@@ -13,4 +13,6 @@ public class KaiaConstantsNbt {
     public static final String attackYourWolf = "attackYourWolf";
     public static final String interactLiquid = "interactLiquid";
     public static final String noBreakTileEntity = "noBreakTileEntity";
+    public static final String kaiaEnchant = "enchantKaia";
+
 }
