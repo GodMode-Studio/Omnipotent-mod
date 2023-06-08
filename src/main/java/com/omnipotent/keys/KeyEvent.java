@@ -25,7 +25,11 @@ public class KeyEvent {
         }
         if (KeyInit.keyOpenGuiKaia.isPressed() && !player.getHeldItemMainhand().isEmpty() && player.getHeldItemMainhand().getItem() instanceof Kaia) {
             ItemStack kaiaItem = Minecraft.getMinecraft().player.getHeldItemMainhand();
-            player.openGui(Omnipotent.instance, ID_MOD.ordinal(), player.world, 0, 0, 0);
+            player.openGui(Omnipotent.instance, 0, player.world, 0, 0, 0);
+        }
+        if(KeyInit.kaiaGuiEnchantment.isPressed()){
+            ItemStack kaiaItem = Minecraft.getMinecraft().player.getHeldItemMainhand();
+            player.openGui(Omnipotent.instance, 1, player.world, 0, 0, 0);
         }
     }
 }
