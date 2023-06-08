@@ -23,9 +23,11 @@ public class GuiHandler implements IGuiHandler {
     @Nullable
     @Override
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        switch (GuiIDs.values()[ID]) {
-            case ID_MOD:
+        switch (ID) {
+            case 0:
                 return new KaiaGui(player.inventory, player.getHeldItemMainhand());
+            case 1:
+                return new KaiaGuiEnchantment(player);
         }
         throw new IllegalArgumentException("sem gui com o id" + ID);
     }
