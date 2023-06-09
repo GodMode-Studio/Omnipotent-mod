@@ -90,7 +90,7 @@ public class KaiaGuiEnchantment extends GuiScreen {
         int y = 42;
         for (int c = 0; c < enchantments.size(); c++) {
             if (y < 240) {
-                int number = page * 20;
+                int number = page * 17;
                 if (c + number < enchantments.size()) {
                     GuiTextField guiTextField = new GuiTextField(++idGuiText, fontRenderer, 52, y, 115, 12);
                     guiTextField.setFocused(false);
@@ -120,7 +120,7 @@ public class KaiaGuiEnchantment extends GuiScreen {
         int y = 42;
         for (int c = 0; c < enchantments.size(); c++) {
             if (y < 240) {
-                int number = pageRemoved * 20;
+                int number = pageRemoved * 17;
                 if (c + number < enchantments.size()) {
                     GuiTextField guiTextField = new GuiTextField(++idGuiText, fontRenderer, 352, y, 115, 12);
                     guiTextField.setFocused(false);
