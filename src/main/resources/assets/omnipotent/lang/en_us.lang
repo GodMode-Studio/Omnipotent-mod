@@ -18,7 +18,7 @@ guikaia.config.attackallentities=Attack all entities
 guikaia.config.blockinteractiondistance=Block interaction distance
 guikaia.config.counterattack=Counterattack
 guikaia.config.attackyourwolf=Attack your wolf
-guikaia.config.interactwithliquidblocks=Interagir com blocos liquidos
+guikaia.config.interactwithliquidblocks=Interact with liquid blocks
 guikaia.config.donotbreaktileentityblocks=Do Not Break Tile Entity Blocks
 #keys
 keykaia.category=Kaia Keys
