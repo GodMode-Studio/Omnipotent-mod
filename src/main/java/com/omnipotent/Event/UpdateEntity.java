@@ -35,7 +35,6 @@ import static com.omnipotent.util.KaiaUtil.isOwnerOfKaia;
 
 
 public class UpdateEntity {
-    List<EntityItem> itemsKaiaLoading = new ArrayList<>();
     public static final Set<String> entitiesWithKaia = new HashSet<>();
     public static final Set<String> entitiesFlightKaia = new HashSet<>();
     public static ArrayList<EntityLivingBase> mobsNamedMkll = new ArrayList<>();
@@ -101,13 +100,6 @@ public class UpdateEntity {
         } else if (mobsNamedMkll.contains(entity) && !entity.getCustomNameTag().equals("mkll")) {
             timeTeleportation.remove(entity);
             mobsNamedMkll.remove(entity);
-        }
-    }
-
-    private static void stripAbilities(EntityLivingBase entity) {
-        String key = entity.getCachedUniqueIdString() + "|" + entity.world.isRemote;
-        if (entitiesWithKaia.remove(key)) {
-            handleKaiaStateChange(entity, false);
         }
     }
 

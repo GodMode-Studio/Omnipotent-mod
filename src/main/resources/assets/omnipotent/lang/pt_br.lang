@@ -3,3 +3,27 @@ itemGroup.Omnipotent mod=Omnipotent mod
 #tooltip
 kaia.damage=UNINTELLIGIBLE
 kaia.speed=UNINTELLIGIBLE
+#gui
+guikaia.enchant=Encantamentos
+guikaia.enchant.previouspage=Página anterior
+guikaia.enchant.nextpage=Próxima página
+guikaia.enchant.label0=Nível padrão
+guikaia.enchant.message=O nivel não pode ser acimada de 32767, deve conter apenas numeros e não pode ser abaixo de 0.
+
+guikaia.config=Configurações Kaia
+guikaia.config.minerationarea=Área de mineração
+guikaia.config.rangeattack=Alcance do ataque
+guikaia.config.attackfriendentities=Atacar entidades amigaveis
+guikaia.config.attackallentities=Atacar todas as entidades
+guikaia.config.blockinteractiondistance=Distancia de interação com blocos
+guikaia.config.counterattack=Contra atacar
+guikaia.config.attackyourwolf=Atacar seu lobo
+guikaia.config.interactwithliquidblocks=Interagir com blocos liquidos
+guikaia.config.donotbreaktileentityblocks=Não quebrar tile entity
+#keys
+keykaia.category=Botões Kaia
+keykaia.config=Configurações
+keykaia.returnkaia=Retorna Kaia
+keykaia.enchantmentkaia=Encantamentos Kaia
+#messages in chat
+kaia.message.void=PARADEIRO Y150

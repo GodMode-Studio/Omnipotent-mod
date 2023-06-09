@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 
 import java.awt.*;
@@ -21,16 +22,12 @@ import static com.omnipotent.util.KaiaUtil.getKaiaInMainHand;
 
 public class InitButtonsForGuiKaia {
     public List<GuiButton> buttonsList = new ArrayList<GuiButton>();
-
     public List<String> namesOfButtons = new ArrayList<String>();
     public List<String> namesOfGuiTextList = new ArrayList<String>();
-
     public Map<GuiButton, Runnable> functionsForButtonsList = new HashMap<>();
     public Map<String, GuiTextField> guiTextFieldList = new HashMap<>();
     public List<String> textButtonList = new ArrayList<>();
-
     public static int width = KaiaGui.width;
-
     public static int height = KaiaGui.height;
     public int buttonID = 0;
     private final Map<String, GuiButton> guiButtonList = new HashMap<>();
@@ -111,16 +108,16 @@ public class InitButtonsForGuiKaia {
     }
 
     public void drawLabels(FontRenderer fontRenderer) {
-        fontRenderer.drawString("Configuracoes Kaia", (width - fontRenderer.getStringWidth("Configuracoes Kaia")) / 2, height - 261, Color.WHITE.getRGB());
-        fontRenderer.drawString("Area de mineracao", width / 2 - 200, height / 2 - 85, Color.WHITE.getRGB());
-        fontRenderer.drawString("Alcance do ataque", width / 2 - 200, height / 2 - 60, Color.WHITE.getRGB());
-        fontRenderer.drawString("Atacar entidades amigaveis", width / 2 - 200, height / 2 - 35, Color.WHITE.getRGB());
-        fontRenderer.drawString("Atacar todas as entidades", width / 2 - 200, height / 2 - 15, Color.WHITE.getRGB());
-        fontRenderer.drawString("Distancia de interacao com os blocos", width / 2 - 200, height / 2 - -5, Color.WHITE.getRGB());
-        fontRenderer.drawString("Contra atacar", width / 2 - 200, height / 2 - -25, Color.WHITE.getRGB());
-        fontRenderer.drawString("Atacar seu lobo", width / 2 - 200, height / 2 - -45, Color.WHITE.getRGB());
-        fontRenderer.drawString("Interagir com blocos liquidos", width / 2 - 200, height / 2 - -65, Color.WHITE.getRGB());
-        fontRenderer.drawString("Nao quebrar Tile Entity blocks", width / 2 - 200, height / 2 - -85, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config"), (width - fontRenderer.getStringWidth(I18n.format("guikaia.config"))) / 2, height - 261, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.minerationarea"), width / 2 - 200, height / 2 - 85, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.rangeattack"), width / 2 - 200, height / 2 - 60, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.attackfriendentities"), width / 2 - 200, height / 2 - 35, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.attackallentities"), width / 2 - 200, height / 2 - 15, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.blockinteractiondistance"), width / 2 - 200, height / 2 - -5, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.counterattack"), width / 2 - 200, height / 2 - -25, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.attackyourwolf"), width / 2 - 200, height / 2 - -45, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.interactwithliquidblocks"), width / 2 - 200, height / 2 - -65, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.donotbreaktileentityblocks"), width / 2 - 200, height / 2 - -85, Color.WHITE.getRGB());
     }
 
     private void setNamesOfGuiTextList() {

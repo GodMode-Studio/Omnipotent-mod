@@ -5,6 +5,7 @@ import com.omnipotent.network.nbtpackets.KaiaNbtPacket;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
@@ -54,7 +55,7 @@ public class KaiaGuiEnchantment extends GuiScreen {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         guiText.drawTextBox();
-        drawString(fontRenderer, "Encantamentos", 220, 5, Color.WHITE.getRGB());
+        drawString(fontRenderer, I18n.format("guikaia.enchant"), 220, 5, Color.WHITE.getRGB());
         super.drawScreen(mouseX, mouseY, partialTicks);
         //cor pega com base nas cores normais do minecraft em GuiScreen
         drawGradientRect(50, 40, 170, 244, -1072689136, -804253680);
@@ -136,12 +137,12 @@ public class KaiaGuiEnchantment extends GuiScreen {
     }
 
     private void addButtonsPage() {
-        GuiButton paginaAnterior = new GuiButton(0, 50, 29, "Pagina anterior");
+        GuiButton paginaAnterior = new GuiButton(0, 50, 29, I18n.format("guikaia.enchant.previouspage"));
         paginaAnterior.height = 11;
         String displayString2 = paginaAnterior.displayString.replaceAll("\\s", "");
         paginaAnterior.width = 8 * displayString2.length();
         buttonList.add(paginaAnterior);
-        GuiButton proximaPagina = new GuiButton(1, 50, 245, "Proxima pagina");
+        GuiButton proximaPagina = new GuiButton(1, 50, 245, I18n.format("guikaia.enchant.nextpage"));
         proximaPagina.height = 11;
         String displayString = proximaPagina.displayString.replaceAll("\\s", "");
         proximaPagina.width = 8 * displayString.length();
@@ -149,12 +150,12 @@ public class KaiaGuiEnchantment extends GuiScreen {
     }
 
     private void addButtonsPageRemoved() {
-        GuiButton paginaAnterior = new GuiButton(2, 350, 29, "Pagina anterior");
+        GuiButton paginaAnterior = new GuiButton(2, 350, 29, I18n.format("guikaia.enchant.previouspage"));
         paginaAnterior.height = 11;
         String displayString2 = paginaAnterior.displayString.replaceAll("\\s", "");
         paginaAnterior.width = 8 * displayString2.length();
         buttonList.add(paginaAnterior);
-        GuiButton proximaPagina = new GuiButton(3, 350, 245, "Proxima pagina");
+        GuiButton proximaPagina = new GuiButton(3, 350, 245, I18n.format("guikaia.enchant.nextpage"));
         proximaPagina.height = 11;
         String displayString = proximaPagina.displayString.replaceAll("\\s", "");
         proximaPagina.width = 8 * displayString.length();
@@ -170,8 +171,8 @@ public class KaiaGuiEnchantment extends GuiScreen {
                 if (isJustNumber(guiText.getText()) && (Integer.parseInt(guiText.getText()) <= Short.MAX_VALUE) && (Integer.parseInt(guiText.getText()) > 0)) {
                     lvl = Integer.parseInt(guiText.getText());
                 } else {
-                    guiText.setText("level padrao 1");
-                    player.sendMessage(new TextComponentString("o level não pode ser acimada de 32767, deve ser apenas numeros e não pode ser abaixo de 0"));
+                    guiText.setText(I18n.format("guikaia.enchant.label0"));
+                    player.sendMessage(new TextComponentString(I18n.format("guikaia.enchant.message")));
                     lvl = 1;
                 }
                 Enchantment enchantment = hashGuiTextEnchant.get(guiField);

@@ -2,6 +2,7 @@ package com.omnipotent.tools;
 
 import com.omnipotent.util.KaiaUtil;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -18,6 +19,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.ModelRegistryEvent;
@@ -123,7 +125,7 @@ public class Kaia extends ItemPickaxe {
         ItemStack kaiaItem = entityItem.getItem();
         if (entityItem.getPosition().getY() < -5) {
             entityItem.setPosition(entityItem.posX, 150, entityItem.posZ);
-            KaiaUtil.sendMessageToAllPlayers("\u00A74O PARADEIRO Y150");
+            KaiaUtil.sendMessageToAllPlayers(TextFormatting.DARK_RED+I18n.format("kaia.message.void"));
         }
         KaiaUtil.createTagCompoundStatusIfNecessary(kaiaItem);
         if (kaiaItem.getTagCompound().hasKey(PositionKaiaEntityItem)) {

@@ -21,7 +21,6 @@ public class KaiaGui extends GuiScreen {
     public static int height;
     public static FontRenderer fontRenderer;
     private InitButtonsForGuiKaia initButtonsForGuiKaia;
-
     public KaiaGui(InventoryPlayer inventoryPlayer, ItemStack itemStack) {
         this.player = inventoryPlayer.player;
     }
