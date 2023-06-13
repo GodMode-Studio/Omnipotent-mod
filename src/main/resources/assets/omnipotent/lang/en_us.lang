@@ -27,3 +27,4 @@ keykaia.returnkaia=Return Kaia
 keykaia.enchantmentkaia=Kaia Enchantments
 #messages in chat
 kaia.message.void=WHEREABOUTS Y150
+kaia.message.returndropitems=Item dropped at position
