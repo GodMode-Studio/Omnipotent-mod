@@ -3,7 +3,6 @@ package com.omnipotent.Event;
 import com.omnipotent.tools.Kaia;
 import com.omnipotent.util.AbsoluteOfCreatorDamage;
 import com.omnipotent.util.KaiaUtil;
-import net.minecraft.block.BlockChest;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,13 +11,8 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.item.ItemExpireEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -26,13 +20,8 @@ import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-
 import java.util.*;
-
-import static com.omnipotent.tools.KaiaConstantsNbt.*;
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
-import static com.omnipotent.util.KaiaUtil.isOwnerOfKaia;
-
 
 public class UpdateEntity {
     public static final Set<String> entitiesWithKaia = new HashSet<>();
@@ -140,7 +129,9 @@ public class UpdateEntity {
     @SubscribeEvent
     public void cancelTimeItem(ItemExpireEvent event) {
         if (event.getEntityItem().getItem().getItem() instanceof Kaia) {
-            event.setCanceled(true);
+            if(event.getEntityItem().getItem().hasTagCompound()){
+                event.setCanceled(true);
+            }
         }
     }
 
@@ -154,25 +145,8 @@ public class UpdateEntity {
         ItemStack item = event.getItem().getItem();
         if (!item.hasTagCompound())
             return;
-        String ownerNameString = item.getTagCompound().getString(ownerName);
-        String ownerIDString = item.getTagCompound().getString(ownerID);
-        if (!player.getName().equals(ownerNameString) || !player.getUniqueID().toString().equals(ownerIDString)) {
+        if (!KaiaUtil.isOwnerOfKaia(item, player)) {
             event.setCanceled(true);
-        }
-        BlockPos pos = new BlockPos(405545454, 0, 28938293);
-        WorldServer worldServer = DimensionManager.getWorld(0);
-        if(worldServer==null) return;
-        TileEntity tileEntity = worldServer.getTileEntity(pos);
-        ItemStack kaiaItem = event.getItem().getItem();
-        if (tileEntity != null && tileEntity.getBlockType() instanceof BlockChest) {
-            TileEntityChest chest = (TileEntityChest) tileEntity;
-            for (int index = 0; index < chest.getSizeInventory(); index++) {
-                ItemStack stackInSlot = chest.getStackInSlot(index);
-                if (!stackInSlot.isEmpty() && stackInSlot.getItem() instanceof Kaia && isOwnerOfKaia(kaiaItem, player)) {
-                    chest.setInventorySlotContents(index, ItemStack.EMPTY);
-                    break;
-                }
-            }
         }
     }
 
@@ -183,35 +157,13 @@ public class UpdateEntity {
             if (!entityItem.getItem().isEmpty() && entityItem.getItem().getItem() instanceof Kaia) {
                 entityItem.setEntityInvulnerable(true);
                 entityItem.setNoPickupDelay();
-                if (entityItem.getItem().hasTagCompound() && entityItem.getItem().getTagCompound().hasKey(ownerID) && entityItem.getItem().getTagCompound().hasKey(ownerName)) {
-                    BlockPos blockPos = new BlockPos(405545454, 0, 28938293);
-                    TileEntity tileEntity = DimensionManager.getWorld(0).getTileEntity(blockPos);
-                    ItemStack kaiaItem = entityItem.getItem();
-                    boolean noExistInChest = true;
-                    if (tileEntity != null && tileEntity.getBlockType() instanceof BlockChest) {
-                        TileEntityChest chest = (TileEntityChest) tileEntity;
-                        for (int index = 0; index < chest.getSizeInventory(); index++) {
-                            ItemStack stackInSlot = chest.getStackInSlot(index);
-                            if (!stackInSlot.isEmpty() && stackInSlot.getItem() instanceof Kaia && kaiaItem.getTagCompound().getLong(idLigation) == stackInSlot.getTagCompound().getLong(idLigation)) {
-                                noExistInChest = false;
-                                break;
-                            }
-                        }
-                        if (noExistInChest) {
-                            for (int index = 0; index < chest.getSizeInventory(); index++) {
-                                ItemStack stackInSlot = chest.getStackInSlot(index);
-                                if (stackInSlot.isEmpty() && !(stackInSlot.getItem() instanceof Kaia)) {
-                                    chest.setInventorySlotContents(index, kaiaItem);
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                if (!entityItem.getItem().hasTagCompound()) {
+                    entityItem.setDead();
                 }
             }
-            if (KaiaUtil.antiEntity.contains(event.getEntity().getClass())) {
-                event.setCanceled(true);
-            }
+        }
+        if (KaiaUtil.antiEntity.contains(event.getEntity().getClass())) {
+            event.setCanceled(true);
         }
     }
 

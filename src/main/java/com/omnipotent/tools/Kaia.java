@@ -1,41 +1,37 @@
 package com.omnipotent.tools;
 
+import com.google.common.collect.ImmutableSetMultimap;
 import com.omnipotent.util.KaiaUtil;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Enchantments;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.EntityEntry;
+import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
+import static com.omnipotent.Omnipotent.instance;
 import static com.omnipotent.Omnipotent.omnipotentTab;
 import static com.omnipotent.tools.KaiaConstantsNbt.*;
 import static com.omnipotent.util.KaiaUtil.checkIfKaiaCanKillPlayerOwnedWolf;
@@ -123,40 +119,20 @@ public class Kaia extends ItemPickaxe {
     @Override
     public boolean onEntityItemUpdate(EntityItem entityItem) {
         ItemStack kaiaItem = entityItem.getItem();
-        if (entityItem.getPosition().getY() < -5) {
-            entityItem.setPosition(entityItem.posX, 150, entityItem.posZ);
-            KaiaUtil.sendMessageToAllPlayers(TextFormatting.DARK_RED+I18n.format("kaia.message.void"));
-        }
-        KaiaUtil.createTagCompoundStatusIfNecessary(kaiaItem);
-        if (kaiaItem.getTagCompound().hasKey(PositionKaiaEntityItem)) {
-            int[] positionKaiaEntityItems = kaiaItem.getTagCompound().getIntArray(PositionKaiaEntityItem);
-            if (positionKaiaEntityItems[0] != entityItem.getPosition().getX())
-                kaiaItem.getTagCompound().setIntArray(PositionKaiaEntityItem, new int[]{entityItem.getPosition().getX(), entityItem.getPosition().getY(), entityItem.getPosition().getZ()});
-            if (positionKaiaEntityItems[1] != entityItem.getPosition().getY())
-                kaiaItem.getTagCompound().setIntArray(PositionKaiaEntityItem, new int[]{entityItem.getPosition().getX(), entityItem.getPosition().getY(), entityItem.getPosition().getZ()});
-            if (positionKaiaEntityItems[2] != entityItem.getPosition().getZ())
-                kaiaItem.getTagCompound().setIntArray(PositionKaiaEntityItem, new int[]{entityItem.getPosition().getX(), entityItem.getPosition().getY(), entityItem.getPosition().getZ()});
-        } else {
-            kaiaItem.getTagCompound().setIntArray("PositionKaiaEntityItem", new int[]{entityItem.getPosition().getX(), entityItem.getPosition().getY(), entityItem.getPosition().getZ()});
-            int[] positionKaiaEntityItems = kaiaItem.getTagCompound().getIntArray(PositionKaiaEntityItem);
-            if (positionKaiaEntityItems[0] != entityItem.getPosition().getX())
-                kaiaItem.getTagCompound().setIntArray(PositionKaiaEntityItem, new int[]{entityItem.getPosition().getX(), entityItem.getPosition().getY(), entityItem.getPosition().getZ()});
-            if (positionKaiaEntityItems[1] != entityItem.getPosition().getY())
-                kaiaItem.getTagCompound().setIntArray(PositionKaiaEntityItem, new int[]{entityItem.getPosition().getX(), entityItem.getPosition().getY(), entityItem.getPosition().getZ()});
-            if (positionKaiaEntityItems[2] != entityItem.getPosition().getZ())
-                kaiaItem.getTagCompound().setIntArray(PositionKaiaEntityItem, new int[]{entityItem.getPosition().getX(), entityItem.getPosition().getY(), entityItem.getPosition().getZ()});
-        }
-        BlockPos pos = new BlockPos(405545454, 0, 28938293);
-        WorldServer worldServer = DimensionManager.getWorld(0);
-        if (worldServer == null) return super.onEntityItemUpdate(entityItem);
-        TileEntityChest chest = (TileEntityChest) worldServer.getTileEntity(pos);
-        for (int index = 0; index < chest.getSizeInventory(); index++) {
-            ItemStack stackInSlot = chest.getStackInSlot(index);
-            if (!stackInSlot.isEmpty() && entityItem.getItem().getTagCompound().getLong(idLigation) == stackInSlot.getTagCompound().getLong(idLigation)) {
-                return super.onEntityItemUpdate(entityItem);
+        World world = entityItem.getEntityWorld();
+        if (!world.isRemote) {
+            if (entityItem.getPosition().getY() < -5) {
+                entityItem.setPosition(entityItem.posX, 150, entityItem.posZ);
+                KaiaUtil.sendMessageToAllPlayers(TextFormatting.DARK_RED + I18n.format("kaia.message.void"));
+            }
+            ImmutableSetMultimap<ChunkPos, ForgeChunkManager.Ticket> chunks = ForgeChunkManager.getPersistentChunksFor(world);
+            ChunkPos chunkPos = world.getChunkFromBlockCoords(entityItem.getPosition()).getPos();
+            if (!chunks.containsKey(chunkPos)) {
+                ForgeChunkManager.Ticket ticket = ForgeChunkManager.requestTicket(instance, world, ForgeChunkManager.Type.ENTITY);
+                ticket.bindEntity(entityItem);
+                ForgeChunkManager.forceChunk(ticket, chunkPos);
             }
         }
-        entityItem.setDead();
         return super.onEntityItemUpdate(entityItem);
     }
 
@@ -179,5 +155,15 @@ public class Kaia extends ItemPickaxe {
             playerIn.world.spawnEntity(new EntityXPOrb(playerIn.world, playerIn.posX, playerIn.posY, playerIn.posZ, Integer.MAX_VALUE / 10000));
         }
         return super.onItemRightClick(worldIn, playerIn, handIn);
+    }
+
+    @Override
+    public boolean hasCustomEntity(ItemStack stack) {
+        return true;
+    }
+    @Nullable
+    @Override
+    public Entity createEntity(World world, Entity location, ItemStack itemstack) {
+        return new KaiaEntity(world, location.posX, location.posY, location.posZ, itemstack);
     }
 }

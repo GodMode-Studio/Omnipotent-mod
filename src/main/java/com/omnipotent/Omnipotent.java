@@ -1,5 +1,6 @@
 package com.omnipotent;
 
+import com.google.common.collect.ImmutableSetMultimap;
 import com.omnipotent.Event.KaiaEvent;
 import com.omnipotent.Event.KaiaToolTip;
 import com.omnipotent.Event.UpdateEntity;
@@ -9,16 +10,24 @@ import com.omnipotent.keys.KeyInit;
 import com.omnipotent.network.NetworkRegister;
 import com.omnipotent.network.PacketInicialization;
 import com.omnipotent.tools.Kaia;
+import com.omnipotent.tools.KaiaEntity;
 import com.omnipotent.util.KaiaUtil;
-import net.minecraft.block.BlockChest;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.Item;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.DimensionType;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -28,8 +37,13 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.common.registry.EntityEntry;
+import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
+import net.minecraftforge.fml.common.registry.EntityRegistry;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import java.io.IOException;
+import java.util.List;
 
 @Mod(modid = Omnipotent.MODID, name = Omnipotent.NAME, version = Omnipotent.VERSION)
 @Mod.EventBusSubscriber
@@ -39,7 +53,6 @@ public class Omnipotent {
     public static final String VERSION = "1.0";
     public static final OmnipotentTab omnipotentTab = new OmnipotentTab("Omnipotent mod");
     public static SimpleNetworkWrapper channel = NetworkRegistry.INSTANCE.newSimpleChannel("omnipotent");
-
     static Kaia kaia = new Kaia();
     @Mod.Instance(Omnipotent.MODID)
     public static Omnipotent instance;
@@ -60,6 +73,17 @@ public class Omnipotent {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         KeyInit.initKeys();
+        ForgeChunkManager.setForcedChunkLoadingCallback(instance, new ForgeChunkManager.LoadingCallback() {
+            @Override
+            public void ticketsLoaded(List<ForgeChunkManager.Ticket> tickets, World world) {
+                for (ForgeChunkManager.Ticket ticket : tickets) {
+                    Entity entity = ticket.getEntity();
+                    if (entity != null) {
+                        ForgeChunkManager.forceChunk(ticket, entity.getEntityWorld().getChunkFromBlockCoords(entity.getPosition()).getPos());
+                    }
+                }
+            }
+        });
     }
 
     @EventHandler
@@ -67,17 +91,14 @@ public class Omnipotent {
     }
 
     @SubscribeEvent
-    public static void playerJoinWorld(WorldEvent.Load event) {
+    public void entityRegister(RegistryEvent.Register<EntityEntry> event){
+        EntityEntryBuilder<Entity> entity = EntityEntryBuilder.create().entity(KaiaEntity.class).id("kaia_entity", 1).name("kaia_entity").tracker(64, 1, true);
+        event.getRegistry().register(entity.build());
+    }
+
+    @SubscribeEvent
+    public void playerJoinWorld(WorldEvent.Load event) {
         NetworkRegister.ACESS.sendToServer(new PacketInicialization());
-        BlockPos pos = new BlockPos(405545454, 0, 28938293);
-        WorldServer world = DimensionManager.getWorld(0);
-        if (world != null) {
-            TileEntity chest = world.getTileEntity(pos);
-            if (chest == null)
-                world.setBlockState(pos, Blocks.CHEST.getDefaultState());
-            else if (!(chest.getBlockType() instanceof BlockChest))
-                world.setBlockState(pos, Blocks.CHEST.getDefaultState());
-        }
     }
 
     @SubscribeEvent

@@ -1,17 +1,21 @@
 package com.omnipotent.Event;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.omnipotent.network.KillPacket;
 import com.omnipotent.network.NetworkRegister;
 import com.omnipotent.network.SummonLightEasterEggPacket;
 import com.omnipotent.tools.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -19,6 +23,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import static com.omnipotent.Omnipotent.instance;
 import static com.omnipotent.util.KaiaUtil.*;
 
 public class KaiaEvent {
@@ -55,7 +60,7 @@ public class KaiaEvent {
                 event.setCanceled(true);
                 NBTTagCompound tagCompoundOfKaia = getKaiaInInventory(player).getTagCompound();
                 if (tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.counterAttack)) {
-                    if(!isPlayer(event.getSource().getTrueSource()) || (isPlayer(event.getSource().getTrueSource()) && !hasInInventoryKaia(event.getSource().getTrueSource())) ){
+                    if (!isPlayer(event.getSource().getTrueSource()) || (isPlayer(event.getSource().getTrueSource()) && !hasInInventoryKaia(event.getSource().getTrueSource()))) {
                         KaiaUtil.kill(event.getSource().getTrueSource(), player, tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.killAllEntities));
                     }
                 }
@@ -75,7 +80,8 @@ public class KaiaEvent {
     @SubscribeEvent
     public void playerClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         EntityPlayer entityPlayer = event.getEntityPlayer();
-        if (withKaiaMainHand(entityPlayer) && !entityPlayer.world.isRemote && entityPlayer instanceof EntityPlayerMP && !entityPlayer.capabilities.isCreativeMode) {
+        World world = entityPlayer.world;
+        if (withKaiaMainHand(entityPlayer) && !world.isRemote && entityPlayer instanceof EntityPlayerMP && !entityPlayer.capabilities.isCreativeMode) {
             decideBreakBlock((EntityPlayerMP) entityPlayer, event.getPos());
         }
     }

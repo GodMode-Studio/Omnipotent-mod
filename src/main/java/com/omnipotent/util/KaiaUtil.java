@@ -1,11 +1,14 @@
 package com.omnipotent.util;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.SetMultimap;
 import com.omnipotent.tools.Kaia;
 import com.omnipotent.tools.KaiaConstantsNbt;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockChest;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
@@ -20,7 +23,6 @@ import net.minecraft.entity.passive.EntitySquid;
 import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.init.Enchantments;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemAir;
@@ -28,22 +30,24 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.stats.StatList;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.omnipotent.tools.KaiaConstantsNbt.*;
 
@@ -269,39 +273,70 @@ public class KaiaUtil {
     }
 
     public static void returnKaiaOfOwner(EntityPlayer player) {
-        World world = DimensionManager.getWorld(0);
-        if (world == null) return;
-        String name = player.getName();
-        String uuidPlayer = player.getUniqueID().toString();
-        BlockPos pos = new BlockPos(405545454, 0, 28938293);
-        TileEntity tileEntity = world.getTileEntity(pos);
-        if (tileEntity == null) {
-            world.destroyBlock(pos, false);
-            world.setBlockState(pos, Blocks.CHEST.getDefaultState());
-            TileEntityChest tileEntityChest = (TileEntityChest) DimensionManager.getWorld(0).getTileEntity(pos);
-            for (int index = 0; index < tileEntityChest.getSizeInventory(); index++) {
-                ItemStack stackInSlot = tileEntityChest.getStackInSlot(index);
-                if (!stackInSlot.isEmpty() && stackInSlot.getItem() instanceof Kaia && isOwnerOfKaia(stackInSlot, player) && !stackInSlot.isEmpty()) {
-                    player.inventory.addItemStackToInventory(stackInSlot);
-                    tileEntityChest.setInventorySlotContents(index, ItemStack.EMPTY);
-                }
+        int kaiaTarget = 0;
+        int allKaia = 0;
+        ArrayList<ImmutableSetMultimap<ChunkPos, ForgeChunkManager.Ticket>> persistentChunksFor = new ArrayList<>();
+        HashMap<ChunkPos, ForgeChunkManager.Ticket> chunks = new HashMap<>();
+        for (DimensionType dimension : DimensionType.values()) {
+            int id = dimension.getId();
+            WorldServer worldServer;
+            worldServer = DimensionManager.getWorld(id);
+            if (worldServer == null) {
+                DimensionManager.initDimension(id);
+                worldServer = DimensionManager.getWorld(id);
             }
-        } else if (tileEntity.getBlockType() instanceof BlockChest) {
-            TileEntityChest tileEntityChest = (TileEntityChest) world.getTileEntity(pos);
-            for (int index = 0; index < tileEntityChest.getSizeInventory(); index++) {
-                ItemStack stackInSlot = tileEntityChest.getStackInSlot(index);
-                if (!stackInSlot.isEmpty() && stackInSlot.getItem() instanceof Kaia && isOwnerOfKaia(stackInSlot, player) && !stackInSlot.isEmpty()) {
-                    player.inventory.addItemStackToInventory(stackInSlot);
-                    tileEntityChest.setInventorySlotContents(index, ItemStack.EMPTY);
-                }
-            }
-        } else {
-            TileEntityChest tileEntityChest = (TileEntityChest) world.getTileEntity(pos);
-            for (int index = 0; index < tileEntityChest.getSizeInventory(); index++) {
-                ItemStack stackInSlot = tileEntityChest.getStackInSlot(index);
-                if (!stackInSlot.isEmpty() && stackInSlot.getItem() instanceof Kaia && isOwnerOfKaia(stackInSlot, player) && !stackInSlot.isEmpty()) {
-                    player.inventory.addItemStackToInventory(stackInSlot);
-                    tileEntityChest.setInventorySlotContents(index, ItemStack.EMPTY);
+            if (worldServer != null)
+                persistentChunksFor.add(ForgeChunkManager.getPersistentChunksFor(worldServer));
+        }
+        ArrayList<SetMultimap<ChunkPos, ForgeChunkManager.Ticket>> mutableMultimap = new ArrayList<>();
+        for (SetMultimap<ChunkPos, ForgeChunkManager.Ticket> setMultimap : persistentChunksFor) {
+            mutableMultimap.add(HashMultimap.create(setMultimap));
+        }
+        for (SetMultimap<ChunkPos, ForgeChunkManager.Ticket> setMultimap : mutableMultimap) {
+            Iterator<ChunkPos> iterator = setMultimap.keySet().iterator();
+            while (iterator.hasNext()) {
+                ChunkPos chunkPos = iterator.next();
+                Set<ForgeChunkManager.Ticket> tickets = setMultimap.get(chunkPos);//esse
+                Iterator<ForgeChunkManager.Ticket> ticketIterator = tickets.iterator();
+                while (ticketIterator.hasNext()) {
+                    ForgeChunkManager.Ticket ticket = ticketIterator.next();
+                    boolean releaseTicket = false;
+                    Chunk chunk = ticket.world.getChunkFromChunkCoords(chunkPos.x, chunkPos.z);
+                    List<EntityItem> filteredEntities = Arrays.stream(chunk.getEntityLists()).flatMap(Collection::stream).filter(entity -> entity instanceof EntityItem).map(entity -> (EntityItem) entity).filter(entityItem -> entityItem.getItem().getItem() instanceof Kaia).collect(Collectors.toList());
+                    List<EntityPlayer> entityPlayers = Arrays.stream(chunk.getEntityLists()).flatMap(Collection::stream).filter(entity -> entity instanceof EntityPlayer).map(entity -> (EntityPlayer) entity).collect(Collectors.toList());
+                    for (EntityItem entityItem : filteredEntities) {
+                        allKaia++;
+                        ItemStack kaiaItem = entityItem.getItem();
+                        if (isOwnerOfKaia(kaiaItem, player)) {
+                            if (!(player.inventory.addItemStackToInventory(kaiaItem))) {
+                                if (player.inventory.offHandInventory.get(0).isEmpty()) {
+                                    player.inventory.offHandInventory.set(0, kaiaItem);
+                                } else {
+                                    for (int index = 0; index < player.inventory.mainInventory.size(); index++) {
+                                        ItemStack itemStack = player.inventory.mainInventory.get(index);
+                                        if (!itemStack.isEmpty() && !(itemStack.getItem() instanceof Kaia)) {
+                                            player.world.spawnEntity(new EntityItem(player.world, player.posX + 20, player.posY, player.posZ, player.inventory.mainInventory.get(index)));
+                                            player.sendMessage(new TextComponentString(I18n.format("kaia.message.returndropitems") + " X: " + ((int) player.posX + 20) + "Y: " + ((int) player.posY) + "Z: " + ((int) player.posZ)));
+                                            player.inventory.mainInventory.set(index, kaiaItem.copy());
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            entityItem.setDead();
+                            kaiaTarget++;
+                        }
+                    }
+                    if (allKaia <= kaiaTarget) {
+                        releaseTicket = true;
+                        if (!entityPlayers.isEmpty()) {
+                            ForgeChunkManager.unforceChunk(ticket, chunk.getPos());
+                        }
+                    }
+                    if (releaseTicket) {
+                        ForgeChunkManager.releaseTicket(ticket);
+                        iterator.remove();
+                    }
                 }
             }
         }
