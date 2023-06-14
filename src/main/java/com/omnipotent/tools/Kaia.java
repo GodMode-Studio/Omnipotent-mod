@@ -22,8 +22,6 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -161,6 +159,7 @@ public class Kaia extends ItemPickaxe {
     public boolean hasCustomEntity(ItemStack stack) {
         return true;
     }
+
     @Nullable
     @Override
     public Entity createEntity(World world, Entity location, ItemStack itemstack) {
