@@ -129,6 +129,14 @@ public class KaiaNbtPacket implements IMessage {
                     enchantments.put(enchantmentByLocation, intValue);
                     EnchantmentHelper.setEnchantments(enchantments, kaiaItem);
                 }
+            } else if (type.equals(maxCountSlot)) {
+                EntityPlayer player = ctx.getServerHandler().player;
+                ItemStack kaiaItem = player.getHeldItemMainhand();
+                kaiaItem.getTagCompound().setInteger(maxCountSlot, intValue);
+            } else if (type.equals(autoBackPack)) {
+                EntityPlayer player = ctx.getServerHandler().player;
+                ItemStack kaiaItem = player.getHeldItemMainhand();
+                kaiaItem.getTagCompound().setBoolean(autoBackPack, booleanValue);
             }
             return null;
         }

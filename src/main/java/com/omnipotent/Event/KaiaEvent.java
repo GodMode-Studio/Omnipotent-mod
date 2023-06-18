@@ -60,7 +60,7 @@ public class KaiaEvent {
                 event.setCanceled(true);
                 NBTTagCompound tagCompoundOfKaia = getKaiaInInventory(player).getTagCompound();
                 if (tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.counterAttack)) {
-                    if (!isPlayer(event.getSource().getTrueSource()) || (isPlayer(event.getSource().getTrueSource()) && !hasInInventoryKaia(event.getSource().getTrueSource()))) {
+                    if (event.getSource().getTrueSource()!=null && !isPlayer(event.getSource().getTrueSource()) || (isPlayer(event.getSource().getTrueSource()) && !hasInInventoryKaia(event.getSource().getTrueSource()))) {
                         KaiaUtil.kill(event.getSource().getTrueSource(), player, tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.killAllEntities));
                     }
                 }
@@ -72,7 +72,7 @@ public class KaiaEvent {
     public void damageHurt(LivingHurtEvent event) {
         if (isPlayer(event.getEntity()) && hasInInventoryKaia((EntityPlayer) event.getEntity())) {
             event.setCanceled(true);
-        } else if (isPlayer(event.getSource().getTrueSource()) && withKaiaMainHand((EntityPlayer) event.getSource().getTrueSource())) {
+        } else if (event.getSource().getTrueSource()!=null && isPlayer(event.getSource().getTrueSource()) && withKaiaMainHand((EntityPlayer) event.getSource().getTrueSource())) {
             event.setCanceled(false);
         }
     }

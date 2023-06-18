@@ -1,6 +1,10 @@
 package com.omnipotent.network;
 
 import com.omnipotent.network.nbtpackets.KaiaNbtPacket;
+import com.omnipotent.test.net.KaiaContainerOpenPackte;
+import com.omnipotent.test.net.KaiaContainerPackte;
+import com.omnipotent.test.net.KaiaSlotChangePacket;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.relauncher.Side;
 
@@ -19,6 +23,11 @@ public enum NetworkRegister {
         channel.registerMessage(SummonLightEasterEggPacket.SummonLightEasterEggPacketHandler.class, SummonLightEasterEggPacket.class, index++, Side.SERVER);
         channel.registerMessage(ReturnKaiaPacket.ReturnKaiaPacketHandler.class, ReturnKaiaPacket.class, index++, Side.SERVER);
         channel.registerMessage(KaiaNbtPacket.KaiaNbtPacketHandler.class, KaiaNbtPacket.class, index++, Side.SERVER);
+
+        channel.registerMessage(KaiaContainerPackte.MessageHandler.class, KaiaContainerPackte.class, index++, Side.SERVER);
+        channel.registerMessage(KaiaSlotChangePacket.MessageHandler.class, KaiaSlotChangePacket.class, index++, Side.CLIENT);
+        channel.registerMessage(KaiaContainerOpenPackte.MessageHandler.class, KaiaContainerOpenPackte.class, index++, Side.SERVER);
+
     }
 
     public void sendToServer(IMessage message) {
@@ -27,5 +36,9 @@ public enum NetworkRegister {
 
     public void sendToAll(IMessage message) {
         channel.sendToAll(message);
+    }
+
+    public void sendMessageToPlayer(IMessage msg, EntityPlayerMP player) {
+        channel.sendTo(msg, player);
     }
 }

@@ -1,6 +1,5 @@
 package com.omnipotent;
 
-import com.google.common.collect.ImmutableSetMultimap;
 import com.omnipotent.Event.KaiaEvent;
 import com.omnipotent.Event.KaiaToolTip;
 import com.omnipotent.Event.UpdateEntity;
@@ -13,21 +12,11 @@ import com.omnipotent.tools.Kaia;
 import com.omnipotent.tools.KaiaEntity;
 import com.omnipotent.util.KaiaUtil;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.Item;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -39,8 +28,6 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import java.io.IOException;
 import java.util.List;
@@ -91,7 +78,7 @@ public class Omnipotent {
     }
 
     @SubscribeEvent
-    public void entityRegister(RegistryEvent.Register<EntityEntry> event){
+    public void entityRegister(RegistryEvent.Register<EntityEntry> event) {
         EntityEntryBuilder<Entity> entity = EntityEntryBuilder.create().entity(KaiaEntity.class).id("kaia_entity", 1).name("kaia_entity").tracker(64, 1, true);
         event.getRegistry().register(entity.build());
     }

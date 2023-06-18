@@ -14,5 +14,7 @@ public class KaiaConstantsNbt {
     public static final String interactLiquid = "interactLiquid";
     public static final String noBreakTileEntity = "noBreakTileEntity";
     public static final String kaiaEnchant = "enchantKaia";
+    public static final String maxCountSlot = "maxcountslot";
+    public static final String autoBackPack = "autobackpack";
 
 }

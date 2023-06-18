@@ -1,6 +1,8 @@
 package com.omnipotent.tools;
 
 import com.google.common.collect.ImmutableSetMultimap;
+import com.omnipotent.test.IContainer;
+import com.omnipotent.test.InventoryKaiaPickaxe;
 import com.omnipotent.util.KaiaUtil;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.I18n;
@@ -35,13 +37,17 @@ import static com.omnipotent.tools.KaiaConstantsNbt.*;
 import static com.omnipotent.util.KaiaUtil.checkIfKaiaCanKillPlayerOwnedWolf;
 import static com.omnipotent.util.KaiaUtil.getKaiaInMainHand;
 
-public class Kaia extends ItemPickaxe {
+public class Kaia extends ItemPickaxe implements IContainer {
     public Kaia() {
         super(EnumHelper.addToolMaterial("kaia", Integer.MAX_VALUE, Integer.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE, Integer.MAX_VALUE));
         setUnlocalizedName("kaia");
         setRegistryName("kaia");
         setCreativeTab(omnipotentTab);
-        setDamage(this.getDefaultInstance(), 0);
+    }
+
+    @Override
+    public void setDamage(ItemStack stack, int damage) {
+        super.setDamage(stack, 0);
     }
 
     @Override
@@ -108,6 +114,14 @@ public class Kaia extends ItemPickaxe {
             NBTTagCompound status = stack.getTagCompound();
             status.setBoolean(killFriendEntities, true);
         }
+        if (!stack.getTagCompound().hasKey(maxCountSlot)) {
+            NBTTagCompound status = stack.getTagCompound();
+            status.setInteger(maxCountSlot, 200_000_000);
+        }
+        if (!stack.getTagCompound().hasKey(autoBackPack)) {
+            NBTTagCompound status = stack.getTagCompound();
+            status.setBoolean(autoBackPack, false);
+        }
         if (!player.getUniqueID().toString().equals(ownerID) || !player.getName().equals(ownerName)) {
             player.world.spawnEntity(new EntityItem(worldIn, player.posX, player.posY, player.posZ + 5, stack));
             player.inventory.deleteStack(stack);
@@ -164,5 +178,15 @@ public class Kaia extends ItemPickaxe {
     @Override
     public Entity createEntity(World world, Entity location, ItemStack itemstack) {
         return new KaiaEntity(world, location.posX, location.posY, location.posZ, itemstack);
+    }
+
+    @Override
+    public boolean hasInventory(ItemStack stack) {
+        return true;
+    }
+
+    @Override
+    public InventoryKaiaPickaxe getInventory(ItemStack stack) {
+        return new InventoryKaiaPickaxe(stack);
     }
 }

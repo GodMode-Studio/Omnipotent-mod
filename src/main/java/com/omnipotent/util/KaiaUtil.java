@@ -4,6 +4,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
+import com.omnipotent.test.IContainer;
+import com.omnipotent.test.InventoryKaiaPickaxe;
 import com.omnipotent.tools.Kaia;
 import com.omnipotent.tools.KaiaConstantsNbt;
 import net.minecraft.block.Block;
@@ -204,19 +206,56 @@ public class KaiaUtil {
         IBlockState state = player.world.getBlockState(pos);
         Block block = state.getBlock();
         NonNullList<ItemStack> drops = NonNullList.create();
-        int enchLevelFortune = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, getKaiaInMainHand(player));
+        ItemStack kaiaInMainHand = getKaiaInMainHand(player);
+        int enchLevelFortune = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, kaiaInMainHand);
         Float xp = 0f;
         block.getDrops(drops, player.world, pos, state, enchLevelFortune);
         drops.removeIf(item -> item.getItem() instanceof ItemAir);
         if (drops.isEmpty()) {
             drops.add(block.getPickBlock(state, player.rayTrace(0.0f, 0.0f), player.world, pos, player));
         }
-        for (ItemStack dropStack : drops) {
-            EntityItem item = new EntityItem(player.world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, dropStack);
-            player.world.spawnEntity(item);
+        if (kaiaInMainHand.getTagCompound().getBoolean(autoBackPack)) {
+            InventoryKaiaPickaxe inventory = ((IContainer) kaiaInMainHand.getItem()).getInventory(kaiaInMainHand);
+            for (ItemStack dropStack : drops) {
+                boolean breakMainLoop = false;
+                inventory.openInventory(player);
+                for (int currentPage = 0; currentPage < inventory.getMaxPage(); currentPage++) {
+                    if (breakMainLoop) {
+                        break;
+                    }
+                    NonNullList<ItemStack> currentPageItems = inventory.getPage(currentPage);
+                    for (int currentSlot = 0; currentSlot < currentPageItems.size(); currentSlot++) {
+                        if (breakMainLoop) {
+                            break;
+                        }
+                        ItemStack stackInCurrentSlot = currentPageItems.get(currentSlot);
+                        if (stackInCurrentSlot == null || stackInCurrentSlot.isEmpty()) {
+                            currentPageItems.set(currentSlot, dropStack);
+                            breakMainLoop = true;
+                            break;
+
+                        } else {
+                            int maxCountSlot = inventory.cancelStackLimit() ? inventory.getInventoryStackLimit() : Math.min(inventory.getInventoryStackLimit(), dropStack.getMaxStackSize());
+                            int countSlotFree = Math.min(maxCountSlot - stackInCurrentSlot.getCount(), dropStack.getCount());
+                            if (countSlotFree > 0 && stackInCurrentSlot.isItemEqual(dropStack) && ItemStack.areItemStackTagsEqual(stackInCurrentSlot, dropStack)) {
+                                stackInCurrentSlot.grow(countSlotFree);
+                                dropStack.shrink(countSlotFree);
+                                if (dropStack.isEmpty()) {
+                                    breakMainLoop = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            inventory.closeInventory(player);
+        } else {
+            drops.forEach(dropStack ->  player.world.spawnEntity(new EntityItem(player.world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, dropStack)));
         }
         xp += block.getExpDrop(state, player.world, pos, enchLevelFortune);
-        player.addStat(StatList.getBlockStats(block));
+        //linha comentada devida a lentidão dela talvez volte no futuro.
+//        player.addStat(StatList.getBlockStats(block));
         player.world.destroyBlock(pos, false);
         return xp;
     }

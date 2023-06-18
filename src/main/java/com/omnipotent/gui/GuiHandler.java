@@ -1,6 +1,9 @@
 package com.omnipotent.gui;
 
+import com.omnipotent.test.ContainerKaia;
+import com.omnipotent.test.GUIContainerKaia;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 
@@ -14,9 +17,11 @@ public class GuiHandler implements IGuiHandler {
     @Nullable
     @Override
     public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
-        switch (GuiIDs.values()[ID]) {
-            case ID_MOD:
+        switch (ID) {
+            case 0:
                 return new KaiaGui(player.inventory, player.getHeldItemMainhand());
+            case 3:
+                return new ContainerKaia(player, player.getHeldItem(y == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND), x);
         }
         throw new IllegalArgumentException("sem gui com o id" + ID);
     }
@@ -28,6 +33,8 @@ public class GuiHandler implements IGuiHandler {
                 return new KaiaGui(player.inventory, player.getHeldItemMainhand());
             case 1:
                 return new KaiaGuiEnchantment(player);
+            case 3:
+                return new GUIContainerKaia(new ContainerKaia(player, player.getHeldItem(y == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND), x));
         }
         throw new IllegalArgumentException("sem gui com o id" + ID);
     }

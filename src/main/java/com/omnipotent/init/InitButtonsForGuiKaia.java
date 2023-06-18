@@ -62,6 +62,7 @@ public class InitButtonsForGuiKaia {
         namesOfButtons.add("attackyourwolf");
         namesOfButtons.add("interactliquid");
         namesOfButtons.add("noBreakTileEntity");
+        namesOfButtons.add("autoBackPack");
     }
 
     public void drawButtons(Minecraft instance, int mouseX, int mouseY, int partialTicks) {
@@ -82,6 +83,7 @@ public class InitButtonsForGuiKaia {
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.attackYourWolf)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.interactLiquid)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.noBreakTileEntity)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.autoBackPack)));
     }
 
     private void setButtonList(EntityPlayer player) {
@@ -91,6 +93,7 @@ public class InitButtonsForGuiKaia {
         buttonsList.add(new GuiButton(++buttonID, width / 2 - 115, height / 2 - -40, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.attackYourWolf))));
         buttonsList.add(new GuiButton(++buttonID, width / 2 - 50, height / 2 - -60, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.interactLiquid))));
         buttonsList.add(new GuiButton(++buttonID, width / 2 - 47, height / 2 - -80, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.noBreakTileEntity))));
+        buttonsList.add(new GuiButton(++buttonID, width / 2 - 90, height / 2 - -100, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.autoBackPack))));
     }
 
     private void setGuiButtonList() {
@@ -118,12 +121,15 @@ public class InitButtonsForGuiKaia {
         fontRenderer.drawString(I18n.format("guikaia.config.attackyourwolf"), width / 2 - 200, height / 2 - -45, Color.WHITE.getRGB());
         fontRenderer.drawString(I18n.format("guikaia.config.interactwithliquidblocks"), width / 2 - 200, height / 2 - -65, Color.WHITE.getRGB());
         fontRenderer.drawString(I18n.format("guikaia.config.donotbreaktileentityblocks"), width / 2 - 200, height / 2 - -85, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.maxslotcount"), width / 2 - 75, height / 2 - -25, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.autobackpack"), width / 2 - 200, height / 2 - -105, Color.WHITE.getRGB());
     }
 
     private void setNamesOfGuiTextList() {
         namesOfGuiTextList.add("minerationArea");
         namesOfGuiTextList.add("rangeattack");
         namesOfGuiTextList.add("blockreachdistance");
+        namesOfGuiTextList.add("maxCountSlot");
     }
 
     private void setGuiTextFieldList(EntityPlayer player) {
@@ -144,6 +150,11 @@ public class InitButtonsForGuiKaia {
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setMaxStringLength(100);
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setFocused(false);
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setText(String.valueOf((int) player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue()));
+
+        guiTextFieldList.put(namesOfGuiTextList.get(++id), new GuiTextField(TEXFIELD_ID++, KaiaGui.fontRenderer, width / 2 + 50, height / 2 - -25, 105, 10));
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).setMaxStringLength(100);
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).setFocused(false);
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).setText(String.valueOf(getKaiaInMainHand(player).getTagCompound().getInteger(maxCountSlot)));
     }
 
     private void setFunctionsForButtonsList(EntityPlayer player) {
@@ -188,6 +199,13 @@ public class InitButtonsForGuiKaia {
             public void run() {
                 boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(noBreakTileEntity);
                 NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(noBreakTileEntity, !value));
+            }
+        });
+        functionsForButtonsList.put(buttonsList.get(++id), new Runnable() {
+            @Override
+            public void run() {
+                boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPack);
+                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(autoBackPack, !value));
             }
         });
     }

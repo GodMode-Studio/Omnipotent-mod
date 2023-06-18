@@ -20,6 +20,8 @@ guikaia.config.counterattack=Contra atacar
 guikaia.config.attackyourwolf=Atacar seu lobo
 guikaia.config.interactwithliquidblocks=Interagir com blocos liquidos
 guikaia.config.donotbreaktileentityblocks=Não quebrar tile entity
+guikaia.config.maxslotcount=Tamanho maximo de pilha na mochila
+guikaia.config.autobackpack=Mochila automatica
 #keys
 keykaia.category=Botões Kaia
 keykaia.config=Configurações
@@ -28,3 +30,6 @@ keykaia.enchantmentkaia=Encantamentos Kaia
 #messages in chat
 kaia.message.void=PARADEIRO Y150
 kaia.message.returndropitems=item dropado na posição
+#container
+container.kaia=Mochila Kaia
+container.kaia.stackCount=Quantidade
