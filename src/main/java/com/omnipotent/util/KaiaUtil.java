@@ -118,7 +118,7 @@ public class KaiaUtil {
                 return;
         }
         ItemStack kaia = getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource);
-        boolean autoBackPack = kaia.getTagCompound().getBoolean(autoBackPackEntities);
+        boolean autoBackpackEntities = kaia.getTagCompound().getBoolean(autoBackPackEntities);
         if (entity instanceof EntityPlayer && !hasInInventoryKaia(entity)) {
             EntityPlayer playerEnemie = (EntityPlayer) entity;
             DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
@@ -131,7 +131,7 @@ public class KaiaUtil {
                 ((EntityPlayer) playerEnemie).onLivingUpdate();
                 playerEnemie.onEntityUpdate();
             }
-            if (!playerSource.getEntityWorld().getGameRules().getBoolean("keepInventory") && autoBackPack) {
+            if (!playerSource.getEntityWorld().getGameRules().getBoolean("keepInventory") && autoBackpackEntities) {
                 compactListItemStacks(playerEnemie.inventory.mainInventory);
                 addedItemsStacksInKaiaInventory((EntityPlayerMP) playerSource, playerEnemie.inventory.mainInventory, kaia);
                 playerEnemie.captureDrops = false;
@@ -150,7 +150,7 @@ public class KaiaUtil {
                 entityCreature.setFire(Integer.MAX_VALUE / 25);
             }
             antiEntity.add(antiEntity.getClass());
-            if (autoBackPack) {
+            if (autoBackpackEntities) {
                 entityCreature.captureDrops = false;
                 entityCreature.captureDropsAbsolute = true;
                 entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
