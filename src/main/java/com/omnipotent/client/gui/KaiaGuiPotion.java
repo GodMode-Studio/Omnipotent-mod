@@ -37,7 +37,7 @@ public class KaiaGuiPotion extends GuiScreen {
     private GuiTextField guiText;
     private int lvl;
 
-    KaiaGuiPotion(EntityPlayer player) {
+    public KaiaGuiPotion(EntityPlayer player) {
         this.player = player;
     }
 
