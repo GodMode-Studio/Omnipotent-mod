@@ -1,7 +1,6 @@
 package com.omnipotent.test;
 
-import javax.annotation.Nullable;
-
+import com.omnipotent.mixin.MixinMinecraft;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.RenderItem;
@@ -10,6 +9,9 @@ import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.item.ItemStack;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.Field;
 
 public class RenderKaiaItem extends RenderItem {
 
@@ -21,7 +23,7 @@ public class RenderKaiaItem extends RenderItem {
 
     public static void init() {
         Minecraft mc = Minecraft.getMinecraft();
-        instance = new RenderKaiaItem(mc.renderEngine, mc.modelManager, mc.getItemColors());
+        instance = new RenderKaiaItem(mc.renderEngine, mc.getModelManager(), mc.getItemColors());
         ((IReloadableResourceManager) mc.getResourceManager()).registerReloadListener(instance);
     }
 

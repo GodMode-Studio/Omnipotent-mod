@@ -316,7 +316,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
     private SkinManager skinManager;
     private final Queue < FutureTask<? >> scheduledTasks = Queues. < FutureTask<? >> newArrayDeque();
     private final Thread mcThread = Thread.currentThread();
-    public ModelManager modelManager;
+    private ModelManager modelManager;
     private BlockRendererDispatcher blockRenderDispatcher;
     private final GuiToast toastGui;
     volatile boolean running = true;
@@ -328,6 +328,10 @@ public class Minecraft implements IThreadListener, ISnooperInfo
     private final Tutorial tutorial;
     long prevFrameTime = -1L;
     private String debugProfilerName = "root";
+
+    public ModelManager getModelManager() {
+        return modelManager;
+    }
 
     public Minecraft(GameConfiguration gameConfig)
     {
