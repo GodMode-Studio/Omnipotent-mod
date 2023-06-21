@@ -1,11 +1,11 @@
 package com.omnipotent;
 
-import com.omnipotent.Event.KaiaEvent;
-import com.omnipotent.Event.KaiaToolTip;
-import com.omnipotent.Event.UpdateEntity;
+import com.omnipotent.event.KaiaEvent;
+import com.omnipotent.client.event.KaiaToolTip;
+import com.omnipotent.event.UpdateEntity;
 import com.omnipotent.gui.GuiHandler;
-import com.omnipotent.keys.KeyEvent;
-import com.omnipotent.keys.KeyInit;
+import com.omnipotent.client.key.KeyEvent;
+import com.omnipotent.key.KeyInit;
 import com.omnipotent.network.NetworkRegister;
 import com.omnipotent.network.PacketInicialization;
 import com.omnipotent.tools.Kaia;

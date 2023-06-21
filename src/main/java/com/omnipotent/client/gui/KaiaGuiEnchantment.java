@@ -1,4 +1,4 @@
-package com.omnipotent.gui;
+package com.omnipotent.client.gui;
 
 import com.omnipotent.network.NetworkRegister;
 import com.omnipotent.network.nbtpackets.KaiaNbtPacket;

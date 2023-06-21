@@ -1,5 +1,9 @@
 package com.omnipotent.gui;
 
+import com.omnipotent.client.gui.KaiaGui;
+import com.omnipotent.client.gui.KaiaGuiDimension;
+import com.omnipotent.client.gui.KaiaGuiEnchantment;
+import com.omnipotent.client.gui.KaiaGuiPotion;
 import com.omnipotent.test.ContainerKaia;
 import com.omnipotent.test.GUIContainerKaia;
 import net.minecraft.entity.player.EntityPlayer;

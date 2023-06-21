@@ -1,6 +1,6 @@
 package com.omnipotent.init;
 
-import com.omnipotent.gui.KaiaGui;
+import com.omnipotent.client.gui.KaiaGui;
 import com.omnipotent.network.NetworkRegister;
 import com.omnipotent.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.tools.KaiaConstantsNbt;
