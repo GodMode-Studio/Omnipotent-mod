@@ -60,13 +60,13 @@ dependencies {
     }
 }
 sourceSets { main { output.resourcesDir = output.classesDir } }
-task copyLangFiles(type: Copy) {
-    from 'src/main/resources/assets/omnipotent/lang'
-    include '**/*.lang'
-    into "$buildDir/classes/java/main/lang"
-}
+//task copyLangFiles(type: Copy) {
+//    from 'src/main/resources/assets/omnipotent/lang'
+//    include '**/*.lang'
+//    into "$buildDir/classes/java/main/lang"
+//}
 
-processResources.dependsOn(copyLangFiles)
+//processResources.dependsOn(copyLangFiles)
 processResources {
     inputs.property "version", project.version
     inputs.property "mcversion", minecraft_version

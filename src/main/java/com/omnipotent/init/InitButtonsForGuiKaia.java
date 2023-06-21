@@ -63,6 +63,7 @@ public class InitButtonsForGuiKaia {
         namesOfButtons.add("interactliquid");
         namesOfButtons.add("noBreakTileEntity");
         namesOfButtons.add("autoBackPack");
+        namesOfButtons.add("autoBackPackEntities");
     }
 
     public void drawButtons(Minecraft instance, int mouseX, int mouseY, int partialTicks) {
@@ -84,6 +85,8 @@ public class InitButtonsForGuiKaia {
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.interactLiquid)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.noBreakTileEntity)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.autoBackPack)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities)));
+
     }
 
     private void setButtonList(EntityPlayer player) {
@@ -94,6 +97,7 @@ public class InitButtonsForGuiKaia {
         buttonsList.add(new GuiButton(++buttonID, width / 2 - 50, height / 2 - -60, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.interactLiquid))));
         buttonsList.add(new GuiButton(++buttonID, width / 2 - 47, height / 2 - -80, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.noBreakTileEntity))));
         buttonsList.add(new GuiButton(++buttonID, width / 2 - 90, height / 2 - -100, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.autoBackPack))));
+        buttonsList.add(new GuiButton(++buttonID, width - width / 3, height / 2 + 40, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.autoBackPackEntities))));
     }
 
     private void setGuiButtonList() {
@@ -111,7 +115,7 @@ public class InitButtonsForGuiKaia {
     }
 
     public void drawLabels(FontRenderer fontRenderer) {
-        fontRenderer.drawString(I18n.format("guikaia.config"), (width - fontRenderer.getStringWidth(I18n.format("guikaia.config"))) / 2, height - 261, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config"), (width - fontRenderer.getStringWidth(I18n.format("guikaia.config"))) / 2, height / 20, Color.WHITE.getRGB());
         fontRenderer.drawString(I18n.format("guikaia.config.minerationarea"), width / 2 - 200, height / 2 - 85, Color.WHITE.getRGB());
         fontRenderer.drawString(I18n.format("guikaia.config.rangeattack"), width / 2 - 200, height / 2 - 60, Color.WHITE.getRGB());
         fontRenderer.drawString(I18n.format("guikaia.config.attackfriendentities"), width / 2 - 200, height / 2 - 35, Color.WHITE.getRGB());
@@ -123,6 +127,7 @@ public class InitButtonsForGuiKaia {
         fontRenderer.drawString(I18n.format("guikaia.config.donotbreaktileentityblocks"), width / 2 - 200, height / 2 - -85, Color.WHITE.getRGB());
         fontRenderer.drawString(I18n.format("guikaia.config.maxslotcount"), width / 2 - 75, height / 2 - -25, Color.WHITE.getRGB());
         fontRenderer.drawString(I18n.format("guikaia.config.autobackpack"), width / 2 - 200, height / 2 - -105, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.autobackpackentities"), width / 3, height / 2 + 45, Color.WHITE.getRGB());
     }
 
     private void setNamesOfGuiTextList() {
@@ -206,6 +211,13 @@ public class InitButtonsForGuiKaia {
             public void run() {
                 boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPack);
                 NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(autoBackPack, !value));
+            }
+        });
+        functionsForButtonsList.put(buttonsList.get(++id), new Runnable() {
+            @Override
+            public void run() {
+                boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities);
+                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(autoBackPackEntities, !value));
             }
         });
     }

@@ -15,19 +15,28 @@ public class KeyEvent {
     @SubscribeEvent
     public void keyPressed(InputEvent.KeyInputEvent event) {
         EntityPlayer player = Minecraft.getMinecraft().player;
+        int id = 0;
         if (KeyInit.keyReturnKaia.isPressed()) {
             NetworkRegister.ACESS.sendToServer(new ReturnKaiaPacket());
         }
         if (KeyInit.keyOpenGuiKaia.isPressed() && !player.getHeldItemMainhand().isEmpty() && player.getHeldItemMainhand().getItem() instanceof Kaia) {
             ItemStack kaiaItem = Minecraft.getMinecraft().player.getHeldItemMainhand();
-            player.openGui(Omnipotent.instance, 0, player.world, 0, 0, 0);
+            player.openGui(Omnipotent.instance, id, player.world, 0, 0, 0);
         }
         if (KeyInit.kaiaGuiEnchantment.isPressed()) {
             ItemStack kaiaItem = Minecraft.getMinecraft().player.getHeldItemMainhand();
-            player.openGui(Omnipotent.instance, 1, player.world, 0, 0, 0);
+            player.openGui(Omnipotent.instance, ++id, player.world, 0, 0, 0);
         }
-        if (KeyInit.kaiaGuiConfig.isPressed()) {
+        if (KeyInit.kaiaGuiBackpack.isPressed()) {
             NetworkRegister.ACESS.sendToServer(new KaiaContainerOpenPackte(3));
+        }
+        if (KeyInit.kaiaGuiPotion.isPressed()) {
+            ItemStack kaiaItem = Minecraft.getMinecraft().player.getHeldItemMainhand();
+            player.openGui(Omnipotent.instance, 4, player.world, 0, 0, 0);
+        }
+        if (KeyInit.kaiaGuiDimension.isPressed()) {
+            ItemStack kaiaItem = Minecraft.getMinecraft().player.getHeldItemMainhand();
+            player.openGui(Omnipotent.instance, 5, player.world, 0, 0, 0);
         }
     }
 }

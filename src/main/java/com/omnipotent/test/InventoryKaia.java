@@ -1,7 +1,6 @@
 package com.omnipotent.test;
 
 import com.google.common.collect.Lists;
-import com.omnipotent.util.KaiaUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
@@ -16,7 +15,7 @@ import java.util.List;
 
 import static com.omnipotent.tools.KaiaConstantsNbt.maxCountSlot;
 
-public class InventoryKaiaPickaxe implements IInventory {
+public class InventoryKaia implements IInventory {
 
     private ItemStack stack;
     private List<NonNullList<ItemStack>> pages;
@@ -227,7 +226,7 @@ public class InventoryKaiaPickaxe implements IInventory {
         pages.clear();
     }
 
-    public InventoryKaiaPickaxe(ItemStack stack) {
+    public InventoryKaia(ItemStack stack) {
         this.stack = stack;
         this.pages = Lists.newArrayList();
     }

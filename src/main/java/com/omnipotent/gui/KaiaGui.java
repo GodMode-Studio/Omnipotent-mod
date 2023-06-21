@@ -4,16 +4,20 @@ import com.omnipotent.init.InitButtonsForGuiKaia;
 import com.omnipotent.network.NetworkRegister;
 import com.omnipotent.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.tools.KaiaConstantsNbt;
-import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.UtillityHelp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 
 import java.io.IOException;
+
+import static com.omnipotent.tools.KaiaConstantsNbt.blockReachDistance;
+import static com.omnipotent.util.KaiaUtil.sendmessageForPlayer;
 
 public class KaiaGui extends GuiScreen {
     EntityPlayer player = null;
@@ -64,39 +68,52 @@ public class KaiaGui extends GuiScreen {
     public void onGuiClosed() {
         int id = 0;
         int idComplement = 0;
-        if (isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(id)).getText())) {
-            int areaBloco = KaiaUtil.getKaiaInMainHand(player).getTagCompound().getInteger(KaiaConstantsNbt.blockBreakArea);
-            int valueButtonBlockArea = Integer.parseInt(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(idComplement)).getText());
+        if (UtillityHelp.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(id)).getText())) {
+            int valueButtonBlockArea;
+            try {
+                valueButtonBlockArea = Integer.parseInt(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(idComplement)).getText());
+            }catch (NumberFormatException e) {
+                valueButtonBlockArea = 1;
+                sendmessageForPlayer(I18n.format("message.client.error.limitnumber")+" "+valueButtonBlockArea);
+            }
             if (valueButtonBlockArea % 2 == 0) {
-                areaBloco = --valueButtonBlockArea;
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.blockBreakArea, areaBloco));
+                --valueButtonBlockArea;
+                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.blockBreakArea, valueButtonBlockArea));
             } else {
-                areaBloco = valueButtonBlockArea;
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.blockBreakArea, areaBloco));
+                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.blockBreakArea, valueButtonBlockArea));
             }
         }
-        if (isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
-            int rangeAttack = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
+        if (UtillityHelp.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
+            int rangeAttack;
+            try {
+                rangeAttack = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
+            } catch (NumberFormatException e) {
+                rangeAttack = 10;
+                sendmessageForPlayer(I18n.format("message.client.error.limitnumber") + " " + rangeAttack);
+            }
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.rangeAttack, rangeAttack));
         }
-        if (isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
-            int distance = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
-            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket("blockReachDistance", distance));
+        if (UtillityHelp.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
+            int distance;
+            try {
+                distance = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
+            } catch (NumberFormatException e) {
+                distance = 5;
+                sendmessageForPlayer(I18n.format("message.client.error.limitnumber") + " " + distance);
+            }
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(blockReachDistance, distance));
         }
-        if (isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
+        if (UtillityHelp.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
             int maxCountSlot;
             try {
                 maxCountSlot = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
             } catch (NumberFormatException e) {
-                maxCountSlot = 1000;
+                maxCountSlot = 200_000_000;
+                sendmessageForPlayer(I18n.format("message.client.error.limitnumber") + " " + maxCountSlot);
             }
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.maxCountSlot, maxCountSlot));
         }
         super.onGuiClosed();
-    }
-
-    public static boolean isJustNumber(String text) {
-        return text.matches("[0-9]+");
     }
 
     @Override

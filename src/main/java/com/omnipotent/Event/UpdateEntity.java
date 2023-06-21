@@ -47,26 +47,6 @@ public class UpdateEntity {
             player.deathTime = 99999;
             player.onDeath(new AbsoluteOfCreatorDamage(player));
         }
-        try {
-            if (!player.getActivePotionEffects().isEmpty() && !player.world.isRemote && hasInInventoryKaia(player)) {
-                for (PotionEffect effect : player.getActivePotionEffects()) {
-                    Potion effectPotion = effect.getPotion();
-                    if (effectPotion.isBadEffect()) {
-                        player.removePotionEffect(effectPotion);
-                    } else if (effect.getAmplifier() < 250 && effect.getDuration() < Integer.MAX_VALUE) {
-                        managerStandartEffectPotions(player, false);
-                    }
-                }
-            } else if (!player.world.isRemote && hasInInventoryKaia(player)) {
-                managerStandartEffectPotions(player, false);
-            }
-        } catch (
-                Exception e) {
-        }
-        if (!entitiesWithKaia.contains(keyUID)) {
-            managerStandartEffectPotions(player, true);
-        }
-
         if (hasKaia) {
             if (player.isBurning()) {
                 player.extinguish();
@@ -107,22 +87,6 @@ public class UpdateEntity {
                     entitiesFlightKaia.remove(keyUID);
                 }
             }
-        }
-    }
-
-    private static void managerStandartEffectPotions(EntityPlayer player, boolean removeEffect) {
-        if (removeEffect) {
-            player.removePotionEffect(MobEffects.NIGHT_VISION);
-            player.removePotionEffect(MobEffects.REGENERATION);
-            player.removePotionEffect(MobEffects.FIRE_RESISTANCE);
-            player.removePotionEffect(MobEffects.SATURATION);
-            player.removePotionEffect(MobEffects.WATER_BREATHING);
-        } else {
-            player.addPotionEffect(new PotionEffect(MobEffects.NIGHT_VISION, Integer.MAX_VALUE, 255));
-            player.addPotionEffect(new PotionEffect(MobEffects.REGENERATION, Integer.MAX_VALUE, 255));
-            player.addPotionEffect(new PotionEffect(MobEffects.FIRE_RESISTANCE, Integer.MAX_VALUE, 255));
-            player.addPotionEffect(new PotionEffect(MobEffects.SATURATION, Integer.MAX_VALUE, 255));
-            player.addPotionEffect(new PotionEffect(MobEffects.WATER_BREATHING, Integer.MAX_VALUE, 255));
         }
     }
 

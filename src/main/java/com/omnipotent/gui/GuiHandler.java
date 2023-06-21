@@ -35,6 +35,10 @@ public class GuiHandler implements IGuiHandler {
                 return new KaiaGuiEnchantment(player);
             case 3:
                 return new GUIContainerKaia(new ContainerKaia(player, player.getHeldItem(y == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND), x));
+            case 4:
+                return new KaiaGuiPotion(player);
+            case 5:
+                return new KaiaGuiDimension(player);
         }
         throw new IllegalArgumentException("sem gui com o id" + ID);
     }

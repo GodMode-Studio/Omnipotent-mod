@@ -2,7 +2,7 @@ package com.omnipotent.tools;
 
 import com.google.common.collect.ImmutableSetMultimap;
 import com.omnipotent.test.IContainer;
-import com.omnipotent.test.InventoryKaiaPickaxe;
+import com.omnipotent.test.InventoryKaia;
 import com.omnipotent.util.KaiaUtil;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.I18n;
@@ -122,6 +122,10 @@ public class Kaia extends ItemPickaxe implements IContainer {
             NBTTagCompound status = stack.getTagCompound();
             status.setBoolean(autoBackPack, false);
         }
+        if (!stack.getTagCompound().hasKey(autoBackPackEntities)) {
+            NBTTagCompound status = stack.getTagCompound();
+            status.setBoolean(autoBackPackEntities, false);
+        }
         if (!player.getUniqueID().toString().equals(ownerID) || !player.getName().equals(ownerName)) {
             player.world.spawnEntity(new EntityItem(worldIn, player.posX, player.posY, player.posZ + 5, stack));
             player.inventory.deleteStack(stack);
@@ -186,7 +190,7 @@ public class Kaia extends ItemPickaxe implements IContainer {
     }
 
     @Override
-    public InventoryKaiaPickaxe getInventory(ItemStack stack) {
-        return new InventoryKaiaPickaxe(stack);
+    public InventoryKaia getInventory(ItemStack stack) {
+        return new InventoryKaia(stack);
     }
 }

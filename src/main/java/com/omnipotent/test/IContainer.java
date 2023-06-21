@@ -5,5 +5,5 @@ import net.minecraft.item.ItemStack;
 public interface IContainer {
     boolean hasInventory(ItemStack stack);
 
-    InventoryKaiaPickaxe getInventory(ItemStack stack);
+    InventoryKaia getInventory(ItemStack stack);
 }

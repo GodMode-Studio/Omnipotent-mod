@@ -9,6 +9,12 @@ guikaia.enchant.previouspage=Previous page
 guikaia.enchant.nextpage=Next page
 guikaia.enchant.label0=Default level
 guikaia.enchant.message=The level cannot be above 32767, must contain only numbers, and cannot be below 0.
+guikaia.potion=Effects
+guikaia.potion.previouspage=Previous page
+guikaia.potion.nextpage=Next page
+guikaia.potion.label0=Default level
+guikaia.potion.message=The level cannot be above 32767, must contain only numbers, and cannot be below 0.
+guikaia.dimension=Dimensions
 
 guikaia.config=Kaia Settings
 guikaia.config.minerationarea=Mineration area
@@ -20,16 +26,22 @@ guikaia.config.counterattack=Counterattack
 guikaia.config.attackyourwolf=Attack your wolf
 guikaia.config.interactwithliquidblocks=Interact with liquid blocks
 guikaia.config.donotbreaktileentityblocks=Do Not Break Tile Entity Blocks
-guikaia.config.maxslotcount=The maximum stack size in the backpack
+guikaia.config.maxslotcount=The maximum stack size
 guikaia.config.autobackpack=Auto Backpack
+guikaia.config.autobackpackentities=Auto Backpack Entities
 #keys
 keykaia.category=Kaia Keys
 keykaia.config=Settings
 keykaia.returnkaia=Return Kaia
 keykaia.enchantmentkaia=Kaia Enchantments
+keykaia.potion=potions menu
+keykaia.dimension=Dimension menu
+keykaia.backpack=Kaia Backpack
 #messages in chat
 kaia.message.void=WHEREABOUTS Y150
 kaia.message.returndropitems=Item dropped at position
+message.client.error.limitnumber=Numeric limit reached, property reset to
+message.client.dimensionhelp=insert the coordinates x, y and z respectively in the text fields.
 #container
 container.kaia=Kaia Backpack
 container.kaia.stackCount=Amount

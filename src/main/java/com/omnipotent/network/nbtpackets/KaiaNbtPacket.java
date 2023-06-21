@@ -2,11 +2,14 @@ package com.omnipotent.network.nbtpackets;
 
 import com.omnipotent.tools.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.TeleporteKaia;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -129,6 +132,15 @@ public class KaiaNbtPacket implements IMessage {
                     enchantments.put(enchantmentByLocation, intValue);
                     EnchantmentHelper.setEnchantments(enchantments, kaiaItem);
                 }
+            } else if (type.equals(kaiaPotion)) {
+                EntityPlayer player = ctx.getServerHandler().player;
+                ItemStack kaiaItem = player.getHeldItemMainhand();
+                Potion potionFromResourceLocation = Potion.getPotionFromResourceLocation(text);
+                if (intValue == 0) {
+                    player.removePotionEffect(potionFromResourceLocation);
+                } else {
+                    player.addPotionEffect(new PotionEffect(potionFromResourceLocation, Integer.MAX_VALUE / 5, intValue, false, false));
+                }
             } else if (type.equals(maxCountSlot)) {
                 EntityPlayer player = ctx.getServerHandler().player;
                 ItemStack kaiaItem = player.getHeldItemMainhand();
@@ -137,6 +149,23 @@ public class KaiaNbtPacket implements IMessage {
                 EntityPlayer player = ctx.getServerHandler().player;
                 ItemStack kaiaItem = player.getHeldItemMainhand();
                 kaiaItem.getTagCompound().setBoolean(autoBackPack, booleanValue);
+            } else if (type.equals(autoBackPackEntities)) {
+                EntityPlayer player = ctx.getServerHandler().player;
+                ItemStack kaiaItem = player.getHeldItemMainhand();
+                kaiaItem.getTagCompound().setBoolean(autoBackPackEntities, booleanValue);
+            } else if (type.equals(kaiaDimension)) {
+                EntityPlayer player = ctx.getServerHandler().player;
+                ItemStack kaiaItem = player.getHeldItemMainhand();
+                if (!ctx.getServerHandler().player.getServerWorld().isCallingFromMinecraftThread()) {
+                    ctx.getServerHandler().player.getServerWorld().addScheduledTask(() -> {
+                        int i = text.indexOf(',');
+                        int posX = Integer.parseInt(text.substring(0, i));
+                        int posY = Integer.parseInt(text.substring(i + 1).split(",")[0].trim());
+                        int posZ = Integer.parseInt(text.substring(i + 1).split(",")[1].trim());
+
+                        player.changeDimension(intValue, new TeleporteKaia(posX, posY, posZ));
+                    });
+                }
             }
             return null;
         }

@@ -9,6 +9,12 @@ guikaia.enchant.previouspage=Página anterior
 guikaia.enchant.nextpage=Próxima página
 guikaia.enchant.label0=Nível padrão
 guikaia.enchant.message=O nivel não pode ser acimada de 32767, deve conter apenas numeros e não pode ser abaixo de 0.
+guikaia.potion=Efeitos
+guikaia.potion.previouspage=Página anterior
+guikaia.potion.nextpage=Próxima página
+guikaia.potion.label0=Nível padrão
+guikaia.potion.message=O nivel não pode ser acimada de 32767, deve conter apenas numeros e não pode ser abaixo de 0.
+guikaia.dimension=Dimensões
 
 guikaia.config=Configurações Kaia
 guikaia.config.minerationarea=Área de mineração
@@ -22,14 +28,20 @@ guikaia.config.interactwithliquidblocks=Interagir com blocos liquidos
 guikaia.config.donotbreaktileentityblocks=Não quebrar tile entity
 guikaia.config.maxslotcount=Tamanho maximo de pilha na mochila
 guikaia.config.autobackpack=Mochila automatica
+guikaia.config.autobackpackentities=Mochila automatica entidades
 #keys
 keykaia.category=Botões Kaia
 keykaia.config=Configurações
 keykaia.returnkaia=Retorna Kaia
 keykaia.enchantmentkaia=Encantamentos Kaia
+keykaia.potion=Menu de poções
+keykaia.dimension=Menu de dimensões
+keykaia.backpack=Mochila da kaia
 #messages in chat
 kaia.message.void=PARADEIRO Y150
 kaia.message.returndropitems=item dropado na posição
+message.client.error.limitnumber=Limite numérico alcançado, propriedade redefinida para
+message.client.dimensionhelp=inserir coordenadas x y e z respectivamente nos campos de texto.
 #container
 container.kaia=Mochila Kaia
 container.kaia.stackCount=Quantidade

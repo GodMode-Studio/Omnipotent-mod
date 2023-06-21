@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import java.util.Set;
 
 public class ContainerKaia extends Container {
-    public InventoryKaiaPickaxe inventory;
+    public InventoryKaia inventory;
     private EntityPlayer player;
     private ItemStack stack;
     private int slotIndex;
@@ -173,7 +173,7 @@ public class ContainerKaia extends Container {
                                     l2 = slot6.getItemStackLimit(itemstack8);
                                 }
                                 if (l2 > itemstack8.getMaxStackSize()) {
-                                    l2 = itemstack8.getMaxStackSize();
+//                                    l2 = itemstack8.getMaxStackSize();
                                 }
                                 inventoryplayer.setItemStack(slot6.decrStackSize(l2));
                                 if (itemstack8.isEmpty()) {

@@ -5,11 +5,12 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.omnipotent.test.IContainer;
-import com.omnipotent.test.InventoryKaiaPickaxe;
+import com.omnipotent.test.InventoryKaia;
 import com.omnipotent.tools.Kaia;
 import com.omnipotent.tools.KaiaConstantsNbt;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -31,7 +32,6 @@ import net.minecraft.item.ItemAir;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.stats.StatList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
@@ -117,6 +117,8 @@ public class KaiaUtil {
             if (entity instanceof EntityWolf && ((EntityWolf) entity).isOwner(playerSource))
                 return;
         }
+        ItemStack kaia = getKaiaInMainHand(playerSource);
+        boolean autoBackPack = kaia.getTagCompound().getBoolean(autoBackPackEntities);
         if (entity instanceof EntityPlayer && !hasInInventoryKaia(entity)) {
             EntityPlayer playerEnemie = (EntityPlayer) entity;
             DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
@@ -129,7 +131,16 @@ public class KaiaUtil {
                 ((EntityPlayer) playerEnemie).onLivingUpdate();
                 playerEnemie.onEntityUpdate();
             }
-            playerEnemie.onDeath(ds);
+            if (!playerSource.getEntityWorld().getGameRules().getBoolean("keepInventory") && autoBackPack) {
+                compactListItemStacks(playerEnemie.inventory.mainInventory);
+                addedItemsStacksInKaiaInventory((EntityPlayerMP) playerSource, playerEnemie.inventory.mainInventory, kaia);
+                playerEnemie.captureDrops = false;
+                playerEnemie.attackEntityFrom(ds, Float.MAX_VALUE);
+                playerEnemie.onDeath(ds);
+            } else {
+                playerEnemie.attackEntityFrom(ds, Float.MAX_VALUE);
+                playerEnemie.onDeath(ds);
+            }
         } else if (entity instanceof EntityLivingBase && !(entity.world.isRemote || entity.isDead || ((EntityLivingBase) entity).getHealth() == 0.0F)) {
             EntityLivingBase entityCreature = (EntityLivingBase) entity;
             DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
@@ -138,9 +149,21 @@ public class KaiaUtil {
             if (enchantmentFire != 0) {
                 entityCreature.setFire(Integer.MAX_VALUE / 25);
             }
-            entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
             antiEntity.add(antiEntity.getClass());
-            entityCreature.onDeath(ds);
+            if (autoBackPack) {
+                entityCreature.captureDrops = false;
+                entityCreature.captureDropsAbsolute = true;
+                entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
+                entityCreature.onDeath(ds);
+                ArrayList<EntityItem> capturedDrops = entityCreature.capturedDrops;
+                NonNullList<ItemStack> drops = NonNullList.create();
+                capturedDrops.forEach(entityItem -> drops.add(entityItem.getItem()));
+                compactListItemStacks(drops);
+                addedItemsStacksInKaiaInventory((EntityPlayerMP) playerSource, drops, kaia);
+            } else {
+                entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
+                entityCreature.onDeath(ds);
+            }
             antiEntity.remove(antiEntity.getClass());
             entityCreature.setHealth(0.0F);
         } else if (killAllEntities) {
@@ -214,50 +237,99 @@ public class KaiaUtil {
         if (drops.isEmpty()) {
             drops.add(block.getPickBlock(state, player.rayTrace(0.0f, 0.0f), player.world, pos, player));
         }
+        compactListItemStacks(drops);
         if (kaiaInMainHand.getTagCompound().getBoolean(autoBackPack)) {
-            InventoryKaiaPickaxe inventory = ((IContainer) kaiaInMainHand.getItem()).getInventory(kaiaInMainHand);
-            for (ItemStack dropStack : drops) {
-                boolean breakMainLoop = false;
-                inventory.openInventory(player);
-                for (int currentPage = 0; currentPage < inventory.getMaxPage(); currentPage++) {
-                    if (breakMainLoop) {
-                        break;
-                    }
-                    NonNullList<ItemStack> currentPageItems = inventory.getPage(currentPage);
-                    for (int currentSlot = 0; currentSlot < currentPageItems.size(); currentSlot++) {
-                        if (breakMainLoop) {
-                            break;
-                        }
-                        ItemStack stackInCurrentSlot = currentPageItems.get(currentSlot);
-                        if (stackInCurrentSlot == null || stackInCurrentSlot.isEmpty()) {
-                            currentPageItems.set(currentSlot, dropStack);
-                            breakMainLoop = true;
-                            break;
-
-                        } else {
-                            int maxCountSlot = inventory.cancelStackLimit() ? inventory.getInventoryStackLimit() : Math.min(inventory.getInventoryStackLimit(), dropStack.getMaxStackSize());
-                            int countSlotFree = Math.min(maxCountSlot - stackInCurrentSlot.getCount(), dropStack.getCount());
-                            if (countSlotFree > 0 && stackInCurrentSlot.isItemEqual(dropStack) && ItemStack.areItemStackTagsEqual(stackInCurrentSlot, dropStack)) {
-                                stackInCurrentSlot.grow(countSlotFree);
-                                dropStack.shrink(countSlotFree);
-                                if (dropStack.isEmpty()) {
-                                    breakMainLoop = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            inventory.closeInventory(player);
+            addedItemsStacksInKaiaInventory(player, drops, kaiaInMainHand);
         } else {
-            drops.forEach(dropStack ->  player.world.spawnEntity(new EntityItem(player.world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, dropStack)));
+            drops.forEach(dropStack -> player.world.spawnEntity(new EntityItem(player.world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, dropStack)));
         }
         xp += block.getExpDrop(state, player.world, pos, enchLevelFortune);
         //linha comentada devida a lentidão dela talvez volte no futuro.
 //        player.addStat(StatList.getBlockStats(block));
         player.world.destroyBlock(pos, false);
         return xp;
+    }
+
+    private static void addedItemsStacksInKaiaInventory(EntityPlayerMP playerOwnerOfKaia, NonNullList<ItemStack> drops, ItemStack kaiaItemStack) {
+        InventoryKaia inventory = ((IContainer) kaiaItemStack.getItem()).getInventory(kaiaItemStack);
+        for (ItemStack dropStack : drops) {
+            boolean breakMainLoop = false;
+            for (int currentPage = 0; currentPage < inventory.getMaxPage(); currentPage++) {
+                if (breakMainLoop) {
+                    break;
+                }
+                inventory.openInventory(playerOwnerOfKaia);
+                NonNullList<ItemStack> currentPageItems = inventory.getPage(currentPage);
+                for (int currentSlot = 0; currentSlot < currentPageItems.size(); currentSlot++) {
+                    if (breakMainLoop) {
+                        break;
+                    }
+                    ItemStack stackInCurrentSlot = currentPageItems.get(currentSlot);
+                    if (stackInCurrentSlot == null || stackInCurrentSlot.isEmpty()) {
+                        currentPageItems.set(currentSlot, dropStack);
+                        breakMainLoop = true;
+                        break;
+
+                    } else {
+                        int maxCountSlot = inventory.cancelStackLimit() ? inventory.getInventoryStackLimit() : Math.min(inventory.getInventoryStackLimit(), dropStack.getMaxStackSize());
+                        int countSlotFree = Math.min(maxCountSlot - stackInCurrentSlot.getCount(), dropStack.getCount());
+                        if (countSlotFree > 0 && stackInCurrentSlot.isItemEqual(dropStack) && ItemStack.areItemStackTagsEqual(stackInCurrentSlot, dropStack)) {
+                            stackInCurrentSlot.grow(countSlotFree);
+                            dropStack.shrink(countSlotFree);
+                            if (dropStack.isEmpty()) {
+                                breakMainLoop = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                inventory.closeInventory(playerOwnerOfKaia);
+            }
+        }
+    }
+
+    public static void compactListItemStacks(List<ItemStack> drops) {
+        ItemStack prevStack = null;
+        Comparator comparator = new Comparator() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                return ((ItemStack) o1).getUnlocalizedName().compareTo(((ItemStack) o2).getUnlocalizedName());
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                return false;
+            }
+        };
+        drops.sort(comparator);
+        List<ItemStack> itemStacks = new ArrayList<>();
+        for (int c = 0; c < drops.size(); c++) {
+            ItemStack stack = drops.get(c);
+            if (prevStack == null) {
+                prevStack = stack;
+                continue;
+            }
+            if (stack.isItemEqual(prevStack) && ItemStack.areItemStackTagsEqual(prevStack, stack)) {
+                prevStack.setCount(prevStack.getCount() + stack.getCount());
+                if (c == drops.size() - 1) {
+                    itemStacks.add(prevStack);
+                }
+            } else {
+                itemStacks.add(prevStack);
+                prevStack = stack;
+                if (c == drops.size() - 1) {
+                    itemStacks.add(prevStack);
+                }
+            }
+        }
+        if (drops.size() == 1) {
+            ItemStack e = drops.get(0);
+            drops.clear();
+            drops.add(e);
+        } else {
+            drops.clear();
+            drops.addAll(itemStacks);
+        }
     }
 
     public static void sendMessageToAllPlayers(String message) {
@@ -421,5 +493,9 @@ public class KaiaUtil {
             }
         }
         return false;
+    }
+
+    public static void sendmessageForPlayer(String message) {
+        Minecraft.getMinecraft().player.sendMessage(new TextComponentString(message));
     }
 }

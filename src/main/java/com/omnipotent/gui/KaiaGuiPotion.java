@@ -6,8 +6,8 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.potion.Potion;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
 
@@ -19,9 +19,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import static com.omnipotent.util.UtillityHelp.isJustNumber;
-import static com.omnipotent.tools.KaiaConstantsNbt.kaiaEnchant;
+import static com.omnipotent.tools.KaiaConstantsNbt.kaiaPotion;
 
-public class KaiaGuiEnchantment extends GuiScreen {
+public class KaiaGuiPotion extends GuiScreen {
 
     private final EntityPlayer player;
     private int mouseScrollStartTop = 40;
@@ -32,12 +32,12 @@ public class KaiaGuiEnchantment extends GuiScreen {
     private int oldValueOfPageRemoved = 0;
     private List<GuiTextField> guiTextFieldList = new ArrayList<GuiTextField>();
     private List<GuiTextField> guiTextFieldListRemove = new ArrayList<GuiTextField>();
-    private HashMap<GuiTextField, Enchantment> hashGuiTextEnchant = new HashMap<>();
-    private HashMap<GuiTextField, Enchantment> hashGuiTextEnchantRemove = new HashMap<>();
+    private HashMap<GuiTextField, Potion> hashGuiTextPotion = new HashMap<>();
+    private HashMap<GuiTextField, Potion> hashGuiTextEnchantPotion = new HashMap<>();
     private GuiTextField guiText;
     private int lvl;
 
-    KaiaGuiEnchantment(EntityPlayer player) {
+    KaiaGuiPotion(EntityPlayer player) {
         this.player = player;
     }
 
@@ -46,8 +46,8 @@ public class KaiaGuiEnchantment extends GuiScreen {
         super.initGui();
         addButtonsPage();
         addButtonsPageRemoved();
-        enchantmentsAdded();
-        enchantmentsRemove();
+        potionsAdded();
+        potionsRemove();
         guiText = new GuiTextField(23930290, fontRenderer, 210, 240, 100, 10);
         guiText.setText("level");
     }
@@ -58,90 +58,90 @@ public class KaiaGuiEnchantment extends GuiScreen {
         drawString(fontRenderer, I18n.format("guikaia.enchant"), 220, 5, Color.WHITE.getRGB());
         super.drawScreen(mouseX, mouseY, partialTicks);
         //cor pega com base nas cores normais do minecraft em GuiScreen
-        drawGradientRect(getEquivalentValueOfscreenHeight(33, height), getEquivalentValueOfscreenWidth(40, width), getEquivalentValueOfscreenHeight(152, height), getEquivalentValueOfscreenHeight(240, height), -1072689136, -804253680);
+        drawGradientRect(getEquivalentValueOfscreenHeight(33), getEquivalentValueOfscreenWidth(40), getEquivalentValueOfscreenHeight(152), getEquivalentValueOfscreenHeight(240), -1072689136, -804253680);
         if (page != oldValueOfPage) {
-            enchantmentsAdded();
+            potionsAdded();
             oldValueOfPage = page;
         }
         for (GuiTextField guiTextField : guiTextFieldList) {
             guiTextField.drawTextBox();
         }
         if (pageRemoved != oldValueOfPageRemoved) {
-            enchantmentsRemove();
+            potionsRemove();
             oldValueOfPageRemoved = pageRemoved;
         }
-        drawGradientRect(getEquivalentValueOfscreenHeight(350, height), getEquivalentValueOfscreenWidth(40, width), getEquivalentValueOfscreenHeight(469, width), getEquivalentValueOfscreenHeight(240, height), -1072689136, -804253680);
+        drawGradientRect(getEquivalentValueOfscreenHeight(350), getEquivalentValueOfscreenWidth(40), getEquivalentValueOfscreenHeight(469), getEquivalentValueOfscreenHeight(240), -1072689136, -804253680);
         for (GuiTextField guiTextField : guiTextFieldListRemove) {
             guiTextField.drawTextBox();
         }
     }
 
-    public static int getEquivalentValueOfscreenHeight(int value, int height) {
+    private int getEquivalentValueOfscreenHeight(int value) {
         double ratio = (double) value / height;
         int equivalentValue = (int) (height * ratio);
         return equivalentValue;
     }
 
-    public static int getEquivalentValueOfscreenWidth(int value, int width) {
+    private int getEquivalentValueOfscreenWidth(int value) {
         double ratio = (double) value / width;
         int equivalentValue = (int) (width * ratio);
         return equivalentValue;
     }
 
-    private void enchantmentsAdded() {
+    private void potionsAdded() {
         guiTextFieldList.clear();
-        hashGuiTextEnchant.clear();
-        Iterator<Enchantment> iteratorTwo = Enchantment.REGISTRY.iterator();
-        ArrayList<Enchantment> enchantments = new ArrayList<>();
+        hashGuiTextPotion.clear();
+        Iterator<Potion> iteratorTwo = Potion.REGISTRY.iterator();
+        ArrayList<Potion> potions = new ArrayList<>();
         int idGuiText = -1;
         while (iteratorTwo.hasNext()) {
-            Enchantment enchantment = iteratorTwo.next();
-            if (!enchantment.isCurse()) {
-                enchantments.add(enchantment);
+            Potion Potion = iteratorTwo.next();
+            if (!Potion.isBadEffect()) {
+                potions.add(Potion);
             }
         }
-        int y = getEquivalentValueOfscreenHeight(40, height);
-        for (int c = 0; c < enchantments.size(); c++) {
-            if (y < getEquivalentValueOfscreenHeight(240, height)) {
+        int y = getEquivalentValueOfscreenHeight(40);
+        for (int c = 0; c < potions.size(); c++) {
+            if (y < getEquivalentValueOfscreenHeight(240)) {
                 int number = page * 17;
-                if (c + number < enchantments.size()) {
-                    GuiTextField guiTextField = new GuiTextField(++idGuiText, fontRenderer, getEquivalentValueOfscreenHeight(35, height), y, 115, 12);
+                if (c + number < potions.size()) {
+                    GuiTextField guiTextField = new GuiTextField(++idGuiText, fontRenderer, getEquivalentValueOfscreenHeight(35), y, 115, 12);
                     guiTextField.setFocused(false);
-                    guiTextField.setText(enchantments.get(c + number).getTranslatedName(1));
+                    guiTextField.setText(I18n.format(potions.get(c + number).getName()));
                     guiTextField.height = 8;
                     guiTextField.drawTextBox();
                     guiTextFieldList.add(guiTextField);
-                    hashGuiTextEnchant.put(guiTextField, enchantments.get(c + number));
+                    hashGuiTextPotion.put(guiTextField, potions.get(c + number));
                     y += 12;
                 }
             }
         }
     }
 
-    private void enchantmentsRemove() {
+    private void potionsRemove() {
         guiTextFieldListRemove.clear();
-        hashGuiTextEnchantRemove.clear();
-        Iterator<Enchantment> iteratorTwo = Enchantment.REGISTRY.iterator();
-        ArrayList<Enchantment> enchantments = new ArrayList<>();
+        hashGuiTextEnchantPotion.clear();
+        Iterator<Potion> iteratorTwo = Potion.REGISTRY.iterator();
+        ArrayList<Potion> potions = new ArrayList<>();
         int idGuiText = -1;
         while (iteratorTwo.hasNext()) {
-            Enchantment enchantment = iteratorTwo.next();
-            if (!enchantment.isCurse()) {
-                enchantments.add(enchantment);
+            Potion potion = iteratorTwo.next();
+            if (!potion.isBadEffect()) {
+                potions.add(potion);
             }
         }
-        int y = getEquivalentValueOfscreenHeight(40, height);
-        for (int c = 0; c < enchantments.size(); c++) {
+        int y = getEquivalentValueOfscreenHeight(40);
+        for (int c = 0; c < potions.size(); c++) {
             if (y < 240) {
                 int number = pageRemoved * 17;
-                if (c + number < enchantments.size()) {
-                    GuiTextField guiTextField = new GuiTextField(++idGuiText, fontRenderer, getEquivalentValueOfscreenHeight(352, height), y, 115, 12);
+                if (c + number < potions.size()) {
+                    GuiTextField guiTextField = new GuiTextField(++idGuiText, fontRenderer, getEquivalentValueOfscreenHeight(352), y, 115, 12);
                     guiTextField.setFocused(false);
-                    guiTextField.setText(enchantments.get(c + number).getTranslatedName(1));
+                    guiTextField.setText(I18n.format(potions.get(c + number).getName()));
                     guiTextField.height = 8;
                     guiTextField.drawTextBox();
                     guiTextFieldListRemove.add(guiTextField);
-                    hashGuiTextEnchantRemove.put(guiTextField, enchantments.get(c + number));
+                    hashGuiTextEnchantPotion.put(guiTextField, potions.get(c + number));
                     y += 12;
                 }
             }
@@ -149,12 +149,12 @@ public class KaiaGuiEnchantment extends GuiScreen {
     }
 
     private void addButtonsPage() {
-        GuiButton paginaAnterior = new GuiButton(0, getEquivalentValueOfscreenWidth(34, width), getEquivalentValueOfscreenHeight(28, height), I18n.format("guikaia.enchant.previouspage"));
+        GuiButton paginaAnterior = new GuiButton(0, getEquivalentValueOfscreenWidth(34), getEquivalentValueOfscreenHeight(28), I18n.format("guikaia.potion.previouspage"));
         paginaAnterior.height = 11;
         String displayString2 = paginaAnterior.displayString.replaceAll("\\s", "");
         paginaAnterior.width = 8 * displayString2.length();
         buttonList.add(paginaAnterior);
-        GuiButton proximaPagina = new GuiButton(1, getEquivalentValueOfscreenWidth(34, width), getEquivalentValueOfscreenHeight(242, height), I18n.format("guikaia.enchant.nextpage"));
+        GuiButton proximaPagina = new GuiButton(1, getEquivalentValueOfscreenWidth(34), getEquivalentValueOfscreenHeight(242), I18n.format("guikaia.potion.nextpage"));
         proximaPagina.height = 11;
         String displayString = proximaPagina.displayString.replaceAll("\\s", "");
         proximaPagina.width = 8 * displayString.length();
@@ -162,12 +162,12 @@ public class KaiaGuiEnchantment extends GuiScreen {
     }
 
     private void addButtonsPageRemoved() {
-        GuiButton paginaAnterior = new GuiButton(2, getEquivalentValueOfscreenWidth(350, width), getEquivalentValueOfscreenHeight(28, height), I18n.format("guikaia.enchant.previouspage"));
+        GuiButton paginaAnterior = new GuiButton(2, getEquivalentValueOfscreenWidth(350), getEquivalentValueOfscreenHeight(28), I18n.format("guikaia.potion.previouspage"));
         paginaAnterior.height = 11;
         String displayString2 = paginaAnterior.displayString.replaceAll("\\s", "");
         paginaAnterior.width = 8 * displayString2.length();
         buttonList.add(paginaAnterior);
-        GuiButton proximaPagina = new GuiButton(3, getEquivalentValueOfscreenWidth(350, width), getEquivalentValueOfscreenHeight(242, height), I18n.format("guikaia.enchant.nextpage"));
+        GuiButton proximaPagina = new GuiButton(3, getEquivalentValueOfscreenWidth(350), getEquivalentValueOfscreenHeight(242), I18n.format("guikaia.potion.nextpage"));
         proximaPagina.height = 11;
         String displayString = proximaPagina.displayString.replaceAll("\\s", "");
         proximaPagina.width = 8 * displayString.length();
@@ -183,22 +183,22 @@ public class KaiaGuiEnchantment extends GuiScreen {
                 if (isJustNumber(guiText.getText()) && (Integer.parseInt(guiText.getText()) <= Short.MAX_VALUE) && (Integer.parseInt(guiText.getText()) > 0)) {
                     lvl = Integer.parseInt(guiText.getText());
                 } else {
-                    guiText.setText(I18n.format("guikaia.enchant.label0"));
-                    player.sendMessage(new TextComponentString(I18n.format("guikaia.enchant.message")));
+                    guiText.setText(I18n.format("guikaia.potion.label0"));
+                    player.sendMessage(new TextComponentString(I18n.format("guikaia.potion.message")));
                     lvl = 1;
                 }
-                Enchantment enchantment = hashGuiTextEnchant.get(guiField);
-                ResourceLocation registryName = enchantment.getRegistryName();
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(kaiaEnchant, registryName.toString(), lvl));
+                Potion potion = hashGuiTextPotion.get(guiField);
+                ResourceLocation registryName = potion.getRegistryName();
+                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(kaiaPotion, registryName.toString(), lvl));
             }
             guiField.setFocused(false);
         }
         for (GuiTextField guiField : guiTextFieldListRemove) {
             guiField.mouseClicked(mouseX, mouseY, mouseButton);
             if (guiField.isFocused()) {
-                Enchantment enchantment = hashGuiTextEnchantRemove.get(guiField);
-                ResourceLocation registryName = enchantment.getRegistryName();
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(kaiaEnchant, registryName.toString(), 0));
+                Potion potion = hashGuiTextEnchantPotion.get(guiField);
+                ResourceLocation registryName = potion.getRegistryName();
+                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(kaiaPotion, registryName.toString(), 0));
             }
             guiField.setFocused(false);
         }
