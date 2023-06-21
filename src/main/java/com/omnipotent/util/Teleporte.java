@@ -4,12 +4,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ITeleporter;
 
-public class TeleporteKaia implements ITeleporter {
+public class Teleporte implements ITeleporter {
     double posX;
     double posY;
     double posZ;
 
-    public TeleporteKaia(double x, double y, double z) {
+    public Teleporte(double x, double y, double z) {
         this.posX = x;
         this.posY = y;
         this.posZ = z;

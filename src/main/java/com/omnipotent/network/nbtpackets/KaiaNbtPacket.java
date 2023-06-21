@@ -2,7 +2,7 @@ package com.omnipotent.network.nbtpackets;
 
 import com.omnipotent.tools.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
-import com.omnipotent.util.TeleporteKaia;
+import com.omnipotent.util.Teleporte;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -163,7 +163,7 @@ public class KaiaNbtPacket implements IMessage {
                         int posY = Integer.parseInt(text.substring(i + 1).split(",")[0].trim());
                         int posZ = Integer.parseInt(text.substring(i + 1).split(",")[1].trim());
 
-                        player.changeDimension(intValue, new TeleporteKaia(posX, posY, posZ));
+                        player.changeDimension(intValue, new Teleporte(posX, posY, posZ));
                     });
                 }
             }
