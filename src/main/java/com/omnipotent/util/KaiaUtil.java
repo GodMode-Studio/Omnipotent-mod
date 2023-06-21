@@ -117,7 +117,7 @@ public class KaiaUtil {
             if (entity instanceof EntityWolf && ((EntityWolf) entity).isOwner(playerSource))
                 return;
         }
-        ItemStack kaia = getKaiaInMainHand(playerSource);
+        ItemStack kaia = getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource);
         boolean autoBackPack = kaia.getTagCompound().getBoolean(autoBackPackEntities);
         if (entity instanceof EntityPlayer && !hasInInventoryKaia(entity)) {
             EntityPlayer playerEnemie = (EntityPlayer) entity;
@@ -454,7 +454,7 @@ public class KaiaUtil {
     }
 
     public static ItemStack getKaiaInMainHand(EntityPlayer player) {
-        return player.getHeldItemMainhand();
+        return withKaiaMainHand(player) ? player.getHeldItemMainhand() : null;
     }
 
     public static ItemStack getKaiaInInventory(EntityPlayer player) throws RuntimeException {
@@ -466,7 +466,7 @@ public class KaiaUtil {
             if (!itemStack.isEmpty() && itemStack.getItem() instanceof Kaia)
                 return itemStack;
         }
-        throw new RuntimeException("No Kaia in Inventory");
+        throw new RuntimeException("without Kaia in Inventory");
     }
 
     public static boolean isOwnerOfKaia(ItemStack kaiaStack, EntityPlayer player) {
