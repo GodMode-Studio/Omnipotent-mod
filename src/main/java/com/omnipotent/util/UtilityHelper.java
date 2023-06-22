@@ -3,6 +3,7 @@ package com.omnipotent.util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -13,7 +14,7 @@ import java.util.List;
  * @Author <a href="gamerYToffi:"
  * este método retorna verdadeiro caso a string contenha apenas numeros inteiros (O que incluir o sinal de menos) e falso caso contrario.
  */
-public class UtillityHelper {
+public class UtilityHelper {
     public static boolean isJustNumber(String text) {
         return text.matches("[-]?\\d+");
     }
@@ -54,5 +55,12 @@ public class UtillityHelper {
         MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
         List<EntityPlayerMP> players = server.getPlayerList().getPlayers();
         players.forEach(player -> player.sendMessage(new TextComponentString(message)));
+    }
+    /**
+     * @Author <a href="gamerYToffi:"
+     * Este método envia verifica se os itemStack são iguais e suas tags, ele ignora a tag de contagem.
+     */
+    public static boolean itemsAreEquals(ItemStack item1, ItemStack item2) {
+        return ItemStack.areItemStackTagsEqual(item1, item2) && item1.isItemEqual(item2);
     }
 }

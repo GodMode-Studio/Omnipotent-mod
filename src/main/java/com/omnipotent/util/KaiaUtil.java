@@ -1,9 +1,7 @@
 package com.omnipotent.util;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.SetMultimap;
+import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.server.specialgui.IContainer;
 import com.omnipotent.server.specialgui.InventoryKaia;
@@ -36,21 +34,17 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.lang.reflect.Field;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 
@@ -371,69 +365,22 @@ public class KaiaUtil {
     }
 
     public static void returnKaiaOfOwner(EntityPlayer player) {
-        int kaiaTarget = 0;
-        int allKaia = 0;
-        ArrayList<ImmutableSetMultimap<ChunkPos, ForgeChunkManager.Ticket>> persistentChunksFor = new ArrayList<>();
-        HashMap<ChunkPos, ForgeChunkManager.Ticket> chunks = new HashMap<>();
-        for (DimensionType dimension : DimensionType.values()) {
-            int id = dimension.getId();
-            WorldServer worldServer;
-            worldServer = DimensionManager.getWorld(id);
-            if (worldServer == null) {
-                DimensionManager.initDimension(id);
-                worldServer = DimensionManager.getWorld(id);
-            }
-            if (worldServer != null)
-                persistentChunksFor.add(ForgeChunkManager.getPersistentChunksFor(worldServer));
-        }
-        ArrayList<SetMultimap<ChunkPos, ForgeChunkManager.Ticket>> mutableMultimap = new ArrayList<>();
-        for (SetMultimap<ChunkPos, ForgeChunkManager.Ticket> setMultimap : persistentChunksFor) {
-            mutableMultimap.add(HashMultimap.create(setMultimap));
-        }
-        for (SetMultimap<ChunkPos, ForgeChunkManager.Ticket> setMultimap : mutableMultimap) {
-            Iterator<ChunkPos> iterator = setMultimap.keySet().iterator();
-            while (iterator.hasNext()) {
-                ChunkPos chunkPos = iterator.next();
-                Set<ForgeChunkManager.Ticket> tickets = setMultimap.get(chunkPos);//esse
-                Iterator<ForgeChunkManager.Ticket> ticketIterator = tickets.iterator();
-                while (ticketIterator.hasNext()) {
-                    ForgeChunkManager.Ticket ticket = ticketIterator.next();
-                    boolean releaseTicket = false;
-                    Chunk chunk = ticket.world.getChunkFromChunkCoords(chunkPos.x, chunkPos.z);
-                    List<EntityItem> filteredEntities = Arrays.stream(chunk.getEntityLists()).flatMap(Collection::stream).filter(entity -> entity instanceof EntityItem).map(entity -> (EntityItem) entity).filter(entityItem -> entityItem.getItem().getItem() instanceof Kaia).collect(Collectors.toList());
-                    List<EntityPlayer> entityPlayers = Arrays.stream(chunk.getEntityLists()).flatMap(Collection::stream).filter(entity -> entity instanceof EntityPlayer).map(entity -> (EntityPlayer) entity).collect(Collectors.toList());
-                    for (EntityItem entityItem : filteredEntities) {
-                        allKaia++;
-                        ItemStack kaiaItem = entityItem.getItem();
-                        if (isOwnerOfKaia(kaiaItem, player)) {
-                            if (!(player.inventory.addItemStackToInventory(kaiaItem))) {
-                                if (player.inventory.offHandInventory.get(0).isEmpty()) {
-                                    player.inventory.offHandInventory.set(0, kaiaItem);
-                                } else {
-                                    for (int index = 0; index < player.inventory.mainInventory.size(); index++) {
-                                        ItemStack itemStack = player.inventory.mainInventory.get(index);
-                                        if (!itemStack.isEmpty() && !(itemStack.getItem() instanceof Kaia)) {
-                                            player.world.spawnEntity(new EntityItem(player.world, player.posX + 20, player.posY, player.posZ, player.inventory.mainInventory.get(index)));
-                                            player.sendMessage(new TextComponentString(I18n.format("kaia.message.returndropitems") + " X: " + ((int) player.posX + 20) + "Y: " + ((int) player.posY) + "Z: " + ((int) player.posZ)));
-                                            player.inventory.mainInventory.set(index, kaiaItem.copy());
-                                            break;
-                                        }
-                                    }
-                                }
+        List<ItemStack> kaiaList = player.getCapability(KaiaProvider.KaiaBrand, null).getAndExcludeAllKaiaInList();
+        for (ItemStack kaia : kaiaList) {
+            if (isOwnerOfKaia(kaia, player)) {
+                if (!(player.inventory.addItemStackToInventory(kaia))) {
+                    if (player.inventory.offHandInventory.get(0).isEmpty())
+                        player.inventory.offHandInventory.set(0, kaia);
+                    else {
+                        for (int index = 0; index < player.inventory.mainInventory.size(); index++) {
+                            ItemStack itemStack = player.inventory.mainInventory.get(index);
+                            if (!itemStack.isEmpty() && !(itemStack.getItem() instanceof Kaia)) {
+                                player.world.spawnEntity(new EntityItem(player.world, player.posX + 20, player.posY, player.posZ, player.inventory.mainInventory.get(index)));
+                                player.sendMessage(new TextComponentString(I18n.format("kaia.message.returndropitems") + " X: " + ((int) player.posX + 20) + "Y: " + ((int) player.posY) + "Z: " + ((int) player.posZ)));
+                                player.inventory.mainInventory.set(index, kaia.copy());
+                                break;
                             }
-                            entityItem.setDead();
-                            kaiaTarget++;
                         }
-                    }
-                    if (allKaia <= kaiaTarget) {
-                        releaseTicket = true;
-                        if (!entityPlayers.isEmpty()) {
-                            ForgeChunkManager.unforceChunk(ticket, chunk.getPos());
-                        }
-                    }
-                    if (releaseTicket) {
-                        ForgeChunkManager.releaseTicket(ticket);
-                        iterator.remove();
                     }
                 }
             }
@@ -457,9 +404,7 @@ public class KaiaUtil {
     }
 
     public static boolean isOwnerOfKaia(ItemStack kaiaStack, EntityPlayer player) {
-        String nameOfOwner = kaiaStack.getTagCompound().getString(ownerName);
-        String ownerUUID = kaiaStack.getTagCompound().getString(ownerID);
-        return nameOfOwner.equals(player.getName()) && ownerUUID.equals(player.getUniqueID().toString());
+        return kaiaStack.getTagCompound().getString(ownerName).equals(player.getName()) && kaiaStack.getTagCompound().getString(ownerID).equals(player.getUniqueID().toString());
     }
 
     public static boolean isPlayer(Entity entity) {

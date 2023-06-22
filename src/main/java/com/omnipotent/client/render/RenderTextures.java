@@ -8,8 +8,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RenderTextures {
-    public static List<Item> itemsTextures = new ArrayList<>();
-    public static void registerTexturesItems() {
-        itemsTextures.forEach(item -> ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(item.getRegistryName(), "inventory")));
+    public static List<Object> texturesItemsInit = new ArrayList<>();
+
+    public static void registerTextures() {
+        for (Object obj : texturesItemsInit) {
+            if (obj instanceof Item)
+                registerTexturesItems((Item) obj);
+        }
+    }
+
+    public static void registerTexturesItems(Item item) {
+        ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(item.getRegistryName(), "inventory"));
     }
 }

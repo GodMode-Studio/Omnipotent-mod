@@ -10,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -79,6 +80,10 @@ public class KaiaNbtPacket implements IMessage {
     public static class KaiaNbtPacketHandler implements IMessageHandler<KaiaNbtPacket, IMessage> {
         @Override
         public IMessage onMessage(KaiaNbtPacket message, MessageContext ctx) {
+            MinecraftServer server = ctx.getServerHandler().player.getServer();
+            if (!server.isCallingFromMinecraftThread()) {
+                ctx.getServerHandler().player.getServer().addScheduledTask(() -> this.onMessage(message, ctx));
+            }
             if (type.equals(blockBreakArea)) {
                 EntityPlayer player = ctx.getServerHandler().player;
                 ItemStack kaiaItem = player.getHeldItemMainhand();
@@ -155,18 +160,16 @@ public class KaiaNbtPacket implements IMessage {
                 kaiaItem.getTagCompound().setBoolean(autoBackPackEntities, booleanValue);
             } else if (type.equals(kaiaDimension)) {
                 EntityPlayer player = ctx.getServerHandler().player;
-                ctx.getServerHandler().player.getServer().addScheduledTask(() -> {
-                    int i = text.indexOf(',');
-                    int posX = Integer.parseInt(text.substring(0, i));
-                    int posY = Integer.parseInt(text.substring(i + 1).split(",")[0].trim());
-                    int posZ = Integer.parseInt(text.substring(i + 1).split(",")[1].trim());
-                    if (player.dimension == intValue) {
-                        player.dismountRidingEntity();
-                        player.setPositionAndUpdate(posX, posY, posZ);
-                    } else {
-                        player.changeDimension(intValue, new Teleporte(posX, posY, posZ));
-                    }
-                });
+                int i = text.indexOf(',');
+                int posX = Integer.parseInt(text.substring(0, i));
+                int posY = Integer.parseInt(text.substring(i + 1).split(",")[0].trim());
+                int posZ = Integer.parseInt(text.substring(i + 1).split(",")[1].trim());
+                if (player.dimension == intValue) {
+                    player.dismountRidingEntity();
+                    player.setPositionAndUpdate(posX, posY, posZ);
+                } else {
+                    player.changeDimension(intValue, new Teleporte(posX, posY, posZ));
+                }
             }
             return null;
         }

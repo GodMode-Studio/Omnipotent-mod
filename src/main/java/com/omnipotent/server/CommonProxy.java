@@ -1,5 +1,6 @@
 package com.omnipotent.server;
 
+import com.omnipotent.server.event.EventInitItems;
 import com.omnipotent.server.event.KaiaEvent;
 import com.omnipotent.server.event.UpdateEntity;
 import com.omnipotent.server.gui.GuiHandler;
@@ -20,20 +21,10 @@ public class CommonProxy {
         MinecraftForge.EVENT_BUS.register(new KaiaEvent());
         MinecraftForge.EVENT_BUS.register(new UpdateEntity());
         MinecraftForge.EVENT_BUS.register(new GuiHandler());
+        MinecraftForge.EVENT_BUS.register(new EventInitItems());
         NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
     }
 
     public void init(FMLInitializationEvent event) {
-        ForgeChunkManager.setForcedChunkLoadingCallback(instance, new ForgeChunkManager.LoadingCallback() {
-            @Override
-            public void ticketsLoaded(List<ForgeChunkManager.Ticket> tickets, World world) {
-                for (ForgeChunkManager.Ticket ticket : tickets) {
-                    Entity entity = ticket.getEntity();
-                    if (entity != null) {
-                        ForgeChunkManager.forceChunk(ticket, entity.getEntityWorld().getChunkFromBlockCoords(entity.getPosition()).getPos());
-                    }
-                }
-            }
-        });
     }
 }

@@ -2,7 +2,7 @@ package com.omnipotent.client.gui;
 
 import com.omnipotent.server.network.NetworkRegister;
 import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
-import com.omnipotent.util.UtillityHelper;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.*;
 
 import static com.omnipotent.util.KaiaConstantsNbt.kaiaDimension;
-import static com.omnipotent.util.UtillityHelper.isJustNumber;
+import static com.omnipotent.util.UtilityHelper.isJustNumber;
 
 public class KaiaGuiDimension extends GuiScreen {
 
@@ -42,13 +42,13 @@ public class KaiaGuiDimension extends GuiScreen {
         super.initGui();
         addButtonsPage();
         dimensionsAdded();
-        listButtonsTeleport.add(new GuiTextField(23930292, fontRenderer, UtillityHelper.getEquivalentValueOfscreenHeight(160, height), 240, 100, 10));
+        listButtonsTeleport.add(new GuiTextField(23930292, fontRenderer, UtilityHelper.getEquivalentValueOfscreenHeight(160, height), 240, 100, 10));
         listButtonsTeleport.get(0).setText(String.valueOf((int) player.posX));
         listButtonsTeleport.add(new GuiTextField(23930293, fontRenderer, 266, 240, 100, 10));
         listButtonsTeleport.get(1).setText(String.valueOf((int) player.posY));
         listButtonsTeleport.add(new GuiTextField(23930294, fontRenderer, 370, 240, 100, 10));
         listButtonsTeleport.get(2).setText(String.valueOf((int) player.posZ));
-        UtillityHelper.sendmessageToPlayer(I18n.format("message.client.dimensionhelp"));
+        UtilityHelper.sendmessageToPlayer(I18n.format("message.client.dimensionhelp"));
     }
 
     @Override
@@ -57,7 +57,7 @@ public class KaiaGuiDimension extends GuiScreen {
         drawString(fontRenderer, I18n.format("guikaia.dimension"), 220, 5, Color.WHITE.getRGB());
         super.drawScreen(mouseX, mouseY, partialTicks);
         //cor pega com base nas cores normais do minecraft em GuiScreen
-        drawGradientRect(UtillityHelper.getEquivalentValueOfscreenHeight(33, height), UtillityHelper.getEquivalentValueOfscreenWidth(40, width), UtillityHelper.getEquivalentValueOfscreenHeight(152, height), UtillityHelper.getEquivalentValueOfscreenHeight(240, height), -1072689136, -804253680);
+        drawGradientRect(UtilityHelper.getEquivalentValueOfscreenHeight(33, height), UtilityHelper.getEquivalentValueOfscreenWidth(40, width), UtilityHelper.getEquivalentValueOfscreenHeight(152, height), UtilityHelper.getEquivalentValueOfscreenHeight(240, height), -1072689136, -804253680);
         if (page != oldValueOfPage) {
             dimensionsAdded();
             oldValueOfPage = page;
@@ -77,12 +77,12 @@ public class KaiaGuiDimension extends GuiScreen {
             DimensionType dimensionType = iteratorTwo.next();
             dimensionTypes.add(dimensionType);
         }
-        int y = UtillityHelper.getEquivalentValueOfscreenHeight(40, height);
+        int y = UtilityHelper.getEquivalentValueOfscreenHeight(40, height);
         for (int c = 0; c < dimensionTypes.size(); c++) {
-            if (y < UtillityHelper.getEquivalentValueOfscreenHeight(240, height)) {
+            if (y < UtilityHelper.getEquivalentValueOfscreenHeight(240, height)) {
                 int number = page * 17;
                 if (c + number < dimensionTypes.size()) {
-                    GuiTextField guiTextField = new GuiTextField(++idGuiText, fontRenderer, UtillityHelper.getEquivalentValueOfscreenHeight(35, height), y, 115, 12);
+                    GuiTextField guiTextField = new GuiTextField(++idGuiText, fontRenderer, UtilityHelper.getEquivalentValueOfscreenHeight(35, height), y, 115, 12);
                     guiTextField.setFocused(false);
                     guiTextField.setText(dimensionTypes.get(c + number).getName());
                     guiTextField.height = 8;
@@ -96,12 +96,12 @@ public class KaiaGuiDimension extends GuiScreen {
     }
 
     private void addButtonsPage() {
-        GuiButton paginaAnterior = new GuiButton(0, UtillityHelper.getEquivalentValueOfscreenWidth(34, width), UtillityHelper.getEquivalentValueOfscreenHeight(28, height), I18n.format("guikaia.enchant.previouspage"));
+        GuiButton paginaAnterior = new GuiButton(0, UtilityHelper.getEquivalentValueOfscreenWidth(34, width), UtilityHelper.getEquivalentValueOfscreenHeight(28, height), I18n.format("guikaia.enchant.previouspage"));
         paginaAnterior.height = 11;
         String displayString2 = paginaAnterior.displayString.replaceAll("\\s", "");
         paginaAnterior.width = 8 * displayString2.length();
         buttonList.add(paginaAnterior);
-        GuiButton proximaPagina = new GuiButton(1, UtillityHelper.getEquivalentValueOfscreenWidth(34, width), UtillityHelper.getEquivalentValueOfscreenHeight(242, height), I18n.format("guikaia.enchant.nextpage"));
+        GuiButton proximaPagina = new GuiButton(1, UtilityHelper.getEquivalentValueOfscreenWidth(34, width), UtilityHelper.getEquivalentValueOfscreenHeight(242, height), I18n.format("guikaia.enchant.nextpage"));
         proximaPagina.height = 11;
         String displayString = proximaPagina.displayString.replaceAll("\\s", "");
         proximaPagina.width = 8 * displayString.length();

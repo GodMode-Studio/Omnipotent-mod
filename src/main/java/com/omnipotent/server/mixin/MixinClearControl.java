@@ -1,7 +1,7 @@
 package com.omnipotent.server.mixin;
 
 import com.omnipotent.util.KaiaUtil;
-import com.omnipotent.util.UtillityHelper;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.command.CommandClearInventory;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -26,9 +26,9 @@ public abstract class MixinClearControl {
         if( KaiaUtil.hasInInventoryKaia(entityPlayerMp) ) {
             String currentLanguage = FMLCommonHandler.instance().getCurrentLanguage();
             if(currentLanguage.equals("pt_br")){
-                UtillityHelper.sendMessageToAllPlayers(TextFormatting.DARK_RED+"O JOGADOR "+entityPlayerMp.getName()+" ESTA ALEM DOS COMANDOS");
+                UtilityHelper.sendMessageToAllPlayers(TextFormatting.DARK_RED+"O JOGADOR "+entityPlayerMp.getName()+" ESTA ALEM DOS COMANDOS");
             }else{
-                UtillityHelper.sendMessageToAllPlayers(TextFormatting.DARK_RED+"THE PLAYER "+entityPlayerMp.getName()+" IS BEYOND THE COMMANDS");
+                UtilityHelper.sendMessageToAllPlayers(TextFormatting.DARK_RED+"THE PLAYER "+entityPlayerMp.getName()+" IS BEYOND THE COMMANDS");
             }
             ci.cancel();
         }

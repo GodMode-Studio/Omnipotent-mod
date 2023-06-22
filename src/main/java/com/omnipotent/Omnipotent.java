@@ -1,13 +1,21 @@
 package com.omnipotent;
 
 import com.omnipotent.server.CommonProxy;
+import com.omnipotent.server.capability.IKaiaBrand;
+import com.omnipotent.server.capability.KaiaBrand;
+import com.omnipotent.server.capability.KaiaProvider;
+import com.omnipotent.server.capability.KaiaStorage;
 import com.omnipotent.server.entity.KaiaEntity;
 import com.omnipotent.server.network.NetworkRegister;
 import com.omnipotent.server.network.PacketInicialization;
 import com.omnipotent.server.tool.Kaia;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -43,6 +51,7 @@ public class Omnipotent {
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(instance);
+        CapabilityManager.INSTANCE.register(IKaiaBrand.class, new KaiaStorage(), KaiaBrand.class);
         proxy.preInit(event);
     }
 
@@ -64,9 +73,12 @@ public class Omnipotent {
     public void playerJoinWorld(WorldEvent.Load event) {
         NetworkRegister.ACESS.sendToServer(new PacketInicialization());
     }
-
+    public static final ResourceLocation KAIACAP = new ResourceLocation(MODID, "kaiabrand");
     @SubscribeEvent
-    public static void registerItem(RegistryEvent.Register<Item> event) throws IOException {
-        event.getRegistry().registerAll(kaia);
+    public void attachCapability(AttachCapabilitiesEvent<Entity> event)
+    {
+        if (!(event.getObject() instanceof EntityPlayer)) return;
+
+        event.addCapability(KAIACAP, new KaiaProvider());
     }
 }

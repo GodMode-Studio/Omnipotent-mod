@@ -1,7 +1,9 @@
 package com.omnipotent.server.event;
 
-import com.omnipotent.server.tool.Kaia;
+import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
+import com.omnipotent.server.tool.Kaia;
+import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
@@ -10,15 +12,20 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.item.ItemExpireEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+
 import java.util.*;
+
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
+import static com.omnipotent.util.KaiaUtil.isOwnerOfKaia;
 
 public class UpdateEntity {
     public static final Set<String> entitiesWithKaia = new HashSet<>();
@@ -90,7 +97,7 @@ public class UpdateEntity {
     @SubscribeEvent
     public void cancelTimeItem(ItemExpireEvent event) {
         if (event.getEntityItem().getItem().getItem() instanceof Kaia) {
-            if(event.getEntityItem().getItem().hasTagCompound()){
+            if (event.getEntityItem().getItem().hasTagCompound()) {
                 event.setCanceled(true);
             }
         }
@@ -103,12 +110,11 @@ public class UpdateEntity {
         if (!(event.getEntity() instanceof EntityPlayer) || !(event.getItem().getItem().getItem() instanceof Kaia))
             return;
         EntityPlayer player = event.getEntityPlayer();
-        ItemStack item = event.getItem().getItem();
-        if (!item.hasTagCompound())
+        ItemStack kaia = event.getItem().getItem();
+        if (!kaia.hasTagCompound())
             return;
-        if (!KaiaUtil.isOwnerOfKaia(item, player)) {
+        if (!KaiaUtil.isOwnerOfKaia(kaia, player))
             event.setCanceled(true);
-        }
     }
 
     @SubscribeEvent
@@ -118,9 +124,15 @@ public class UpdateEntity {
             if (!entityItem.getItem().isEmpty() && entityItem.getItem().getItem() instanceof Kaia) {
                 entityItem.setEntityInvulnerable(true);
                 entityItem.setNoPickupDelay();
-                if (!entityItem.getItem().hasTagCompound()) {
-                    entityItem.setDead();
+                UUID uuid = UUID.fromString(entityItem.getItem().getTagCompound().getString(KaiaConstantsNbt.ownerID));
+                EntityPlayer player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(uuid);
+                List<ItemStack> kaiaItems = null;
+                if (player != null && isOwnerOfKaia(entityItem.getItem(), player)) {
+                    player.sendMessage(new TextComponentString("press G for return Kaia"));
+                    kaiaItems = player.getCapability(KaiaProvider.KaiaBrand, null).returnList();
+                    kaiaItems.add(entityItem.getItem());
                 }
+                entityItem.setDead();
             }
         }
         if (KaiaUtil.antiEntity.contains(event.getEntity().getClass())) {

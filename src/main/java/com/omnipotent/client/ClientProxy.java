@@ -1,5 +1,6 @@
 package com.omnipotent.client;
 
+import com.omnipotent.client.event.EventInitTextures;
 import com.omnipotent.server.CommonProxy;
 import com.omnipotent.client.event.KaiaToolTip;
 import com.omnipotent.client.key.KeyEvent;
@@ -15,7 +16,7 @@ public class ClientProxy extends CommonProxy {
         super.preInit(event);
         MinecraftForge.EVENT_BUS.register(new KaiaToolTip());
         MinecraftForge.EVENT_BUS.register(new KeyEvent());
-        RenderTextures.registerTexturesItems();
+        MinecraftForge.EVENT_BUS.register(new EventInitTextures());
     }
 
     @Override

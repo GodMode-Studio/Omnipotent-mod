@@ -3,7 +3,7 @@ package com.omnipotent.client.gui;
 import com.omnipotent.server.network.NetworkRegister;
 import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.KaiaConstantsNbt;
-import com.omnipotent.util.UtillityHelper;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -16,7 +16,7 @@ import net.minecraft.item.ItemStack;
 import java.io.IOException;
 
 import static com.omnipotent.util.KaiaConstantsNbt.blockReachDistance;
-import static com.omnipotent.util.UtillityHelper.sendmessageToPlayer;
+import static com.omnipotent.util.UtilityHelper.sendmessageToPlayer;
 
 public class KaiaGui extends GuiScreen {
     EntityPlayer player = null;
@@ -67,13 +67,13 @@ public class KaiaGui extends GuiScreen {
     public void onGuiClosed() {
         int id = 0;
         int idComplement = 0;
-        if (UtillityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(id)).getText())) {
+        if (UtilityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(id)).getText())) {
             int valueButtonBlockArea;
             try {
                 valueButtonBlockArea = Integer.parseInt(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(idComplement)).getText());
-            }catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 valueButtonBlockArea = 1;
-                sendmessageToPlayer(I18n.format("message.client.error.limitnumber")+" "+valueButtonBlockArea);
+                sendmessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + valueButtonBlockArea);
             }
             if (valueButtonBlockArea % 2 == 0) {
                 --valueButtonBlockArea;
@@ -82,17 +82,21 @@ public class KaiaGui extends GuiScreen {
                 NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.blockBreakArea, valueButtonBlockArea));
             }
         }
-        if (UtillityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
+        if (UtilityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
             int rangeAttack;
             try {
                 rangeAttack = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
+                if (rangeAttack > 10000) {
+                    rangeAttack = 10000;
+                    sendmessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + rangeAttack);
+                }
             } catch (NumberFormatException e) {
                 rangeAttack = 10;
                 sendmessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + rangeAttack);
             }
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.rangeAttack, rangeAttack));
         }
-        if (UtillityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
+        if (UtilityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
             int distance;
             try {
                 distance = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
@@ -102,7 +106,7 @@ public class KaiaGui extends GuiScreen {
             }
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(blockReachDistance, distance));
         }
-        if (UtillityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
+        if (UtilityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
             int maxCountSlot;
             try {
                 maxCountSlot = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
