@@ -4,12 +4,14 @@ import com.omnipotent.Omnipotent;
 import com.omnipotent.server.network.NetworkRegister;
 import com.omnipotent.server.network.ReturnKaiaPacket;
 import com.omnipotent.server.specialgui.net.KaiaContainerOpenPackte;
-import com.omnipotent.server.tool.Kaia;
+import com.omnipotent.util.KaiaUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
+
+import static com.omnipotent.util.KaiaUtil.withKaiaMainHand;
 
 public class KeyEvent {
     @SubscribeEvent
@@ -19,22 +21,22 @@ public class KeyEvent {
         if (KeyInit.keyReturnKaia.isPressed()) {
             NetworkRegister.ACESS.sendToServer(new ReturnKaiaPacket());
         }
-        if (KeyInit.keyOpenGuiKaia.isPressed() && !player.getHeldItemMainhand().isEmpty() && player.getHeldItemMainhand().getItem() instanceof Kaia) {
+        if (KeyInit.KaiaGui.isPressed() && withKaiaMainHand(player)) {
             ItemStack kaiaItem = Minecraft.getMinecraft().player.getHeldItemMainhand();
             player.openGui(Omnipotent.instance, id, player.world, 0, 0, 0);
         }
-        if (KeyInit.kaiaGuiEnchantment.isPressed() && !player.getHeldItemMainhand().isEmpty() && player.getHeldItemMainhand().getItem() instanceof Kaia) {
+        if (KeyInit.kaiaGuiEnchantment.isPressed() && withKaiaMainHand(player)) {
             ItemStack kaiaItem = Minecraft.getMinecraft().player.getHeldItemMainhand();
             player.openGui(Omnipotent.instance, ++id, player.world, 0, 0, 0);
         }
-        if (KeyInit.kaiaGuiBackpack.isPressed() && !player.getHeldItemMainhand().isEmpty() && player.getHeldItemMainhand().getItem() instanceof Kaia) {
+        if (KeyInit.kaiaGuiBackpack.isPressed() && withKaiaMainHand(player)) {
             NetworkRegister.ACESS.sendToServer(new KaiaContainerOpenPackte(3));
         }
-        if (KeyInit.kaiaGuiPotion.isPressed() && !player.getHeldItemMainhand().isEmpty() && player.getHeldItemMainhand().getItem() instanceof Kaia) {
+        if (KeyInit.kaiaGuiPotion.isPressed() && withKaiaMainHand(player)) {
             ItemStack kaiaItem = Minecraft.getMinecraft().player.getHeldItemMainhand();
             player.openGui(Omnipotent.instance, 4, player.world, 0, 0, 0);
         }
-        if (KeyInit.kaiaGuiDimension.isPressed() && !player.getHeldItemMainhand().isEmpty() && player.getHeldItemMainhand().getItem() instanceof Kaia) {
+        if (KeyInit.kaiaGuiDimension.isPressed() && KaiaUtil.getKaiaInMainHand(player)!=null) {
             ItemStack kaiaItem = Minecraft.getMinecraft().player.getHeldItemMainhand();
             player.openGui(Omnipotent.instance, 5, player.world, 0, 0, 0);
         }

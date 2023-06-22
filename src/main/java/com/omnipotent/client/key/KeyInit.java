@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KeyInit {
-    public static KeyBinding keyOpenGuiKaia = new KeyBinding(I18n.format("keykaia.config"), Keyboard.KEY_R, I18n.format("keykaia.category"));
+    public static KeyBinding KaiaGui = new KeyBinding(I18n.format("keykaia.config"), Keyboard.KEY_R, I18n.format("keykaia.category"));
     public static KeyBinding keyReturnKaia = new KeyBinding(I18n.format("keykaia.returnkaia"), Keyboard.KEY_G, I18n.format("keykaia.category"));
     public static KeyBinding kaiaGuiEnchantment = new KeyBinding(I18n.format("keykaia.enchantmentkaia"), Keyboard.KEY_L, I18n.format("keykaia.category"));
     public static KeyBinding kaiaGuiBackpack = new KeyBinding(I18n.format("keykaia.backpack"), Keyboard.KEY_P, I18n.format("keykaia.category"));
@@ -19,7 +19,7 @@ public class KeyInit {
 
 
     public static void initKeys(){
-        keyBindingList.add(keyOpenGuiKaia);
+        keyBindingList.add(KaiaGui);
         keyBindingList.add(keyReturnKaia);
         keyBindingList.add(kaiaGuiEnchantment);
         keyBindingList.add(kaiaGuiBackpack);
