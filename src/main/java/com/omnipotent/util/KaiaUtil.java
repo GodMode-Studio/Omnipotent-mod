@@ -76,9 +76,10 @@ public class KaiaUtil {
         EntityPlayer playerSource = (EntityPlayer) player;
         World world = playerSource.world;
         List<Entity> entities = Lists.newArrayList();
-        int range = getKaiaInMainHand(playerSource).getTagCompound().getInteger(rangeAttack);
-        boolean killAllEntities = getKaiaInMainHand(playerSource).getTagCompound().getBoolean(KaiaConstantsNbt.killAllEntities);
-        boolean killFriendEntities = getKaiaInMainHand(playerSource).getTagCompound().getBoolean(KaiaConstantsNbt.killFriendEntities);
+        NBTTagCompound tagCompoundOfKaia = (getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource)).getTagCompound();
+        int range = tagCompoundOfKaia.getInteger(rangeAttack);
+        boolean killAllEntities = tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.killAllEntities);
+        boolean killFriendEntities = tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.killFriendEntities);
         double slope = 0.1;
         for (int dist = 0; dist <= range; dist += 2) {
             AxisAlignedBB bb = playerSource.getEntityBoundingBox();

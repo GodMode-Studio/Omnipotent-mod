@@ -6,7 +6,7 @@ import com.omnipotent.server.specialgui.IContainer;
 import com.omnipotent.server.specialgui.InventoryKaia;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
-import com.omnipotent.util.UtillityHelp;
+import com.omnipotent.util.UtillityHelper;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
@@ -144,7 +144,7 @@ public class Kaia extends ItemPickaxe implements IContainer {
         if (!world.isRemote) {
             if (entityItem.getPosition().getY() < -5) {
                 entityItem.setPosition(entityItem.posX, 150, entityItem.posZ);
-                UtillityHelp.sendMessageToAllPlayers(TextFormatting.DARK_RED + I18n.format("kaia.message.void"));
+                UtillityHelper.sendMessageToAllPlayers(TextFormatting.DARK_RED + I18n.format("kaia.message.void"));
             }
             ImmutableSetMultimap<ChunkPos, ForgeChunkManager.Ticket> chunks = ForgeChunkManager.getPersistentChunksFor(world);
             ChunkPos chunkPos = world.getChunkFromBlockCoords(entityItem.getPosition()).getPos();

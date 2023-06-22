@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.omnipotent.util.UtillityHelp.isJustNumber;
+import static com.omnipotent.util.UtillityHelper.isJustNumber;
 import static com.omnipotent.util.KaiaConstantsNbt.kaiaEnchant;
 
 public class KaiaGuiEnchantment extends GuiScreen {

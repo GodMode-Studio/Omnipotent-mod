@@ -2,22 +2,18 @@ package com.omnipotent.util;
 
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 /**
  * @Author <a href="gamerYToffi:"
  * este método retorna verdadeiro caso a string contenha apenas numeros inteiros (O que incluir o sinal de menos) e falso caso contrario.
  */
-public class UtillityHelp {
+public class UtillityHelper {
     public static boolean isJustNumber(String text) {
         return text.matches("[-]?\\d+");
     }

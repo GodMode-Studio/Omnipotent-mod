@@ -3,7 +3,7 @@ package com.omnipotent.client.gui;
 import com.omnipotent.server.network.NetworkRegister;
 import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.KaiaConstantsNbt;
-import com.omnipotent.util.UtillityHelp;
+import com.omnipotent.util.UtillityHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -16,7 +16,7 @@ import net.minecraft.item.ItemStack;
 import java.io.IOException;
 
 import static com.omnipotent.util.KaiaConstantsNbt.blockReachDistance;
-import static com.omnipotent.util.UtillityHelp.sendmessageToPlayer;
+import static com.omnipotent.util.UtillityHelper.sendmessageToPlayer;
 
 public class KaiaGui extends GuiScreen {
     EntityPlayer player = null;
@@ -67,7 +67,7 @@ public class KaiaGui extends GuiScreen {
     public void onGuiClosed() {
         int id = 0;
         int idComplement = 0;
-        if (UtillityHelp.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(id)).getText())) {
+        if (UtillityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(id)).getText())) {
             int valueButtonBlockArea;
             try {
                 valueButtonBlockArea = Integer.parseInt(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(idComplement)).getText());
@@ -82,7 +82,7 @@ public class KaiaGui extends GuiScreen {
                 NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.blockBreakArea, valueButtonBlockArea));
             }
         }
-        if (UtillityHelp.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
+        if (UtillityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
             int rangeAttack;
             try {
                 rangeAttack = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
@@ -92,7 +92,7 @@ public class KaiaGui extends GuiScreen {
             }
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.rangeAttack, rangeAttack));
         }
-        if (UtillityHelp.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
+        if (UtillityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
             int distance;
             try {
                 distance = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
@@ -102,7 +102,7 @@ public class KaiaGui extends GuiScreen {
             }
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(blockReachDistance, distance));
         }
-        if (UtillityHelp.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
+        if (UtillityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
             int maxCountSlot;
             try {
                 maxCountSlot = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());

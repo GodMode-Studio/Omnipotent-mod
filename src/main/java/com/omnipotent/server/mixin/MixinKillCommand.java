@@ -2,8 +2,6 @@ package com.omnipotent.server.mixin;
 
 import com.omnipotent.server.tool.Kaia;
 import com.omnipotent.util.KaiaUtil;
-import com.omnipotent.util.UtillityHelp;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandKill;
@@ -12,8 +10,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
