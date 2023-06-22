@@ -13,7 +13,7 @@ guikaia.potion=Efeitos
 guikaia.potion.previouspage=Página anterior
 guikaia.potion.nextpage=Próxima página
 guikaia.potion.label0=Nível padrão
-guikaia.potion.message=O nivel não pode ser acimada de 32767, deve conter apenas numeros e não pode ser abaixo de 0.
+guikaia.potion.message=O nivel não pode ser acimada de 32767 e deve conter apenas numeros.
 guikaia.dimension=Dimensões
 
 guikaia.config=Configurações Kaia

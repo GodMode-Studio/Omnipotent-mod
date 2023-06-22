@@ -55,7 +55,7 @@ public class KaiaGuiPotion extends GuiScreen {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         guiText.drawTextBox();
-        drawString(fontRenderer, I18n.format("guikaia.enchant"), 220, 5, Color.WHITE.getRGB());
+        drawString(fontRenderer, I18n.format("guikaia.potion"), 220, 5, Color.WHITE.getRGB());
         super.drawScreen(mouseX, mouseY, partialTicks);
         //cor pega com base nas cores normais do minecraft em GuiScreen
         drawGradientRect(getEquivalentValueOfscreenHeight(33), getEquivalentValueOfscreenWidth(40), getEquivalentValueOfscreenHeight(152), getEquivalentValueOfscreenHeight(240), -1072689136, -804253680);
