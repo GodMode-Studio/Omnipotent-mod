@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 
@@ -366,6 +367,7 @@ public class KaiaUtil {
 
     public static void returnKaiaOfOwner(EntityPlayer player) {
         List<ItemStack> kaiaList = player.getCapability(KaiaProvider.KaiaBrand, null).getAndExcludeAllKaiaInList();
+        kaiaList = kaiaList.stream().filter(item -> item.getItem() instanceof Kaia).collect(Collectors.toList());
         for (ItemStack kaia : kaiaList) {
             if (isOwnerOfKaia(kaia, player)) {
                 if (!(player.inventory.addItemStackToInventory(kaia))) {

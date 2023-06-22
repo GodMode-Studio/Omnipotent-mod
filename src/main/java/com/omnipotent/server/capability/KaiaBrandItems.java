@@ -3,10 +3,9 @@ package com.omnipotent.server.capability;
 import net.minecraft.item.ItemStack;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-public class KaiaBrand implements IKaiaBrand {
+public class KaiaBrandItems implements IKaiaBrand {
 
     private List<ItemStack> kaiaItems = new ArrayList<>();
 

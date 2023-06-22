@@ -2,7 +2,7 @@ package com.omnipotent;
 
 import com.omnipotent.server.CommonProxy;
 import com.omnipotent.server.capability.IKaiaBrand;
-import com.omnipotent.server.capability.KaiaBrand;
+import com.omnipotent.server.capability.KaiaBrandItems;
 import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.capability.KaiaStorage;
 import com.omnipotent.server.entity.KaiaEntity;
@@ -11,12 +11,13 @@ import com.omnipotent.server.network.PacketInicialization;
 import com.omnipotent.server.tool.Kaia;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -29,8 +30,6 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
-
-import java.io.IOException;
 
 @Mod(modid = Omnipotent.MODID, name = Omnipotent.NAME, version = Omnipotent.VERSION)
 @Mod.EventBusSubscriber
@@ -51,7 +50,7 @@ public class Omnipotent {
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(instance);
-        CapabilityManager.INSTANCE.register(IKaiaBrand.class, new KaiaStorage(), KaiaBrand.class);
+        CapabilityManager.INSTANCE.register(IKaiaBrand.class, new KaiaStorage(), KaiaBrandItems.class);
         proxy.preInit(event);
     }
 
@@ -61,7 +60,8 @@ public class Omnipotent {
     }
 
     @EventHandler
-    public void posinit(FMLPostInitializationEvent event) {}
+    public void posinit(FMLPostInitializationEvent event) {
+    }
 
     @SubscribeEvent
     public void entityRegister(RegistryEvent.Register<EntityEntry> event) {
@@ -73,12 +73,27 @@ public class Omnipotent {
     public void playerJoinWorld(WorldEvent.Load event) {
         NetworkRegister.ACESS.sendToServer(new PacketInicialization());
     }
-    public static final ResourceLocation KAIACAP = new ResourceLocation(MODID, "kaiabrand");
-    @SubscribeEvent
-    public void attachCapability(AttachCapabilitiesEvent<Entity> event)
-    {
-        if (!(event.getObject() instanceof EntityPlayer)) return;
 
+    public static final ResourceLocation KAIACAP = new ResourceLocation(MODID, "kaiabrand");
+
+    @SubscribeEvent
+    public void attachCapabilityEntity(AttachCapabilitiesEvent<Entity> event) {
+        if (!(event.getObject() instanceof EntityPlayer))
+            return;
         event.addCapability(KAIACAP, new KaiaProvider());
+    }
+//    @SubscribeEvent
+//    public void attachCapabilityWorld(AttachCapabilitiesEvent<World> event) {
+//        if (!(event.getObject() instanceof World))
+//            return;
+//        event.addCapability(KAIACAP, new KaiaProvider());
+//    }
+
+    @SubscribeEvent
+    public void onPlayerClone(PlayerEvent.Clone event) {
+        EntityPlayer player = event.getEntityPlayer();
+        IKaiaBrand kaiaBrand = player.getCapability(KaiaProvider.KaiaBrand, null);
+        IKaiaBrand oldKaiaBrand = event.getOriginal().getCapability(KaiaProvider.KaiaBrand, null);
+        kaiaBrand.habilityBrand(oldKaiaBrand.returnList());
     }
 }
