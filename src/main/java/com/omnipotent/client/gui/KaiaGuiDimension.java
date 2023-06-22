@@ -1,8 +1,7 @@
 package com.omnipotent.client.gui;
 
-import com.omnipotent.network.NetworkRegister;
-import com.omnipotent.network.nbtpackets.KaiaNbtPacket;
-import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.server.network.NetworkRegister;
+import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.UtillityHelp;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -16,7 +15,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.*;
 
-import static com.omnipotent.tools.KaiaConstantsNbt.kaiaDimension;
+import static com.omnipotent.util.KaiaConstantsNbt.kaiaDimension;
 import static com.omnipotent.util.UtillityHelp.isJustNumber;
 
 public class KaiaGuiDimension extends GuiScreen {
@@ -44,12 +43,12 @@ public class KaiaGuiDimension extends GuiScreen {
         addButtonsPage();
         dimensionsAdded();
         listButtonsTeleport.add(new GuiTextField(23930292, fontRenderer, UtillityHelp.getEquivalentValueOfscreenHeight(160, height), 240, 100, 10));
-        listButtonsTeleport.get(0).setText("0");
+        listButtonsTeleport.get(0).setText(String.valueOf((int) player.posX));
         listButtonsTeleport.add(new GuiTextField(23930293, fontRenderer, 266, 240, 100, 10));
-        listButtonsTeleport.get(1).setText("0");
+        listButtonsTeleport.get(1).setText(String.valueOf((int) player.posY));
         listButtonsTeleport.add(new GuiTextField(23930294, fontRenderer, 370, 240, 100, 10));
-        listButtonsTeleport.get(2).setText("0");
-        KaiaUtil.sendmessageForPlayer(I18n.format("message.client.dimensionhelp"));
+        listButtonsTeleport.get(2).setText(String.valueOf((int) player.posZ));
+        UtillityHelp.sendmessageToPlayer(I18n.format("message.client.dimensionhelp"));
     }
 
     @Override

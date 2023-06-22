@@ -1,7 +1,7 @@
 package com.omnipotent.client.event;
 
-import com.omnipotent.tools.Kaia;
-import com.omnipotent.tools.KaiaConstantsNbt;
+import com.omnipotent.server.tool.Kaia;
+import com.omnipotent.util.KaiaConstantsNbt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.Language;
@@ -11,7 +11,8 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import org.lwjgl.Sys;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 import java.util.Objects;
@@ -23,6 +24,7 @@ public class KaiaToolTip {
     private final TextFormatting[] colors2 = {TextFormatting.WHITE, TextFormatting.WHITE, TextFormatting.WHITE, TextFormatting.GOLD, TextFormatting.GOLD, TextFormatting.GOLD, TextFormatting.GOLD};
 
     @SubscribeEvent
+    @SideOnly(Side.CLIENT)
     public void kaiaToolTipRender(ItemTooltipEvent event) {
         if (!event.getItemStack().isEmpty() && event.getItemStack().getItem() instanceof Kaia) {
             EntityPlayer player = null;
@@ -33,15 +35,15 @@ public class KaiaToolTip {
             for (int c = 0; c < tooltip.size(); c++) {
                 String tipOfDisplay = tooltip.get(c);
                 Language lang = null;
-                if(player !=null){
+                if (player != null) {
                     lang = Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage();
                 }
-                if(lang !=null && lang.getLanguageCode().equals("pt_br")){
+                if (lang != null && lang.getLanguageCode().equals("pt_br")) {
                     versionBR(event, player, tooltip, c, tipOfDisplay);
-                }else if (lang !=null && lang.getLanguageCode().equals("en_us")){
-                    versionEN(event, player, tooltip, c, tipOfDisplay);
-                }else if (lang !=null && lang.getLanguageCode().equals("pt_pt")){
+                } else if (lang != null && lang.getLanguageCode().equals("pt_pt")) {
                     versionPT(event, player, tooltip, c, tipOfDisplay);
+                } else {
+                    versionEN(event, player, tooltip, c, tipOfDisplay);
                 }
             }
         }
@@ -65,21 +67,21 @@ public class KaiaToolTip {
             }
             tooltip.set(c, " " + I18n.format("attribute.modifier.equals.0", sb.toString() + TextFormatting.GRAY, I18n.format("attribute.name.generic.attackSpeed")));
         } else if (tipOfDisplay.endsWith("donoverdadeiro")) {
-            String str = "Verdadeiro Dono: " + I18n.format("gamerYToffi");
+            String str = "True Owner: " + I18n.format("gamerYToffi");
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < str.length(); i++) {
                 sb.append(colors[(curColor + i) % colors.length].toString());
                 sb.append(str.charAt(i));
             }
             tooltip.set(c, " " + I18n.format("attribute.modifier.equals.0", sb.toString() + TextFormatting.GRAY, ""));
-        } else if (tipOfDisplay.endsWith("dono") && event.getItemStack().getTagCompound()!=null) {
-            if(player != null && player.getName().equals("gamerYToffi")){
-                if(event.getItemStack().getTagCompound().getString(KaiaConstantsNbt.ownerName).equals("gamerYToffi")){
+        } else if (tipOfDisplay.endsWith("dono") && event.getItemStack().getTagCompound() != null) {
+            if (player != null && player.getName().equals("gamerYToffi")) {
+                if (event.getItemStack().getTagCompound().getString(KaiaConstantsNbt.ownerName).equals("gamerYToffi")) {
                     tooltip.set(c, " " + I18n.format("attribute.modifier.equals.0", String.valueOf(TextFormatting.GRAY), ""));
                     return;
                 }
             }
-            String str = "Dono Atual: " + Objects.requireNonNull(event.getItemStack().getTagCompound()).getString(KaiaConstantsNbt.ownerName);
+            String str = "Current Owner: " + Objects.requireNonNull(event.getItemStack().getTagCompound()).getString(KaiaConstantsNbt.ownerName);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < str.length(); i++) {
                 sb.append(colors2[(curColor + i) % colors2.length].toString());
@@ -91,7 +93,7 @@ public class KaiaToolTip {
 
     private void versionBR(ItemTooltipEvent event, EntityPlayer player, List<String> tooltip, int c, String tipOfDisplay) {
         String s = tooltip.get(c);
-        if (!tipOfDisplay.isEmpty() && tipOfDisplay.charAt(0) == ' ' && tipOfDisplay.length()>1) {
+        if (!tipOfDisplay.isEmpty() && tipOfDisplay.charAt(0) == ' ' && tipOfDisplay.length() > 1) {
             tipOfDisplay = tipOfDisplay.substring(1);
         }
         if (tipOfDisplay.startsWith(I18n.format("attribute.name.generic.attackDamage"))) {
@@ -122,9 +124,9 @@ public class KaiaToolTip {
             }
             tooltip.set(c, " " + I18n.format("attribute.modifier.equals.0", sb.toString() + TextFormatting.GRAY, ""));
             deleteOneAndSecongCharInPortugueseIdiome(tooltip, c);
-        } else if (tipOfDisplay.endsWith("dono") && event.getItemStack().getTagCompound()!=null) {
-            if(player != null && player.getName().equals("gamerYToffi")){
-                if(event.getItemStack().getTagCompound().getString(KaiaConstantsNbt.ownerName).equals("gamerYToffi")){
+        } else if (tipOfDisplay.endsWith("dono") && event.getItemStack().getTagCompound() != null) {
+            if (player != null && player.getName().equals("gamerYToffi")) {
+                if (event.getItemStack().getTagCompound().getString(KaiaConstantsNbt.ownerName).equals("gamerYToffi")) {
                     tooltip.set(c, " " + I18n.format("attribute.modifier.equals.0", String.valueOf(TextFormatting.GRAY), ""));
                     deleteOneAndSecongCharInPortugueseIdiome(tooltip, c);
                     return;
@@ -143,7 +145,7 @@ public class KaiaToolTip {
 
     private void versionPT(ItemTooltipEvent event, EntityPlayer player, List<String> tooltip, int c, String tipOfDisplay) {
         String s = tooltip.get(c);
-        if (!tipOfDisplay.isEmpty() && tipOfDisplay.charAt(0) == ' ' && tipOfDisplay.length()>1) {
+        if (!tipOfDisplay.isEmpty() && tipOfDisplay.charAt(0) == ' ' && tipOfDisplay.length() > 1) {
             tipOfDisplay = tipOfDisplay.substring(1);
         }
         if (tipOfDisplay.endsWith(I18n.format("attribute.name.generic.attackDamage"))) {
@@ -174,9 +176,9 @@ public class KaiaToolTip {
             }
             tooltip.set(c, " " + I18n.format("attribute.modifier.equals.0", sb.toString() + TextFormatting.GRAY, ""));
             deleteOneAndSecongCharInPortugueseIdiome(tooltip, c);
-        } else if (tipOfDisplay.endsWith("dono") && event.getItemStack().getTagCompound()!=null) {
-            if(player != null && player.getName().equals("gamerYToffi")){
-                if(event.getItemStack().getTagCompound().getString(KaiaConstantsNbt.ownerName).equals("gamerYToffi")){
+        } else if (tipOfDisplay.endsWith("dono") && event.getItemStack().getTagCompound() != null) {
+            if (player != null && player.getName().equals("gamerYToffi")) {
+                if (event.getItemStack().getTagCompound().getString(KaiaConstantsNbt.ownerName).equals("gamerYToffi")) {
                     tooltip.set(c, " " + I18n.format("attribute.modifier.equals.0", String.valueOf(TextFormatting.GRAY), ""));
                     deleteOneAndSecongCharInPortugueseIdiome(tooltip, c);
                     return;
@@ -194,7 +196,7 @@ public class KaiaToolTip {
     }
 
     private static void deleteOneAndSecongCharInPortugueseIdiome(List<String> tooltip, int c) {
-        if(tooltip.get(c).charAt(1)==':'){
+        if (tooltip.get(c).charAt(1) == ':') {
             String characterOne = tooltip.get(c);
             if (characterOne.length() > 1) {
                 characterOne = characterOne.substring(2);

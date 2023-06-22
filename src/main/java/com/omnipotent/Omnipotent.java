@@ -1,25 +1,18 @@
 package com.omnipotent;
 
-import com.omnipotent.event.KaiaEvent;
-import com.omnipotent.client.event.KaiaToolTip;
-import com.omnipotent.event.UpdateEntity;
-import com.omnipotent.gui.GuiHandler;
-import com.omnipotent.client.key.KeyEvent;
-import com.omnipotent.key.KeyInit;
-import com.omnipotent.network.NetworkRegister;
-import com.omnipotent.network.PacketInicialization;
-import com.omnipotent.tools.Kaia;
-import com.omnipotent.tools.KaiaEntity;
-import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.server.CommonProxy;
+import com.omnipotent.server.entity.KaiaEntity;
+import com.omnipotent.server.network.NetworkRegister;
+import com.omnipotent.server.network.PacketInicialization;
+import com.omnipotent.server.tool.Kaia;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
-import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -30,7 +23,6 @@ import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
 
 import java.io.IOException;
-import java.util.List;
 
 @Mod(modid = Omnipotent.MODID, name = Omnipotent.NAME, version = Omnipotent.VERSION)
 @Mod.EventBusSubscriber
@@ -41,41 +33,26 @@ public class Omnipotent {
     public static final OmnipotentTab omnipotentTab = new OmnipotentTab("Omnipotent mod");
     public static SimpleNetworkWrapper channel = NetworkRegistry.INSTANCE.newSimpleChannel("omnipotent");
     static Kaia kaia = new Kaia();
+
     @Mod.Instance(Omnipotent.MODID)
     public static Omnipotent instance;
+
+    @SidedProxy(clientSide = "com.omnipotent.client.ClientProxy", serverSide = "com.omnipotent.server.CommonProxy")
+    public static CommonProxy proxy;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(instance);
-        MinecraftForge.EVENT_BUS.register(new KaiaEvent());
-        MinecraftForge.EVENT_BUS.register(new KaiaUtil());
-        MinecraftForge.EVENT_BUS.register(new UpdateEntity());
-        MinecraftForge.EVENT_BUS.register(new GuiHandler());
-        MinecraftForge.EVENT_BUS.register(kaia);
-        NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
-        MinecraftForge.EVENT_BUS.register(new KeyEvent());
-        MinecraftForge.EVENT_BUS.register(new KaiaToolTip());
+        proxy.preInit(event);
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        KeyInit.initKeys();
-        ForgeChunkManager.setForcedChunkLoadingCallback(instance, new ForgeChunkManager.LoadingCallback() {
-            @Override
-            public void ticketsLoaded(List<ForgeChunkManager.Ticket> tickets, World world) {
-                for (ForgeChunkManager.Ticket ticket : tickets) {
-                    Entity entity = ticket.getEntity();
-                    if (entity != null) {
-                        ForgeChunkManager.forceChunk(ticket, entity.getEntityWorld().getChunkFromBlockCoords(entity.getPosition()).getPos());
-                    }
-                }
-            }
-        });
+        proxy.init(event);
     }
 
     @EventHandler
-    public void posinit(FMLPostInitializationEvent event) {
-    }
+    public void posinit(FMLPostInitializationEvent event) {}
 
     @SubscribeEvent
     public void entityRegister(RegistryEvent.Register<EntityEntry> event) {

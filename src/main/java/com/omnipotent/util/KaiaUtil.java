@@ -4,13 +4,12 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
-import com.omnipotent.test.IContainer;
-import com.omnipotent.test.InventoryKaia;
-import com.omnipotent.tools.Kaia;
-import com.omnipotent.tools.KaiaConstantsNbt;
+import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
+import com.omnipotent.server.specialgui.IContainer;
+import com.omnipotent.server.specialgui.InventoryKaia;
+import com.omnipotent.server.tool.Kaia;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -40,6 +39,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -48,10 +48,11 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.omnipotent.tools.KaiaConstantsNbt.*;
+import static com.omnipotent.util.KaiaConstantsNbt.*;
 
 public class KaiaUtil {
     public static List<Class> antiEntity = new ArrayList();
@@ -122,8 +123,6 @@ public class KaiaUtil {
         if (entity instanceof EntityPlayer && !hasInInventoryKaia(entity)) {
             EntityPlayer playerEnemie = (EntityPlayer) entity;
             DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
-            playerEnemie.getCombatTracker().trackDamage(ds, Float.MAX_VALUE, Float.MAX_VALUE);
-            playerEnemie.setHealth(0.0F);
             if (!playerEnemie.isDead) {
                 playerEnemie.attemptTeleport(0, -1000, 0);
                 dropAllInventory((EntityPlayer) playerEnemie);
@@ -131,16 +130,11 @@ public class KaiaUtil {
                 ((EntityPlayer) playerEnemie).onLivingUpdate();
                 playerEnemie.onEntityUpdate();
             }
-            if (!playerSource.getEntityWorld().getGameRules().getBoolean("keepInventory") && autoBackpackEntities) {
-                compactListItemStacks(playerEnemie.inventory.mainInventory);
-                addedItemsStacksInKaiaInventory((EntityPlayerMP) playerSource, playerEnemie.inventory.mainInventory, kaia);
-                playerEnemie.captureDrops = false;
-                playerEnemie.attackEntityFrom(ds, Float.MAX_VALUE);
-                playerEnemie.onDeath(ds);
-            } else {
-                playerEnemie.attackEntityFrom(ds, Float.MAX_VALUE);
-                playerEnemie.onDeath(ds);
-            }
+            playerEnemie.getCombatTracker().trackDamage(ds, Float.MAX_VALUE, Float.MAX_VALUE);
+            playerEnemie.setHealth(0.0F);
+            playerEnemie.attackEntityFrom(ds, Float.MAX_VALUE);
+            playerEnemie.onDeath(ds);
+
         } else if (entity instanceof EntityLivingBase && !(entity.world.isRemote || entity.isDead || ((EntityLivingBase) entity).getHealth() == 0.0F)) {
             EntityLivingBase entityCreature = (EntityLivingBase) entity;
             DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
@@ -159,7 +153,7 @@ public class KaiaUtil {
                 NonNullList<ItemStack> drops = NonNullList.create();
                 capturedDrops.forEach(entityItem -> drops.add(entityItem.getItem()));
                 compactListItemStacks(drops);
-                addedItemsStacksInKaiaInventory((EntityPlayerMP) playerSource, drops, kaia);
+                addedItemsStacksInKaiaInventory(playerSource, drops, kaia);
             } else {
                 entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
                 entityCreature.onDeath(ds);
@@ -169,6 +163,7 @@ public class KaiaUtil {
         } else if (killAllEntities) {
             entity.setDead();
         }
+
     }
 
     public static boolean withKaiaMainHand(EntityPlayer trueSource) {
@@ -250,7 +245,7 @@ public class KaiaUtil {
         return xp;
     }
 
-    private static void addedItemsStacksInKaiaInventory(EntityPlayerMP playerOwnerOfKaia, NonNullList<ItemStack> drops, ItemStack kaiaItemStack) {
+    private static void addedItemsStacksInKaiaInventory(EntityPlayer playerOwnerOfKaia, NonNullList<ItemStack> drops, ItemStack kaiaItemStack) {
         InventoryKaia inventory = ((IContainer) kaiaItemStack.getItem()).getInventory(kaiaItemStack);
         for (ItemStack dropStack : drops) {
             boolean breakMainLoop = false;
@@ -269,7 +264,6 @@ public class KaiaUtil {
                         currentPageItems.set(currentSlot, dropStack);
                         breakMainLoop = true;
                         break;
-
                     } else {
                         int maxCountSlot = inventory.cancelStackLimit() ? inventory.getInventoryStackLimit() : Math.min(inventory.getInventoryStackLimit(), dropStack.getMaxStackSize());
                         int countSlotFree = Math.min(maxCountSlot - stackInCurrentSlot.getCount(), dropStack.getCount());
@@ -329,14 +323,6 @@ public class KaiaUtil {
         } else {
             drops.clear();
             drops.addAll(itemStacks);
-        }
-    }
-
-    public static void sendMessageToAllPlayers(String message) {
-        MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-        List<EntityPlayerMP> players = server.getPlayerList().getPlayers();
-        for (EntityPlayerMP player : players) {
-            player.sendMessage(new TextComponentString(message));
         }
     }
 
@@ -495,7 +481,23 @@ public class KaiaUtil {
         return false;
     }
 
-    public static void sendmessageForPlayer(String message) {
-        Minecraft.getMinecraft().player.sendMessage(new TextComponentString(message));
+    public static void kaiaKillCommandMessage() {
+        MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+        List<EntityPlayerMP> players = server.getPlayerList().getPlayers();
+        for (EntityPlayerMP player : players) {
+            try {
+                Field languageField = EntityPlayerMP.class.getDeclaredField("language");
+                languageField.setAccessible(true);
+                String playerLanguage = (String) languageField.get(player);
+                if (playerLanguage.equals("pt_br")) {
+                    player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA NAO PODE SER MORTA"));
+                } else {
+                    player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA CANNOT BE KILLED"));
+                }
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+                player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA CANNOT BE KILLED"));
+            }
+        }
     }
 }

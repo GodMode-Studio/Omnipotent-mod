@@ -1,8 +1,18 @@
 {
     "compatibilityLevel": "JAVA_8",
-    "package": "com.omnipotent.mixin",
+    "package": "com.omnipotent.server.mixin",
     "refmap": "refmap.omnipotent.json",
-    "mixins": ["MixinClearControl", "MixinPlayerDeathHooks","MixinOnDeathPlayerMp","MixinClearInventory", "MixinGiveKaiaOfPlayer", "MixinKillCommand", "MixinEntity","MixinMinecraft", "MixinEntityLivingBase"],
+    "mixins": [
+      "MixinClearControl",
+      "MixinPlayerDeathHooks",
+      "MixinOnDeathPlayerMp",
+      "MixinClearInventory",
+      "MixinGiveKaiaOfPlayer",
+      "MixinKillCommand",
+      "MixinEntity",
+      "MixinMinecraft",
+      "MixinEntityLivingBase"
+    ],
     "client": [],
     "server": []
 }

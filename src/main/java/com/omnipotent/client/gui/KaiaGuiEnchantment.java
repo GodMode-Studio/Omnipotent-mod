@@ -1,7 +1,7 @@
 package com.omnipotent.client.gui;
 
-import com.omnipotent.network.NetworkRegister;
-import com.omnipotent.network.nbtpackets.KaiaNbtPacket;
+import com.omnipotent.server.network.NetworkRegister;
+import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -19,7 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static com.omnipotent.util.UtillityHelp.isJustNumber;
-import static com.omnipotent.tools.KaiaConstantsNbt.kaiaEnchant;
+import static com.omnipotent.util.KaiaConstantsNbt.kaiaEnchant;
 
 public class KaiaGuiEnchantment extends GuiScreen {
 

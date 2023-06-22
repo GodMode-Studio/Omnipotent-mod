@@ -1,11 +1,10 @@
 package com.omnipotent.client.key;
 
 import com.omnipotent.Omnipotent;
-import com.omnipotent.key.KeyInit;
-import com.omnipotent.network.NetworkRegister;
-import com.omnipotent.network.ReturnKaiaPacket;
-import com.omnipotent.test.net.KaiaContainerOpenPackte;
-import com.omnipotent.tools.Kaia;
+import com.omnipotent.server.network.NetworkRegister;
+import com.omnipotent.server.network.ReturnKaiaPacket;
+import com.omnipotent.server.specialgui.net.KaiaContainerOpenPackte;
+import com.omnipotent.server.tool.Kaia;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
