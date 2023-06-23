@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.item.ItemExpireEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -128,7 +129,7 @@ public class UpdateEntity {
                 EntityPlayer player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(uuid);
                 List<ItemStack> kaiaItems = null;
                 if (player != null && isOwnerOfKaia(entityItem.getItem(), player)) {
-                    player.sendMessage(new TextComponentString("press G for return Kaia"));
+                    player.sendMessage(new TextComponentString(TextFormatting.AQUA+"press G for return Kaia"));
                     kaiaItems = player.getCapability(KaiaProvider.KaiaBrand, null).returnList();
                     kaiaItems.add(entityItem.getItem());
                 }
