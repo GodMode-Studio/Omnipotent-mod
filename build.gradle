@@ -53,7 +53,7 @@ configurations {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-//    implementation files('libs/LoliPickaxe-1.2.16f V3 tradução(versão santificada brasileira, que não veio da deepweb chinesa) (1).jar')
+    implementation files('libs/LoliPickaxe-1.2.16f V3 tradução(versão santificada brasileira, que não veio da deepweb chinesa) (1).jar')
 
     embed('org.spongepowered:mixin:0.8.3-SNAPSHOT') {
         exclude module: 'guava'
