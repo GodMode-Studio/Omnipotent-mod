@@ -56,14 +56,16 @@ public class KaiaUtil {
         if (!isPlayer(entity)) {
             return false;
         }
-        EntityPlayer player = (EntityPlayer) entity;
-        if (player.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof Kaia)
-            return true;
-        for (ItemStack slot : player.inventory.mainInventory) {
-            if (slot.getItem() instanceof Kaia) {
+        try {
+            EntityPlayer player = (EntityPlayer) entity;
+            if (player.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof Kaia)
                 return true;
+            for (ItemStack slot : player.inventory.mainInventory) {
+                if (slot.getItem() instanceof Kaia) {
+                    return true;
+                }
             }
-        }
+        }catch (Exception e) {return false;}
         return false;
     }
 
@@ -119,13 +121,13 @@ public class KaiaUtil {
         if (entity instanceof EntityPlayer && !hasInInventoryKaia(entity)) {
             EntityPlayer playerEnemie = (EntityPlayer) entity;
             DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
-            if (!playerEnemie.isDead) {
-                playerEnemie.attemptTeleport(0, -1000, 0);
-                dropAllInventory((EntityPlayer) playerEnemie);
-                playerEnemie.onUpdate();
-                ((EntityPlayer) playerEnemie).onLivingUpdate();
-                playerEnemie.onEntityUpdate();
-            }
+//            if (!playerEnemie.isDead) {
+//                playerEnemie.attemptTeleport(0, -1000, 0);
+//                dropAllInventory((EntityPlayer) playerEnemie);
+//                playerEnemie.onUpdate();
+//                ((EntityPlayer) playerEnemie).onLivingUpdate();
+//                playerEnemie.onEntityUpdate();
+//            }
             playerEnemie.getCombatTracker().trackDamage(ds, Float.MAX_VALUE, Float.MAX_VALUE);
             playerEnemie.setHealth(0.0F);
             playerEnemie.attackEntityFrom(ds, Float.MAX_VALUE);
@@ -158,6 +160,7 @@ public class KaiaUtil {
             entityCreature.setHealth(0.0F);
         } else if (killAllEntities) {
             entity.setDead();
+            playerSource.world.onEntityRemoved(entity);
         }
 
     }

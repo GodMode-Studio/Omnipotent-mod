@@ -169,6 +169,7 @@ public class KaiaNbtPacket implements IMessage {
                     player.setPositionAndUpdate(posX, posY, posZ);
                 } else {
                     player.changeDimension(intValue, new Teleporte(posX, posY, posZ));
+                    return null;
                 }
             }
             return null;

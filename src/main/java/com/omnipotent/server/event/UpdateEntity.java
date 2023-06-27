@@ -1,10 +1,12 @@
 package com.omnipotent.server.event;
 
+import com.omnipotent.server.capability.IKaiaBrand;
 import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.server.tool.Kaia;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -14,10 +16,12 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.item.ItemExpireEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -25,6 +29,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.*;
 
+import static com.omnipotent.Omnipotent.KAIACAP;
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
 import static com.omnipotent.util.KaiaUtil.isOwnerOfKaia;
 
@@ -139,6 +144,21 @@ public class UpdateEntity {
         if (KaiaUtil.antiEntity.contains(event.getEntity().getClass())) {
             event.setCanceled(true);
         }
+    }
+
+    @SubscribeEvent
+    public void attachCapabilityEntity(AttachCapabilitiesEvent<Entity> event) {
+        if (!(event.getObject() instanceof EntityPlayer))
+            return;
+        event.addCapability(KAIACAP, new KaiaProvider());
+    }
+
+    @SubscribeEvent
+    public void onPlayerClone(PlayerEvent.Clone event) {
+        EntityPlayer player = event.getEntityPlayer();
+        IKaiaBrand kaiaBrand = player.getCapability(KaiaProvider.KaiaBrand, null);
+        IKaiaBrand oldKaiaBrand = event.getOriginal().getCapability(KaiaProvider.KaiaBrand, null);
+        kaiaBrand.habilityBrand(oldKaiaBrand.returnList());
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

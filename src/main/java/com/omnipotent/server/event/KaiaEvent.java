@@ -1,13 +1,9 @@
 package com.omnipotent.server.event;
 
-import com.omnipotent.server.network.KillPacket;
-import com.omnipotent.server.network.NetworkRegister;
-import com.omnipotent.server.network.SummonLightEasterEggPacket;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
@@ -18,19 +14,18 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import static com.omnipotent.util.KaiaConstantsNbt.rangeAttack;
 import static com.omnipotent.util.KaiaUtil.*;
 
 public class KaiaEvent {
     @SubscribeEvent
     public void playerAttack(PlayerInteractEvent.LeftClickEmpty event) {
         EntityPlayer player = event.getEntityPlayer();
-        ItemStack heldItemMainhand = player.getHeldItemMainhand();
-        if (withKaiaMainHand(player)) {
-            if (heldItemMainhand.getTagCompound().getInteger("rangeAttack") > 1) {
-                NetworkRegister.ACESS.sendToServer(new KillPacket());
+        ItemStack kaia = getKaiaInMainHand(player);
+        if (kaia!=null && !player.world.isRemote) {
+            if (kaia.getTagCompound().getInteger(rangeAttack) > 5) {
+                KaiaUtil.killArea(player);
             }
-        } else if (heldItemMainhand.getItem().equals(Item.getItemById(258)) && !heldItemMainhand.isItemDamaged()) {
-            NetworkRegister.ACESS.sendToServer(new SummonLightEasterEggPacket());
         }
     }
 
@@ -68,6 +63,9 @@ public class KaiaEvent {
             event.setCanceled(true);
         } else if (event.getSource().getTrueSource() != null && isPlayer(event.getSource().getTrueSource()) && withKaiaMainHand((EntityPlayer) event.getSource().getTrueSource())) {
             event.setCanceled(false);
+            EntityPlayer source = (EntityPlayer) event.getSource().getTrueSource();
+            ItemStack kaia = getKaiaInMainHand(source) == null ? getKaiaInInventory(source) : getKaiaInMainHand(source);
+            KaiaUtil.kill(event.getEntity(), source, kaia.getTagCompound().getBoolean(KaiaConstantsNbt.killAllEntities));
         }
     }
 
