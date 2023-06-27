@@ -65,9 +65,9 @@ public class KaiaEvent {
             event.setCanceled(true);
         } else if (event.getSource().getTrueSource() != null && isPlayer(event.getSource().getTrueSource()) && withKaiaMainHand((EntityPlayer) event.getSource().getTrueSource())) {
             event.setCanceled(false);
-            EntityPlayer source = (EntityPlayer) event.getSource().getTrueSource();
-            ItemStack kaia = getKaiaInMainHand(source) == null ? getKaiaInInventory(source) : getKaiaInMainHand(source);
-            KaiaUtil.kill(event.getEntity(), source, kaia.getTagCompound().getBoolean(KaiaConstantsNbt.killAllEntities));
+//            EntityPlayer source = (EntityPlayer) event.getSource().getTrueSource();
+//            ItemStack kaia = getKaiaInMainHand(source) == null ? getKaiaInInventory(source) : getKaiaInMainHand(source);
+//            KaiaUtil.kill(event.getEntity(), source, kaia.getTagCompound().getBoolean(KaiaConstantsNbt.killAllEntities));
         }
     }
 
