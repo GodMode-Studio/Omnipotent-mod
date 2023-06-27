@@ -69,8 +69,7 @@ public class KaiaUtil {
         return false;
     }
 
-    public static void killArea(EntityLivingBase player) {
-        EntityPlayer playerSource = (EntityPlayer) player;
+    public static void killArea(EntityPlayer playerSource) {
         World world = playerSource.world;
         List<Entity> entities = Lists.newArrayList();
         NBTTagCompound tagCompoundOfKaia = (getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource)).getTagCompound();
