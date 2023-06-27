@@ -53,6 +53,8 @@ configurations {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+//    implementation files('libs/LoliPickaxe-1.2.16f V3 tradução(versão santificada brasileira, que não veio da deepweb chinesa) (1).jar')
+
     embed('org.spongepowered:mixin:0.8.3-SNAPSHOT') {
         exclude module: 'guava'
         exclude module: 'commons-io'
@@ -60,13 +62,6 @@ dependencies {
     }
 }
 sourceSets { main { output.resourcesDir = output.classesDir } }
-//task copyLangFiles(type: Copy) {
-//    from 'src/main/resources/assets/omnipotent/lang'
-//    include '**/*.lang'
-//    into "$buildDir/classes/java/main/lang"
-//}
-
-//processResources.dependsOn(copyLangFiles)
 processResources {
     inputs.property "version", project.version
     inputs.property "mcversion", minecraft_version
@@ -82,6 +77,15 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+}
+repositories {
+    maven {
+        url 'https://maven.cleanroommc.com'
+    }
+}
+
+dependencies {
+    compile 'zone.rong:mixinbooter:8.3'
 }
 
 mixin {
