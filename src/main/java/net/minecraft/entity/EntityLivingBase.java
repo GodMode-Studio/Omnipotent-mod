@@ -19,6 +19,8 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.EnchantmentFrostWalker;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.*;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.attributes.AbstractAttributeMap;
 import net.minecraft.entity.ai.attributes.AttributeMap;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
@@ -28,7 +30,6 @@ import net.minecraft.entity.item.EntityBoat;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.passive.AbstractHorse;
-import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityArrow;
@@ -77,17 +78,17 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public abstract class EntityLivingBase extends Entity
+public abstract class EntityLivingBase extends net.minecraft.entity.Entity
 {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final UUID SPRINTING_SPEED_BOOST_ID = UUID.fromString("662A6B8D-DA3E-4C1C-8813-96EA6097278D");
     private static final AttributeModifier SPRINTING_SPEED_BOOST = (new AttributeModifier(SPRINTING_SPEED_BOOST_ID, "Sprinting speed boost", 0.30000001192092896D, 2)).setSaved(false);
     public static final net.minecraft.entity.ai.attributes.IAttribute SWIM_SPEED = new net.minecraft.entity.ai.attributes.RangedAttribute(null, "forge.swimSpeed", 1.0D, 0.0D, 1024.0D).setShouldWatch(true);
-    protected static final DataParameter<Byte> HAND_STATES = EntityDataManager.<Byte>createKey(EntityLivingBase.class, DataSerializers.BYTE);
-    private static final DataParameter<Float> HEALTH = EntityDataManager.<Float>createKey(EntityLivingBase.class, DataSerializers.FLOAT);
-    private static final DataParameter<Integer> POTION_EFFECTS = EntityDataManager.<Integer>createKey(EntityLivingBase.class, DataSerializers.VARINT);
-    private static final DataParameter<Boolean> HIDE_PARTICLES = EntityDataManager.<Boolean>createKey(EntityLivingBase.class, DataSerializers.BOOLEAN);
-    private static final DataParameter<Integer> ARROW_COUNT_IN_ENTITY = EntityDataManager.<Integer>createKey(EntityLivingBase.class, DataSerializers.VARINT);
+    protected static final DataParameter<Byte> HAND_STATES = EntityDataManager.<Byte>createKey(net.minecraft.entity.EntityLivingBase.class, DataSerializers.BYTE);
+    private static final DataParameter<Float> HEALTH = EntityDataManager.<Float>createKey(net.minecraft.entity.EntityLivingBase.class, DataSerializers.FLOAT);
+    private static final DataParameter<Integer> POTION_EFFECTS = EntityDataManager.<Integer>createKey(net.minecraft.entity.EntityLivingBase.class, DataSerializers.VARINT);
+    private static final DataParameter<Boolean> HIDE_PARTICLES = EntityDataManager.<Boolean>createKey(net.minecraft.entity.EntityLivingBase.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Integer> ARROW_COUNT_IN_ENTITY = EntityDataManager.<Integer>createKey(net.minecraft.entity.EntityLivingBase.class, DataSerializers.VARINT);
     private AbstractAttributeMap attributeMap;
     private final CombatTracker _combatTracker = new CombatTracker(this);
     private final Map<Potion, PotionEffect> activePotionsMap = Maps.<Potion, PotionEffect>newHashMap();
@@ -140,9 +141,9 @@ public abstract class EntityLivingBase extends Entity
     protected double interpTargetYaw;
     protected double interpTargetPitch;
     private boolean potionsNeedUpdate = true;
-    private EntityLivingBase revengeTarget;
+    private net.minecraft.entity.EntityLivingBase revengeTarget;
     private int revengeTimer;
-    private EntityLivingBase lastAttackedEntity;
+    private net.minecraft.entity.EntityLivingBase lastAttackedEntity;
     private int lastAttackedEntityTime;
     private float landMovementFactor;
     private int jumpTicks;
@@ -343,11 +344,11 @@ public abstract class EntityLivingBase extends Entity
         {
             if (!this.revengeTarget.isEntityAlive())
             {
-                this.setRevengeTarget((EntityLivingBase)null);
+                this.setRevengeTarget((net.minecraft.entity.EntityLivingBase)null);
             }
             else if (this.ticksExisted - this.revengeTimer > 100)
             {
-                this.setRevengeTarget((EntityLivingBase)null);
+                this.setRevengeTarget((net.minecraft.entity.EntityLivingBase)null);
             }
         }
 
@@ -432,7 +433,7 @@ public abstract class EntityLivingBase extends Entity
     }
 
     @Nullable
-    public EntityLivingBase getRevengeTarget()
+    public net.minecraft.entity.EntityLivingBase getRevengeTarget()
     {
         return this.revengeTarget;
     }
@@ -442,13 +443,13 @@ public abstract class EntityLivingBase extends Entity
         return this.revengeTimer;
     }
 
-    public void setRevengeTarget(@Nullable EntityLivingBase livingBase)
+    public void setRevengeTarget(@Nullable net.minecraft.entity.EntityLivingBase livingBase)
     {
         this.revengeTarget = livingBase;
         this.revengeTimer = this.ticksExisted;
     }
 
-    public EntityLivingBase getLastAttackedEntity()
+    public net.minecraft.entity.EntityLivingBase getLastAttackedEntity()
     {
         return this.lastAttackedEntity;
     }
@@ -458,11 +459,11 @@ public abstract class EntityLivingBase extends Entity
         return this.lastAttackedEntityTime;
     }
 
-    public void setLastAttackedEntity(Entity entityIn)
+    public void setLastAttackedEntity(net.minecraft.entity.Entity entityIn)
     {
-        if (entityIn instanceof EntityLivingBase)
+        if (entityIn instanceof net.minecraft.entity.EntityLivingBase)
         {
-            this.lastAttackedEntity = (EntityLivingBase)entityIn;
+            this.lastAttackedEntity = (net.minecraft.entity.EntityLivingBase)entityIn;
         }
         else
         {
@@ -895,11 +896,11 @@ public abstract class EntityLivingBase extends Entity
 
                     if (!source.isProjectile())
                     {
-                        Entity entity = source.getImmediateSource();
+                        net.minecraft.entity.Entity entity = source.getImmediateSource();
 
-                        if (entity instanceof EntityLivingBase)
+                        if (entity instanceof net.minecraft.entity.EntityLivingBase)
                         {
-                            this.blockUsingShield((EntityLivingBase)entity);
+                            this.blockUsingShield((net.minecraft.entity.EntityLivingBase)entity);
                         }
                     }
 
@@ -930,13 +931,13 @@ public abstract class EntityLivingBase extends Entity
                 }
 
                 this.attackedAtYaw = 0.0F;
-                Entity entity1 = source.getTrueSource();
+                net.minecraft.entity.Entity entity1 = source.getTrueSource();
 
                 if (entity1 != null)
                 {
-                    if (entity1 instanceof EntityLivingBase)
+                    if (entity1 instanceof net.minecraft.entity.EntityLivingBase)
                     {
-                        this.setRevengeTarget((EntityLivingBase)entity1);
+                        this.setRevengeTarget((net.minecraft.entity.EntityLivingBase)entity1);
                     }
 
                     if (entity1 instanceof EntityPlayer)
@@ -1052,7 +1053,7 @@ public abstract class EntityLivingBase extends Entity
         }
     }
 
-    protected void blockUsingShield(EntityLivingBase p_190629_1_)
+    protected void blockUsingShield(net.minecraft.entity.EntityLivingBase p_190629_1_)
     {
         p_190629_1_.knockBack(this, 0.5F, this.posX - p_190629_1_.posX, this.posZ - p_190629_1_.posZ);
     }
@@ -1169,8 +1170,8 @@ public abstract class EntityLivingBase extends Entity
         if (net.minecraftforge.common.ForgeHooks.onLivingDeath(this, cause)) return;
         if (!this.dead)
         {
-            Entity entity = cause.getTrueSource();
-            EntityLivingBase entitylivingbase = this.getAttackingEntity();
+            net.minecraft.entity.Entity entity = cause.getTrueSource();
+            net.minecraft.entity.EntityLivingBase entitylivingbase = this.getAttackingEntity();
 
             if (this.scoreValue >= 0 && entitylivingbase != null)
             {
@@ -1228,7 +1229,7 @@ public abstract class EntityLivingBase extends Entity
     {
     }
 
-    public void knockBack(Entity entityIn, float strength, double xRatio, double zRatio)
+    public void knockBack(net.minecraft.entity.Entity entityIn, float strength, double xRatio, double zRatio)
     {
         net.minecraftforge.event.entity.living.LivingKnockBackEvent event = net.minecraftforge.common.ForgeHooks.onLivingKnockBack(this, entityIn, strength, xRatio, zRatio);
         if(event.isCanceled()) return;
@@ -1438,7 +1439,7 @@ public abstract class EntityLivingBase extends Entity
     }
 
     @Nullable
-    public EntityLivingBase getAttackingEntity()
+    public net.minecraft.entity.EntityLivingBase getAttackingEntity()
     {
         if (this._combatTracker.getBestAttacker() != null)
         {
@@ -1706,7 +1707,7 @@ public abstract class EntityLivingBase extends Entity
         return this.getHealth() <= 0.0F;
     }
 
-    public void dismountEntity(Entity entityIn)
+    public void dismountEntity(net.minecraft.entity.Entity entityIn)
     {
         if (!(entityIn instanceof EntityBoat) && !(entityIn instanceof AbstractHorse))
         {
@@ -2085,7 +2086,7 @@ public abstract class EntityLivingBase extends Entity
         this.landMovementFactor = speedIn;
     }
 
-    public boolean attackEntityAsMob(Entity entityIn)
+    public boolean attackEntityAsMob(net.minecraft.entity.Entity entityIn)
     {
         this.setLastAttackedEntity(entityIn);
         return false;
@@ -2442,7 +2443,7 @@ public abstract class EntityLivingBase extends Entity
 
     protected void collideWithNearbyEntities()
     {
-        List<Entity> list = this.world.getEntitiesInAABBexcluding(this, this.getEntityBoundingBox(), EntitySelectors.getTeamCollisionPredicate(this));
+        List<net.minecraft.entity.Entity> list = this.world.getEntitiesInAABBexcluding(this, this.getEntityBoundingBox(), EntitySelectors.getTeamCollisionPredicate(this));
 
         if (!list.isEmpty())
         {
@@ -2454,7 +2455,7 @@ public abstract class EntityLivingBase extends Entity
 
                 for (int k = 0; k < list.size(); ++k)
                 {
-                    if (!((Entity)list.get(k)).isRiding())
+                    if (!((net.minecraft.entity.Entity)list.get(k)).isRiding())
                     {
                         ++j;
                     }
@@ -2468,20 +2469,20 @@ public abstract class EntityLivingBase extends Entity
 
             for (int l = 0; l < list.size(); ++l)
             {
-                Entity entity = list.get(l);
+                net.minecraft.entity.Entity entity = list.get(l);
                 this.collideWithEntity(entity);
             }
         }
     }
 
-    protected void collideWithEntity(Entity entityIn)
+    protected void collideWithEntity(net.minecraft.entity.Entity entityIn)
     {
         entityIn.applyEntityCollision(this);
     }
 
     public void dismountRidingEntity()
     {
-        Entity entity = this.getRidingEntity();
+        net.minecraft.entity.Entity entity = this.getRidingEntity();
         super.dismountRidingEntity();
 
         if (entity != null && entity != this.getRidingEntity() && !this.world.isRemote)
@@ -2514,7 +2515,7 @@ public abstract class EntityLivingBase extends Entity
         this.isJumping = jumping;
     }
 
-    public void onItemPickup(Entity entityIn, int quantity)
+    public void onItemPickup(net.minecraft.entity.Entity entityIn, int quantity)
     {
         if (!entityIn.isDead && !this.world.isRemote)
         {

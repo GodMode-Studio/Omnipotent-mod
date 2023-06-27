@@ -1,4 +1,4 @@
-package com.omnipotent.server.network;
+package com.omnipotent.server.specialgui.net;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
