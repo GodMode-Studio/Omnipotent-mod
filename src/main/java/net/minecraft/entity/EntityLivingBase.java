@@ -80,6 +80,11 @@ import org.apache.logging.log4j.Logger;
 
 public abstract class EntityLivingBase extends net.minecraft.entity.Entity
 {
+    //apenas para compilação
+    public boolean loliDead;
+    public int loliDeathTime;
+    public boolean loliCool;
+
     private static final Logger LOGGER = LogManager.getLogger();
     private static final UUID SPRINTING_SPEED_BOOST_ID = UUID.fromString("662A6B8D-DA3E-4C1C-8813-96EA6097278D");
     private static final AttributeModifier SPRINTING_SPEED_BOOST = (new AttributeModifier(SPRINTING_SPEED_BOOST_ID, "Sprinting speed boost", 0.30000001192092896D, 2)).setSaved(false);
