@@ -1,5 +1,7 @@
 package com.omnipotent.server.event;
 
+import com.omnipotent.server.network.KillPacket;
+import com.omnipotent.server.network.NetworkRegister;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
 import net.minecraft.entity.player.EntityPlayer;
@@ -22,9 +24,9 @@ public class KaiaEvent {
     public void playerAttack(PlayerInteractEvent.LeftClickEmpty event) {
         EntityPlayer player = event.getEntityPlayer();
         ItemStack kaia = getKaiaInMainHand(player);
-        if (kaia!=null && !player.world.isRemote) {
+        if (kaia!=null) {
             if (kaia.getTagCompound().getInteger(rangeAttack) > 5) {
-                KaiaUtil.killArea(player);
+                NetworkRegister.ACESS.sendToServer(new KillPacket());
             }
         }
     }

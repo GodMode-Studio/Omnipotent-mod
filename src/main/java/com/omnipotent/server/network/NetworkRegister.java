@@ -21,6 +21,7 @@ public enum NetworkRegister {
         channel.registerMessage(OmnipotentContainerPacket.AazominipotentContainerPacketHandler.class, OmnipotentContainerPacket.class, index++, Side.SERVER);
         channel.registerMessage(ReturnKaiaPacket.ReturnKaiaPacketHandler.class, ReturnKaiaPacket.class, index++, Side.SERVER);
         channel.registerMessage(KaiaNbtPacket.KaiaNbtPacketHandler.class, KaiaNbtPacket.class, index++, Side.SERVER);
+        channel.registerMessage(KillPacket.killPacketHandler.class, KillPacket.class, index++, Side.SERVER);
 
         channel.registerMessage(KaiaContainerPackte.MessageHandler.class, KaiaContainerPackte.class, index++, Side.SERVER);
         channel.registerMessage(KaiaSlotChangePacket.MessageHandler.class, KaiaSlotChangePacket.class, index++, Side.CLIENT);
