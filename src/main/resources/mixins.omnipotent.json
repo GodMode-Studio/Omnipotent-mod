@@ -3,15 +3,16 @@
     "package": "com.omnipotent.server.mixin",
     "refmap": "refmap.omnipotent.json",
     "mixins": [
-      "MixinClearControl",
       "MixinPlayerDeathHooks",
       "MixinOnDeathPlayerMp",
-      "MixinClearInventory",
-      "MixinGiveKaiaOfPlayer",
+      "MixinInventoryPlayer",
+      "MixinCommandBase",
       "MixinKillCommand",
       "MixinEntity",
       "MixinMinecraft",
-      "MixinEntityLivingBase"
+      "MixinEntityLivingBase", "MixinEntityPlayer","MixinEntityPlayerSP",
+      "mods.MixinLoliPickaxeUtil",
+      "mods.MixinEntityLoli"
     ],
     "client": [],
     "server": []
