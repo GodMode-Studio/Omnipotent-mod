@@ -20,6 +20,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
+import static com.omnipotent.util.UtilityHelper.isPlayer;
 
 @Mixin(EntityLivingBase.class)
 public abstract class MixinEntityLivingBase extends Entity {
@@ -188,18 +189,21 @@ public abstract class MixinEntityLivingBase extends Entity {
     @Overwrite
     @Final
     public final float getHealth() {
+        EntityLivingBase entity = (EntityLivingBase) (Object) this;
         EntityPlayer player;
-        float StandardValue = ((Float) this.dataManager.get(HEALTH)).floatValue();
-        if (this == null || !((EntityLivingBase) (Object) this instanceof EntityPlayer))
-            return StandardValue;
-        player = (EntityPlayer) (Object) this;
-        boolean inInventoryKaia = hasInInventoryKaia(player);
-        if (player.getLastDamageSource() != null && player.getLastDamageSource().getTrueSource() != null) {
-            boolean equals = player.getLastDamageSource().damageType.equals(new AbsoluteOfCreatorDamage(player.getLastDamageSource().getTrueSource()).damageType);
-            return inInventoryKaia ? 20 : equals ? 0 : StandardValue;
+        Entity source;
+        float standardValue = ((Float) this.dataManager.get(HEALTH)).floatValue();
+        if(isPlayer(entity) && hasInInventoryKaia(entity))
+            return 20;
+        if (entity.getLastDamageSource() != null && entity.getLastDamageSource().getTrueSource() != null) {
+            source = entity.getLastDamageSource().getTrueSource();
+            boolean equals = entity.getLastDamageSource().getDamageType().equals(new AbsoluteOfCreatorDamage(source).getDamageType());
+            if(equals)
+                return 0;
         }
-        return inInventoryKaia ? 20 : StandardValue;
+        return standardValue;
     }
+
     /**
      * @author
      * @reason

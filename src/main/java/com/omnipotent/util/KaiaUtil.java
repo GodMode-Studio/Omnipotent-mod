@@ -24,7 +24,6 @@ import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Enchantments;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemAir;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -42,7 +41,6 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,7 +51,7 @@ public class KaiaUtil {
     public static List<Class> antiEntity = new ArrayList();
 
     public static boolean hasInInventoryKaia(Entity entity) {
-        if (!isPlayer(entity)) {
+        if (!UtilityHelper.isPlayer(entity)) {
             return false;
         }
         try {
@@ -88,7 +86,7 @@ public class KaiaUtil {
             List<Entity> list = world.getEntitiesWithinAABB(Entity.class, bb);
             entities.addAll(list);
         }
-        entities.removeIf(entity -> isPlayer(entity) && hasInInventoryKaia((EntityPlayer) entity));
+        entities.removeIf(entity -> UtilityHelper.isPlayer(entity) && hasInInventoryKaia((EntityPlayer) entity));
         List<String> idEntitiesList = new ArrayList<>();
         Iterator<Entity> entityIterator = entities.iterator();
         while (entityIterator.hasNext()) {
@@ -143,7 +141,7 @@ public class KaiaUtil {
                 ArrayList<EntityItem> capturedDrops = entityCreature.capturedDrops;
                 NonNullList<ItemStack> drops = NonNullList.create();
                 capturedDrops.forEach(entityItem -> drops.add(entityItem.getItem()));
-                compactListItemStacks(drops);
+                UtilityHelper.compactListItemStacks(drops);
                 addedItemsStacksInKaiaInventory(playerSource, drops, kaia);
             } else {
                 entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
@@ -224,7 +222,7 @@ public class KaiaUtil {
         if (drops.isEmpty()) {
             drops.add(block.getPickBlock(state, player.rayTrace(0.0f, 0.0f), player.world, pos, player));
         }
-        compactListItemStacks(drops);
+        UtilityHelper.compactListItemStacks(drops);
         if (kaiaInMainHand.getTagCompound().getBoolean(autoBackPack)) {
             addedItemsStacksInKaiaInventory(player, drops, kaiaInMainHand);
         } else {
@@ -274,50 +272,6 @@ public class KaiaUtil {
         }
     }
 
-    public static void compactListItemStacks(List<ItemStack> drops) {
-        ItemStack prevStack = null;
-        Comparator comparator = new Comparator() {
-            @Override
-            public int compare(Object o1, Object o2) {
-                return ((ItemStack) o1).getUnlocalizedName().compareTo(((ItemStack) o2).getUnlocalizedName());
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                return false;
-            }
-        };
-        drops.sort(comparator);
-        List<ItemStack> itemStacks = new ArrayList<>();
-        for (int c = 0; c < drops.size(); c++) {
-            ItemStack stack = drops.get(c);
-            if (prevStack == null) {
-                prevStack = stack;
-                continue;
-            }
-            if (stack.isItemEqual(prevStack) && ItemStack.areItemStackTagsEqual(prevStack, stack)) {
-                prevStack.setCount(prevStack.getCount() + stack.getCount());
-                if (c == drops.size() - 1) {
-                    itemStacks.add(prevStack);
-                }
-            } else {
-                itemStacks.add(prevStack);
-                prevStack = stack;
-                if (c == drops.size() - 1) {
-                    itemStacks.add(prevStack);
-                }
-            }
-        }
-        if (drops.size() == 1) {
-            ItemStack e = drops.get(0);
-            drops.clear();
-            drops.add(e);
-        } else {
-            drops.clear();
-            drops.addAll(itemStacks);
-        }
-    }
-
     public static void dropKaiaOfInventory(ItemStack stack, EntityPlayer player) {
         player.dropItem(stack, false);
         player.inventory.deleteStack(stack);
@@ -341,24 +295,23 @@ public class KaiaUtil {
         }
     }
 
-    public static void dropAllInventory(EntityPlayer player) {
-        for (ItemStack item : player.inventory.mainInventory) {
-            player.dropItem(true);
-        }
+    public static boolean theLastAttackOfKaia(EntityLivingBase entity) {
+        return entity.getLastDamageSource() != null && entity.getLastDamageSource().getTrueSource()!= null && entity.getLastDamageSource().getDamageType().equals(new AbsoluteOfCreatorDamage(entity).getDamageType());
     }
 
-    public static boolean theLastAttackIsKaia(EntityPlayer player) {
-        return player.getLastDamageSource() != null && player.getLastDamageSource().damageType.equals(new AbsoluteOfCreatorDamage(player).getDamageType());
-    }
-
-    public static void clearPlayer(EntityPlayer player) {
-        IInventory playerInventory = player.inventory;
-        for (int i = 0; i < playerInventory.getSizeInventory(); i++) {
-            ItemStack itemStack = playerInventory.getStackInSlot(i);
-            if (!itemStack.isEmpty()) {
-                playerInventory.removeStackFromSlot(i);
-            }
-        }
+    /**
+     * Este método retorna a entidade responsavel pelo dano de AbsoluteOfCreator.
+     * Retorna null caso o ultimo dano na entidade recebiada não seja do tipo AbsoluteOfCreator, sua verdadeira fonte de dano seja null ou não seja uma instancia de entityPlayer
+     * e caso o ultimo dano seja null
+     * @Author gamerYToffi
+     */
+    public static Entity ReturnDamageSourceByKaia(EntityLivingBase entity) {
+        DamageSource source = entity.getLastDamageSource();
+        Entity trueSource = source.getTrueSource();
+        if(source !=null && trueSource != null && UtilityHelper.isPlayer(trueSource)){
+            return source.getDamageType().equals(new AbsoluteOfCreatorDamage(trueSource).getDamageType()) ? trueSource : null;
+        }else
+            return null;
     }
 
     public static void returnKaiaOfOwner(EntityPlayer player) {
@@ -403,15 +356,6 @@ public class KaiaUtil {
 
     public static boolean isOwnerOfKaia(ItemStack kaiaStack, EntityPlayer player) {
         return kaiaStack.getTagCompound().getString(ownerName).equals(player.getName()) && kaiaStack.getTagCompound().getString(ownerID).equals(player.getUniqueID().toString());
-    }
-
-    public static boolean isPlayer(Entity entity) {
-        return entity instanceof EntityPlayer;
-    }
-
-    public static void modifyBlockReachDistance(EntityPlayerMP player, int distance) {
-        player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).setBaseValue(distance);
-        player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).setBaseValue(distance);
     }
 
     public static boolean checkIfKaiaCanKillPlayerOwnedWolf(Entity entity, EntityPlayer player) {

@@ -1,5 +1,8 @@
 item.kaia.name=Kaia
+item.broken_glass.name=broken glass
+item.glass_sword.name=glass sword
 itemGroup.Omnipotent mod=Omnipotent mod
+tile.glass_ore_block=glass ore block
 #tooltip
 kaia.damage=UNINTELLIGIBLE
 kaia.speed=UNINTELLIGIBLE

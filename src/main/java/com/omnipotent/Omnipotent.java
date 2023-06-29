@@ -61,8 +61,6 @@ public class Omnipotent {
     public static SimpleNetworkWrapper channel = NetworkRegistry.INSTANCE.newSimpleChannel("omnipotent");
     public static final ResourceLocation KAIACAP = new ResourceLocation(MODID, "kaiabrand");
 
-    static Kaia kaia = new Kaia();
-
     @Mod.Instance(Omnipotent.MODID)
     public static Omnipotent instance;
 

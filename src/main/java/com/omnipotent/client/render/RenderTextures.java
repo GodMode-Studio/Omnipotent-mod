@@ -1,5 +1,8 @@
 package com.omnipotent.client.render;
 
+import com.omnipotent.server.block.BlockBasic;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockOre;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.model.ModelLoader;

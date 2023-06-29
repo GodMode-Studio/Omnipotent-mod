@@ -3,6 +3,7 @@ package com.omnipotent.server.network.nbtpackets;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.Teleporte;
+import com.omnipotent.util.UtilityHelper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -114,7 +115,7 @@ public class KaiaNbtPacket implements IMessage {
                 boolean attackYourWolf = booleanValue;
                 kaiaItem.getTagCompound().setBoolean(KaiaConstantsNbt.attackYourWolf, attackYourWolf);
             } else if (type.equals("blockReachDistance")) {
-                KaiaUtil.modifyBlockReachDistance(ctx.getServerHandler().player, intValue);
+                UtilityHelper.modifyBlockReachDistance(ctx.getServerHandler().player, intValue);
             } else if (type.equals(interactLiquid)) {
                 EntityPlayer player = ctx.getServerHandler().player;
                 ItemStack kaiaItem = player.getHeldItemMainhand();

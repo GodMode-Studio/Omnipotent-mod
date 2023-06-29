@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
 
-@Mixin(net.minecraft.client.entity.EntityPlayerSP.class)
+@Mixin(EntityPlayerSP.class)
 public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
     public MixinEntityPlayerSP(World worldIn, GameProfile playerProfile) {
         super(worldIn, playerProfile);

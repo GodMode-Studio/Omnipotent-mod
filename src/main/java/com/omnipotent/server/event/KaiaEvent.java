@@ -4,6 +4,7 @@ import com.omnipotent.server.network.KillPacket;
 import com.omnipotent.server.network.NetworkRegister;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -33,7 +34,7 @@ public class KaiaEvent {
 
     @SubscribeEvent(receiveCanceled = true, priority = EventPriority.LOWEST)
     public void killEvent(LivingDeathEvent event) {
-        if (isPlayer(event.getEntityLiving())) {
+        if (UtilityHelper.isPlayer(event.getEntityLiving())) {
             EntityPlayer player = (EntityPlayer) event.getEntityLiving();
             if (hasInInventoryKaia(player)) {
                 player.setHealth(Integer.MAX_VALUE);
@@ -44,14 +45,14 @@ public class KaiaEvent {
 
     @SubscribeEvent(receiveCanceled = true, priority = EventPriority.LOWEST)
     public void attackEvent(LivingAttackEvent event) {
-        if (isPlayer(event.getEntity())) {
+        if (UtilityHelper.isPlayer(event.getEntity())) {
             EntityPlayer player = (EntityPlayer) event.getEntity();
             if (hasInInventoryKaia(player)) {
                 player.setHealth(Integer.MAX_VALUE);
                 event.setCanceled(true);
                 NBTTagCompound tagCompoundOfKaia = (getKaiaInMainHand(player) == null ? getKaiaInInventory(player) : getKaiaInMainHand(player)).getTagCompound();
                 if (tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.counterAttack)) {
-                    if (event.getSource().getTrueSource() != null && !isPlayer(event.getSource().getTrueSource()) || (isPlayer(event.getSource().getTrueSource()) && !hasInInventoryKaia(event.getSource().getTrueSource()))) {
+                    if (event.getSource().getTrueSource() != null && !UtilityHelper.isPlayer(event.getSource().getTrueSource()) || (UtilityHelper.isPlayer(event.getSource().getTrueSource()) && !hasInInventoryKaia(event.getSource().getTrueSource()))) {
                         KaiaUtil.kill(event.getSource().getTrueSource(), player, tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.killAllEntities));
                     }
                 }
@@ -61,9 +62,9 @@ public class KaiaEvent {
 
     @SubscribeEvent(receiveCanceled = true, priority = EventPriority.LOWEST)
     public void damageHurt(LivingHurtEvent event) {
-        if (isPlayer(event.getEntity()) && hasInInventoryKaia((EntityPlayer) event.getEntity())) {
+        if (UtilityHelper.isPlayer(event.getEntity()) && hasInInventoryKaia((EntityPlayer) event.getEntity())) {
             event.setCanceled(true);
-        } else if (event.getSource().getTrueSource() != null && isPlayer(event.getSource().getTrueSource()) && withKaiaMainHand((EntityPlayer) event.getSource().getTrueSource())) {
+        } else if (event.getSource().getTrueSource() != null && UtilityHelper.isPlayer(event.getSource().getTrueSource()) && withKaiaMainHand((EntityPlayer) event.getSource().getTrueSource())) {
             event.setCanceled(false);
 //            EntityPlayer source = (EntityPlayer) event.getSource().getTrueSource();
 //            ItemStack kaia = getKaiaInMainHand(source) == null ? getKaiaInInventory(source) : getKaiaInMainHand(source);

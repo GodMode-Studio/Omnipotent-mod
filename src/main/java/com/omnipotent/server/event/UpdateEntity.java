@@ -52,7 +52,7 @@ public class UpdateEntity {
             player.isDead = false;
             player.setHealth(Float.MAX_VALUE);
         }
-        if (KaiaUtil.theLastAttackIsKaia(player) && !hasKaia && !player.isDead) {
+        if (KaiaUtil.theLastAttackOfKaia(player) && !hasKaia && !player.isDead) {
             player.isDead = true;
             player.deathTime = 99999;
             player.onDeath(new AbsoluteOfCreatorDamage(player));

@@ -1,14 +1,12 @@
 package com.omnipotent.server.mixin;
 
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
-import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -26,7 +24,7 @@ public abstract class MixinPlayerDeathHooks {
     @Overwrite
     @Final
     public static boolean onLivingDeath(EntityLivingBase entity, DamageSource src) {
-        if (!KaiaUtil.isPlayer(entity)) {
+        if (!UtilityHelper.isPlayer(entity)) {
             return !src.getDamageType().equals(new AbsoluteOfCreatorDamage(src.getTrueSource()).getDamageType()) && MinecraftForge.EVENT_BUS.post(new LivingDeathEvent(entity, src));
         }
         if (hasInInventoryKaia(entity)) {

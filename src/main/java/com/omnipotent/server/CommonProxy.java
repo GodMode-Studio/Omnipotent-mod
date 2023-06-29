@@ -1,5 +1,6 @@
 package com.omnipotent.server;
 
+import com.omnipotent.server.event.EventBlockItems;
 import com.omnipotent.server.event.EventInitItems;
 import com.omnipotent.server.event.KaiaEvent;
 import com.omnipotent.server.event.UpdateEntity;
@@ -22,6 +23,7 @@ public class CommonProxy {
         MinecraftForge.EVENT_BUS.register(new UpdateEntity());
         MinecraftForge.EVENT_BUS.register(new GuiHandler());
         MinecraftForge.EVENT_BUS.register(new EventInitItems());
+        MinecraftForge.EVENT_BUS.register(new EventBlockItems());
         NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
     }
 

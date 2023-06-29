@@ -1,5 +1,8 @@
 item.kaia.name=Kaia
+item.broken_glass.name=caco de vidro
+item.glass_sword.name=espada de vidro
 itemGroup.Omnipotent mod=Omnipotent mod
+tile.glass_ore_block=bloco de minério de vidro
 #tooltip
 kaia.damage=UNINTELLIGIBLE
 kaia.speed=UNINTELLIGIBLE
