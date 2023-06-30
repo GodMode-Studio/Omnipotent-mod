@@ -3,6 +3,7 @@ package com.omnipotent.client.gui;
 import com.omnipotent.server.network.NetworkRegister;
 import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.KaiaConstantsNbt;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -18,17 +19,19 @@ import java.util.Map;
 
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.KaiaUtil.getKaiaInMainHand;
+import static com.omnipotent.util.UtilityHelper.getEquivalentValueOfscreenHeight;
+import static com.omnipotent.util.UtilityHelper.getEquivalentValueOfscreenWidth;
 
 public class InitButtonsForGuiKaia {
     public List<GuiButton> buttonsList = new ArrayList<GuiButton>();
-    public List<String> namesOfButtons = new ArrayList<String>();
+    private List<String> namesOfButtons = new ArrayList<String>();
     public List<String> namesOfGuiTextList = new ArrayList<String>();
     public Map<GuiButton, Runnable> functionsForButtonsList = new HashMap<>();
     public Map<String, GuiTextField> guiTextFieldList = new HashMap<>();
-    public List<String> textButtonList = new ArrayList<>();
-    public static int width = KaiaGui.width;
-    public static int height = KaiaGui.height;
-    public int buttonID = 0;
+    private List<String> textButtonList = new ArrayList<>();
+    private static int width = KaiaGui.width;
+    private static int height = KaiaGui.height;
+    private int buttonID = 0;
     private final Map<String, GuiButton> guiButtonList = new HashMap<>();
 
     /*Para adicionar um novo botão, adicione ele no método setButtonList, adicione o nome dele em setNamesInListNamesOfButtons, e o texto dele em
@@ -63,6 +66,7 @@ public class InitButtonsForGuiKaia {
         namesOfButtons.add("noBreakTileEntity");
         namesOfButtons.add("autoBackPack");
         namesOfButtons.add("autoBackPackEntities");
+        namesOfButtons.add("playerscantrespawn");
     }
 
     public void drawButtons(Minecraft instance, int mouseX, int mouseY, int partialTicks) {
@@ -77,26 +81,27 @@ public class InitButtonsForGuiKaia {
 
     private void setTextButtonList(EntityPlayer player) {
         textButtonList.clear();
-        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.killFriendEntities)));
-        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.killAllEntities)));
-        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.counterAttack)));
-        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.attackYourWolf)));
-        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.interactLiquid)));
-        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.noBreakTileEntity)));
-        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.autoBackPack)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(killFriendEntities)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(killAllEntities)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(counterAttack)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(attackYourWolf)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(interactLiquid)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(noBreakTileEntity)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPack)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities)));
-
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn)));
     }
 
     private void setButtonList(EntityPlayer player) {
-        buttonsList.add(new GuiButton(buttonID, width / 2 - 62, height / 2 - 38, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.killFriendEntities))));
-        buttonsList.add(new GuiButton(++buttonID, width / 2 - 62, height / 2 - 19, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.killAllEntities))));
-        buttonsList.add(new GuiButton(++buttonID, width / 2 - 115, height / 2 - -20, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.counterAttack))));
-        buttonsList.add(new GuiButton(++buttonID, width / 2 - 115, height / 2 - -40, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.attackYourWolf))));
-        buttonsList.add(new GuiButton(++buttonID, width / 2 - 50, height / 2 - -60, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.interactLiquid))));
-        buttonsList.add(new GuiButton(++buttonID, width / 2 - 47, height / 2 - -80, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.noBreakTileEntity))));
-        buttonsList.add(new GuiButton(++buttonID, width / 2 - 90, height / 2 - -100, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.autoBackPack))));
-        buttonsList.add(new GuiButton(++buttonID, width - width / 3, height / 2 + 40, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.autoBackPackEntities))));
+        buttonsList.add(new GuiButton(buttonID, width / 2 - 62, height / 2 - 38, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(killFriendEntities))));
+        buttonsList.add(new GuiButton(++buttonID, width / 2 - 62, height / 2 - 19, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(killAllEntities))));
+        buttonsList.add(new GuiButton(++buttonID, width / 2 - 115, height / 2 - -20, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(counterAttack))));
+        buttonsList.add(new GuiButton(++buttonID, width / 2 - 115, height / 2 - -40, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(attackYourWolf))));
+        buttonsList.add(new GuiButton(++buttonID, width / 2 - 50, height / 2 - -60, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(interactLiquid))));
+        buttonsList.add(new GuiButton(++buttonID, width / 2 - 47, height / 2 - -80, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(noBreakTileEntity))));
+        buttonsList.add(new GuiButton(++buttonID, width / 2 - 90, height / 2 - -100, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPack))));
+        buttonsList.add(new GuiButton(++buttonID, width - width / 3, height / 2 + 40, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities))));
+        buttonsList.add(new GuiButton(++buttonID, getEquivalentValueOfscreenWidth(324, width), getEquivalentValueOfscreenHeight(218, height), 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn))));
     }
 
     private void setGuiButtonList() {
@@ -127,6 +132,7 @@ public class InitButtonsForGuiKaia {
         fontRenderer.drawString(I18n.format("guikaia.config.maxslotcount"), width / 2 - 75, height / 2 - -25, Color.WHITE.getRGB());
         fontRenderer.drawString(I18n.format("guikaia.config.autobackpack"), width / 2 - 200, height / 2 - -105, Color.WHITE.getRGB());
         fontRenderer.drawString(I18n.format("guikaia.config.autobackpackentities"), width / 3, height / 2 + 45, Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.playerscantrespawn"), getEquivalentValueOfscreenWidth(160, width), getEquivalentValueOfscreenHeight(223, height), Color.WHITE.getRGB());
     }
 
     private void setNamesOfGuiTextList() {
@@ -217,6 +223,13 @@ public class InitButtonsForGuiKaia {
             public void run() {
                 boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities);
                 NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(autoBackPackEntities, !value));
+            }
+        });
+        functionsForButtonsList.put(buttonsList.get(++id), new Runnable() {
+            @Override
+            public void run() {
+                boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn);
+                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playersCantRespawn, !value));
             }
         });
     }

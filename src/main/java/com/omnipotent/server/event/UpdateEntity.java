@@ -1,21 +1,26 @@
 package com.omnipotent.server.event;
 
+import com.omnipotent.Config;
 import com.omnipotent.server.capability.IKaiaBrand;
 import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.server.tool.Kaia;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.item.ItemExpireEvent;
@@ -155,6 +160,10 @@ public class UpdateEntity {
 
     @SubscribeEvent
     public void onPlayerClone(PlayerEvent.Clone event) {
+        EntityPlayerMP playerByUUID = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(event.getEntityPlayer().getUniqueID());
+        if(Config.playerscantrespawn.contains(playerByUUID.getUniqueID().toString()) && !hasInInventoryKaia(playerByUUID)){
+            event.setCanceled(true);
+        }
         EntityPlayer player = event.getEntityPlayer();
         IKaiaBrand kaiaBrand = player.getCapability(KaiaProvider.KaiaBrand, null);
         IKaiaBrand oldKaiaBrand = event.getOriginal().getCapability(KaiaProvider.KaiaBrand, null);

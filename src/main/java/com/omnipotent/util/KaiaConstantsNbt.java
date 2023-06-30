@@ -8,8 +8,7 @@ public class KaiaConstantsNbt {
     public static final String killFriendEntities = "killFriendEntities";
     public static final String ownerName = "ownerName";
     public static final String ownerID = "ownerID";
-    public static final String PositionKaiaEntityItem = "PositionKaiaEntityItem";
-    public static final String idLigation = "idLigation";
+    public static final String playersCantRespawn = "playerscantresSpawn";
     public static final String attackYourWolf = "attackYourWolf";
     public static final String interactLiquid = "interactLiquid";
     public static final String noBreakTileEntity = "noBreakTileEntity";

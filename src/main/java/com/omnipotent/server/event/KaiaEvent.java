@@ -25,7 +25,7 @@ public class KaiaEvent {
     public void playerAttack(PlayerInteractEvent.LeftClickEmpty event) {
         EntityPlayer player = event.getEntityPlayer();
         ItemStack kaia = getKaiaInMainHand(player);
-        if (kaia!=null) {
+        if (kaia != null) {
             if (kaia.getTagCompound().getInteger(rangeAttack) > 5) {
                 NetworkRegister.ACESS.sendToServer(new KillPacket());
             }

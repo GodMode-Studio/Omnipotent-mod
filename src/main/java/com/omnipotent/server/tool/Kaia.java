@@ -3,7 +3,6 @@ package com.omnipotent.server.tool;
 import com.omnipotent.server.entity.KaiaEntity;
 import com.omnipotent.server.specialgui.IContainer;
 import com.omnipotent.server.specialgui.InventoryKaia;
-import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.resources.I18n;
@@ -24,15 +23,16 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 import static com.omnipotent.Omnipotent.omnipotentTab;
 import static com.omnipotent.client.render.RenderTextures.texturesItemsInit;
 import static com.omnipotent.server.event.EventInitItems.itemsInit;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
-import static com.omnipotent.util.KaiaUtil.checkIfKaiaCanKillPlayerOwnedWolf;
-import static com.omnipotent.util.KaiaUtil.getKaiaInMainHand;
+import static com.omnipotent.util.KaiaUtil.*;
+import static com.omnipotent.util.UtilityHelper.isPlayer;
 
 public class Kaia extends ItemPickaxe implements IContainer {
     public Kaia() {
@@ -60,65 +60,38 @@ public class Kaia extends ItemPickaxe implements IContainer {
     @Override
     public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
         super.onUpdate(stack, worldIn, entityIn, itemSlot, isSelected);
-        if (!(entityIn instanceof EntityPlayer) || worldIn.isRemote) {
+        if (!isPlayer(entityIn) || worldIn.isRemote)
             return;
-        }
         EntityPlayer player = (EntityPlayer) entityIn;
         KaiaUtil.createTagCompoundStatusIfNecessary(stack);
         KaiaUtil.createOwnerIfNecessary(stack, entityIn);
-        String ownerName = stack.getTagCompound().getString(KaiaConstantsNbt.ownerName);
-        String ownerID = stack.getTagCompound().getString(KaiaConstantsNbt.ownerID);
-        Random x = new Random();
-        if (!stack.getTagCompound().hasKey(blockBreakArea) || stack.getTagCompound().getInteger(blockBreakArea) < 1) {
-            NBTTagCompound status = stack.getTagCompound();
-            status.setInteger(blockBreakArea, 1);
+        NBTTagCompound tagCompoundOfKaia = stack.getTagCompound();
+        ArrayList<String> nbtBoolean = new ArrayList<>();
+        nbtBoolean.addAll(Arrays.asList(noBreakTileEntity, interactLiquid, attackYourWolf, counterAttack, killAllEntities, killFriendEntities, autoBackPack, autoBackPackEntities, playersCantRespawn));
+        for (String nbtName : nbtBoolean) {
+            if (!tagCompoundOfKaia.hasKey(nbtName)) {
+                NBTTagCompound status = tagCompoundOfKaia;
+                if (!nbtName.equals(killFriendEntities))
+                    status.setBoolean(nbtName, true);
+                else
+                    status.setBoolean(nbtName, false);
+            }
         }
-        if (!stack.getTagCompound().hasKey(noBreakTileEntity)) {
-            NBTTagCompound status = stack.getTagCompound();
-            status.setBoolean(noBreakTileEntity, false);
-        }
-        if (!stack.getTagCompound().hasKey(interactLiquid)) {
-            NBTTagCompound status = stack.getTagCompound();
-            status.setBoolean(interactLiquid, false);
-        }
-        if (!stack.getTagCompound().hasKey(attackYourWolf)) {
-            NBTTagCompound status = stack.getTagCompound();
-            status.setBoolean(attackYourWolf, false);
-        }
-        if (!stack.getTagCompound().hasKey(counterAttack)) {
-            NBTTagCompound status = stack.getTagCompound();
-            status.setBoolean(counterAttack, false);
-        }
-        if (!(stack.getTagCompound().hasKey(idLigation))) {
-            stack.getTagCompound().setLong(idLigation, x.nextLong());
-        }
-        if (!stack.getTagCompound().hasKey(killAllEntities)) {
-            NBTTagCompound status = stack.getTagCompound();
-            status.setBoolean(killAllEntities, false);
-        }
-        if (!stack.getTagCompound().hasKey(rangeAttack) || stack.getTagCompound().getInteger(rangeAttack) < 1) {
-            NBTTagCompound status = stack.getTagCompound();
-            status.setInteger(rangeAttack, 1);
-        }
-        if (!stack.getTagCompound().hasKey(killFriendEntities)) {
-            NBTTagCompound status = stack.getTagCompound();
-            status.setBoolean(killFriendEntities, true);
-        }
-        if (!stack.getTagCompound().hasKey(maxCountSlot)) {
-            NBTTagCompound status = stack.getTagCompound();
-            status.setInteger(maxCountSlot, 200_000_000);
-        }
-        if (!stack.getTagCompound().hasKey(autoBackPack)) {
-            NBTTagCompound status = stack.getTagCompound();
-            status.setBoolean(autoBackPack, false);
-        }
-        if (!stack.getTagCompound().hasKey(autoBackPackEntities)) {
-            NBTTagCompound status = stack.getTagCompound();
-            status.setBoolean(autoBackPackEntities, false);
-        }
-        if (!player.getUniqueID().toString().equals(ownerID) || !player.getName().equals(ownerName)) {
+        if (!isOwnerOfKaia(stack, player)) {
             player.world.spawnEntity(new EntityItem(worldIn, player.posX, player.posY, player.posZ + 5, stack));
             player.inventory.deleteStack(stack);
+        }
+        if (!tagCompoundOfKaia.hasKey(blockBreakArea) || tagCompoundOfKaia.getInteger(blockBreakArea) < 1) {
+            NBTTagCompound status = tagCompoundOfKaia;
+            status.setInteger(blockBreakArea, 1);
+        }
+        if (!tagCompoundOfKaia.hasKey(rangeAttack) || tagCompoundOfKaia.getInteger(rangeAttack) < 1) {
+            NBTTagCompound status = tagCompoundOfKaia;
+            status.setInteger(rangeAttack, 1);
+        }
+        if (!tagCompoundOfKaia.hasKey(maxCountSlot)) {
+            NBTTagCompound status = tagCompoundOfKaia;
+            status.setInteger(maxCountSlot, 200_000_000);
         }
     }
 

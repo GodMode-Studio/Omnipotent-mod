@@ -29,6 +29,7 @@ guikaia.config.donotbreaktileentityblocks=Do Not Break Tile Entity Blocks
 guikaia.config.maxslotcount=The maximum stack size
 guikaia.config.autobackpack=Auto Backpack
 guikaia.config.autobackpackentities=Auto Backpack Entities
+guikaia.config.playerscantrespawn=Players can´t respawn
 #keys
 keykaia.category=Kaia Keys
 keykaia.config=Settings
@@ -45,3 +46,5 @@ message.client.dimensionhelp=insert the coordinates x, y and z respectively in t
 #container
 container.kaia=Kaia Backpack
 container.kaia.stackCount=Amount
+#configs
+config.playerscantrespawn=players that can't respawn

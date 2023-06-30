@@ -1,6 +1,7 @@
 package com.omnipotent.util;
 
 import com.google.common.collect.Lists;
+import com.omnipotent.Config;
 import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.server.specialgui.IContainer;
@@ -124,6 +125,8 @@ public class KaiaUtil {
             playerEnemie.setHealth(0.0F);
             playerEnemie.attackEntityFrom(ds, Float.MAX_VALUE);
             playerEnemie.onDeath(ds);
+            if (kaia.getTagCompound().getBoolean(playersCantRespawn))
+                Config.addPlayerInListThatCantRespawn(playerEnemie.getUniqueID().toString());
         } else if (entity instanceof EntityLivingBase && !(entity.world.isRemote || entity.isDead || ((EntityLivingBase) entity).getHealth() == 0.0F)) {
             EntityLivingBase entityCreature = (EntityLivingBase) entity;
             DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
@@ -296,7 +299,7 @@ public class KaiaUtil {
     }
 
     public static boolean theLastAttackOfKaia(EntityLivingBase entity) {
-        return entity.getLastDamageSource() != null && entity.getLastDamageSource().getTrueSource()!= null && entity.getLastDamageSource().getDamageType().equals(new AbsoluteOfCreatorDamage(entity).getDamageType());
+        return entity.getLastDamageSource() != null && entity.getLastDamageSource().getTrueSource() != null && entity.getLastDamageSource().getDamageType().equals(new AbsoluteOfCreatorDamage(entity).getDamageType());
     }
 
     /**
@@ -308,9 +311,9 @@ public class KaiaUtil {
     public static Entity ReturnDamageSourceByKaia(EntityLivingBase entity) {
         DamageSource source = entity.getLastDamageSource();
         Entity trueSource = source.getTrueSource();
-        if(source !=null && trueSource != null && UtilityHelper.isPlayer(trueSource)){
+        if (source != null && trueSource != null && UtilityHelper.isPlayer(trueSource)) {
             return source.getDamageType().equals(new AbsoluteOfCreatorDamage(trueSource).getDamageType()) ? trueSource : null;
-        }else
+        } else
             return null;
     }
 

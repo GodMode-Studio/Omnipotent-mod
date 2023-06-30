@@ -22,10 +22,10 @@ import java.util.Map;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 
 public class KaiaNbtPacket implements IMessage {
-    public static String type;
-    public static String text;
-    public static boolean booleanValue;
-    public static int intValue;
+    private static String type;
+    private static String text;
+    private static boolean booleanValue;
+    private static int intValue;
 
     public KaiaNbtPacket() {
     }
@@ -159,6 +159,10 @@ public class KaiaNbtPacket implements IMessage {
                 EntityPlayer player = ctx.getServerHandler().player;
                 ItemStack kaiaItem = player.getHeldItemMainhand();
                 kaiaItem.getTagCompound().setBoolean(autoBackPackEntities, booleanValue);
+            } else if (type.equals(playersCantRespawn)) {
+                EntityPlayer player = ctx.getServerHandler().player;
+                ItemStack kaiaItem = player.getHeldItemMainhand();
+                kaiaItem.getTagCompound().setBoolean(playersCantRespawn, booleanValue);
             } else if (type.equals(kaiaDimension)) {
                 EntityPlayer player = ctx.getServerHandler().player;
                 int i = text.indexOf(',');

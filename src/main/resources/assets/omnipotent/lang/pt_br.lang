@@ -29,6 +29,7 @@ guikaia.config.donotbreaktileentityblocks=Não quebrar tile entity
 guikaia.config.maxslotcount=Tamanho maximo de pilha na mochila
 guikaia.config.autobackpack=Mochila automatica
 guikaia.config.autobackpackentities=Mochila automatica entidades
+guikaia.config.playerscantrespawn=Jogadores não podem renascer
 #keys
 keykaia.category=Botões Kaia
 keykaia.config=Configurações
@@ -45,3 +46,5 @@ message.client.dimensionhelp=inserir coordenadas x y e z respectivamente nos cam
 #container
 container.kaia=Mochila Kaia
 container.kaia.stackCount=Quantidade
+#Configs
+config.playerscantrespawn=Jogadores que não podem reviver
