@@ -83,7 +83,10 @@ public class Kaia extends ItemPickaxe implements IContainer {
         }
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, blockBreakArea, 1);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAttack, 1);
-        checkAndSetIntegerNbtTag(tagCompoundOfKaia, maxCountSlot, 200_000_000);
+        if (!tagCompoundOfKaia.hasKey(maxCountSlot) || tagCompoundOfKaia.getInteger(maxCountSlot) < 1) {
+            NBTTagCompound status = tagCompoundOfKaia;
+            status.setInteger(maxCountSlot, 200_000_000);
+        }
         player.setEntityInvulnerable(true);
     }
 

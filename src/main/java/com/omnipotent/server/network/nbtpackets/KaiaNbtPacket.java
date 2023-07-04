@@ -1,6 +1,5 @@
 package com.omnipotent.server.network.nbtpackets;
 
-import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.Teleporte;
 import com.omnipotent.util.UtilityHelper;
@@ -17,15 +16,17 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 
 public class KaiaNbtPacket implements IMessage {
-    private static String type;
-    private static String text;
-    private static boolean booleanValue;
-    private static int intValue;
+    private String type;
+    private String text;
+    private boolean booleanValue;
+    private int intValue;
 
     public KaiaNbtPacket() {
     }
@@ -82,99 +83,53 @@ public class KaiaNbtPacket implements IMessage {
         @Override
         public IMessage onMessage(KaiaNbtPacket message, MessageContext ctx) {
             MinecraftServer server = ctx.getServerHandler().player.getServer();
-            if (!server.isCallingFromMinecraftThread()) {
-                ctx.getServerHandler().player.getServer().addScheduledTask(() -> this.onMessage(message, ctx));
-            }
-            if (type.equals(blockBreakArea)) {
+            if (!server.isCallingFromMinecraftThread()) ctx.getServerHandler().player.getServer().addScheduledTask(() -> this.onMessage(message, ctx));
+            else {
                 EntityPlayer player = ctx.getServerHandler().player;
-                ItemStack kaiaItem = player.getHeldItemMainhand();
-                int areaBloco = intValue;
-                kaiaItem.getTagCompound().setInteger(blockBreakArea, areaBloco);
-            } else if (type.equals(counterAttack)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                boolean value = KaiaNbtPacket.booleanValue;
-                KaiaUtil.getKaiaInMainHand(player).getTagCompound().setBoolean(counterAttack, value);
-            } else if (type.equals(killAllEntities)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                ItemStack kaiaItem = player.getHeldItemMainhand();
-                boolean killAllEntitiesPacket = booleanValue;
-                kaiaItem.getTagCompound().setBoolean(killAllEntities, killAllEntitiesPacket);
-            } else if (type.equals(killFriendEntities)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                ItemStack kaiaItem = player.getHeldItemMainhand();
-                boolean killFriendEntities = booleanValue;
-                kaiaItem.getTagCompound().setBoolean(KaiaConstantsNbt.killFriendEntities, killFriendEntities);
-            } else if (type.equals(rangeAttack)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                ItemStack kaiaItem = player.getHeldItemMainhand();
-                int killRangeAttack = intValue;
-                kaiaItem.getTagCompound().setInteger(rangeAttack, killRangeAttack);
-            } else if (type.equals(attackYourWolf)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                ItemStack kaiaItem = player.getHeldItemMainhand();
-                boolean attackYourWolf = booleanValue;
-                kaiaItem.getTagCompound().setBoolean(KaiaConstantsNbt.attackYourWolf, attackYourWolf);
-            } else if (type.equals("blockReachDistance")) {
-                UtilityHelper.modifyBlockReachDistance(ctx.getServerHandler().player, intValue);
-            } else if (type.equals(interactLiquid)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                ItemStack kaiaItem = player.getHeldItemMainhand();
-                kaiaItem.getTagCompound().setBoolean(interactLiquid, booleanValue);
-            } else if (type.equals(noBreakTileEntity)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                ItemStack kaiaItem = player.getHeldItemMainhand();
-                kaiaItem.getTagCompound().setBoolean(noBreakTileEntity, booleanValue);
-            } else if (type.equals(kaiaEnchant)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                ItemStack kaiaItem = player.getHeldItemMainhand();
-                if (intValue == 0) {
-                    Enchantment enchantmentByLocation = Enchantment.getEnchantmentByLocation(text);
-                    Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(kaiaItem);
-                    enchantments.remove(enchantmentByLocation);
-                    EnchantmentHelper.setEnchantments(enchantments, kaiaItem);
+                if (message.type.equals(blockReachDistance)) UtilityHelper.modifyBlockReachDistance(ctx.getServerHandler().player, message.intValue);
+                 else if (message.type.equals(kaiaEnchant)) {
+                    ItemStack kaiaItem = KaiaUtil.getKaiaInMainHand(player);
+                    if (message.intValue == 0) {
+                        Enchantment enchantmentByLocation = Enchantment.getEnchantmentByLocation(message.text);
+                        Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(kaiaItem);
+                        enchantments.remove(enchantmentByLocation);
+                        EnchantmentHelper.setEnchantments(enchantments, kaiaItem);
+                    } else {
+                        Enchantment enchantmentByLocation = Enchantment.getEnchantmentByLocation(message.text);
+                        Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(kaiaItem);
+                        enchantments.put(enchantmentByLocation, message.intValue);
+                        EnchantmentHelper.setEnchantments(enchantments, kaiaItem);
+                    }
+                } else if (message.type.equals(kaiaPotion)) {
+                    Potion potionFromResourceLocation = Potion.getPotionFromResourceLocation(message.text);
+                    if (message.intValue == 0) player.removePotionEffect(potionFromResourceLocation);
+                    else player.addPotionEffect(new PotionEffect(potionFromResourceLocation, Integer.MAX_VALUE / 5, message.intValue, false, false));
+                } else if (message.type.equals(kaiaDimension)) {
+                    int i = message.text.indexOf(',');
+                    int posX = Integer.parseInt(message.text.substring(0, i));
+                    int posY = Integer.parseInt(message.text.substring(i + 1).split(",")[0].trim());
+                    int posZ = Integer.parseInt(message.text.substring(i + 1).split(",")[1].trim());
+                    if (player.dimension == message.intValue) {
+                        player.dismountRidingEntity();
+                        player.setPositionAndUpdate(posX, posY, posZ);
+                    } else player.changeDimension(message.intValue, new Teleporte(posX, posY, posZ));
                 } else {
-                    Enchantment enchantmentByLocation = Enchantment.getEnchantmentByLocation(text);
-                    Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(kaiaItem);
-                    enchantments.put(enchantmentByLocation, intValue);
-                    EnchantmentHelper.setEnchantments(enchantments, kaiaItem);
-                }
-            } else if (type.equals(kaiaPotion)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                ItemStack kaiaItem = player.getHeldItemMainhand();
-                Potion potionFromResourceLocation = Potion.getPotionFromResourceLocation(text);
-                if (intValue == 0) {
-                    player.removePotionEffect(potionFromResourceLocation);
-                } else {
-                    player.addPotionEffect(new PotionEffect(potionFromResourceLocation, Integer.MAX_VALUE / 5, intValue, false, false));
-                }
-            } else if (type.equals(maxCountSlot)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                ItemStack kaiaItem = player.getHeldItemMainhand();
-                kaiaItem.getTagCompound().setInteger(maxCountSlot, intValue);
-            } else if (type.equals(autoBackPack)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                ItemStack kaiaItem = player.getHeldItemMainhand();
-                kaiaItem.getTagCompound().setBoolean(autoBackPack, booleanValue);
-            } else if (type.equals(autoBackPackEntities)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                ItemStack kaiaItem = player.getHeldItemMainhand();
-                kaiaItem.getTagCompound().setBoolean(autoBackPackEntities, booleanValue);
-            } else if (type.equals(playersCantRespawn)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                ItemStack kaiaItem = player.getHeldItemMainhand();
-                kaiaItem.getTagCompound().setBoolean(playersCantRespawn, booleanValue);
-            } else if (type.equals(kaiaDimension)) {
-                EntityPlayer player = ctx.getServerHandler().player;
-                int i = text.indexOf(',');
-                int posX = Integer.parseInt(text.substring(0, i));
-                int posY = Integer.parseInt(text.substring(i + 1).split(",")[0].trim());
-                int posZ = Integer.parseInt(text.substring(i + 1).split(",")[1].trim());
-                if (player.dimension == intValue) {
-                    player.dismountRidingEntity();
-                    player.setPositionAndUpdate(posX, posY, posZ);
-                } else {
-                    player.changeDimension(intValue, new Teleporte(posX, posY, posZ));
-                    return null;
+                    ArrayList<String> listNBTBoolean = new ArrayList<>();
+                    listNBTBoolean.addAll(Arrays.asList(counterAttack, killAllEntities, killFriendEntities, attackYourWolf, interactLiquid, noBreakTileEntity, autoBackPack, autoBackPackEntities, playersCantRespawn));
+                    for (String nbt : listNBTBoolean) {
+                        if (message.type.equals(nbt)) {
+                            KaiaUtil.getKaiaInMainHand(player).getTagCompound().setBoolean(nbt, message.booleanValue);
+                            return null;
+                        }
+                    }
+                    ArrayList<String> listNBTInt = new ArrayList<>();
+                    listNBTInt.addAll(Arrays.asList(blockBreakArea, rangeAttack, maxCountSlot));
+                    for (String nbt : listNBTInt) {
+                        if (message.type.equals(nbt)) {
+                            KaiaUtil.getKaiaInMainHand(player).getTagCompound().setInteger(nbt, message.intValue);
+                            return null;
+                        }
+                    }
                 }
             }
             return null;
