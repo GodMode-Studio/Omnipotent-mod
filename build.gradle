@@ -78,15 +78,6 @@ processResources {
         exclude 'mcmod.info'
     }
 }
-repositories {
-    maven {
-        url 'https://maven.cleanroommc.com'
-    }
-}
-
-dependencies {
-    compile 'zone.rong:mixinbooter:8.3'
-}
 
 mixin {
     add sourceSets.main, mod_mixin_refmap.replace('${mod_id}', mod_id)

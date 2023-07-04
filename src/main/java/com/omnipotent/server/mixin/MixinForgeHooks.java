@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
 
 @Mixin(value = ForgeHooks.class, remap = false)
-public abstract class MixinPlayerDeathHooks {
+public abstract class MixinForgeHooks {
 //    se onLivingDeath retorna true onDeath será cancelado
 
     /**

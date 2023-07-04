@@ -3,14 +3,14 @@
     "package": "com.omnipotent.server.mixin",
     "refmap": "refmap.omnipotent.json",
     "mixins": [
-      "MixinPlayerDeathHooks",
-      "MixinOnDeathPlayerMp",
+      "MixinForgeHooks",
+      "MixinEntityPlayerMp",
       "MixinInventoryPlayer",
       "MixinCommandBase",
       "MixinKillCommand",
       "MixinEntity",
       "MixinMinecraft",
-      "MixinEntityLivingBase", "MixinEntityPlayer","MixinEntityPlayerSP",
+      "MixinEntityLivingBase", "MixinEntityPlayer",
       "mods.MixinLoliPickaxeUtil",
       "mods.MixinEntityLoli"
     ],

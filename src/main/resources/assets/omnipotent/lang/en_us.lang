@@ -48,3 +48,7 @@ container.kaia=Kaia Backpack
 container.kaia.stackCount=Amount
 #configs
 config.playerscantrespawn=players that can't respawn
+#commands
+command.sucess=Command sucess
+command.omni.error=The sintaxe of the command is wrong
+command.omni.notfound=Command not found

@@ -1,8 +1,6 @@
 package com.omnipotent.server.mixin;
 
 import com.mojang.authlib.GameProfile;
-import com.omnipotent.server.network.NetworkRegister;
-import com.omnipotent.server.network.PacketInicialization;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,16 +21,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Accessor;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
 
 
 @Mixin(EntityPlayerMP.class)
-public abstract class MixinOnDeathPlayerMp extends EntityPlayer {
-    public MixinOnDeathPlayerMp(World worldIn, GameProfile gameProfileIn) {
+public abstract class MixinEntityPlayerMp extends EntityPlayer {
+    public MixinEntityPlayerMp(World worldIn, GameProfile gameProfileIn) {
         super(worldIn, gameProfileIn);
     }
     @Shadow

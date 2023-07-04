@@ -48,3 +48,7 @@ container.kaia=Mochila Kaia
 container.kaia.stackCount=Quantidade
 #Configs
 config.playerscantrespawn=Jogadores que não podem reviver
+#commands
+command.sucess=Sucesso no comando
+command.omni.error=A sintaxe do commando esta errada
+command.omni.notfound=Esse comando não foi encontrado

@@ -1,6 +1,8 @@
 package com.omnipotent.server.mixin;
 
+import com.omnipotent.Config;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -190,15 +192,18 @@ public abstract class MixinEntityLivingBase extends Entity {
     @Final
     public final float getHealth() {
         EntityLivingBase entity = (EntityLivingBase) (Object) this;
-        EntityPlayer player;
         Entity source;
         float standardValue = ((Float) this.dataManager.get(HEALTH)).floatValue();
-        if(isPlayer(entity) && hasInInventoryKaia(entity))
+        if (isPlayer(entity) && hasInInventoryKaia(entity))
             return 20;
+        else if (Config.getListPlayersCantRespawn().contains(entity.getUniqueID().toString()) && !hasInInventoryKaia(entity)) {
+            Config.reloadConfigsOfFile();
+            return 0;
+        }
         if (entity.getLastDamageSource() != null && entity.getLastDamageSource().getTrueSource() != null) {
             source = entity.getLastDamageSource().getTrueSource();
             boolean equals = entity.getLastDamageSource().getDamageType().equals(new AbsoluteOfCreatorDamage(source).getDamageType());
-            if(equals)
+            if (equals)
                 return 0;
         }
         return standardValue;
@@ -211,6 +216,10 @@ public abstract class MixinEntityLivingBase extends Entity {
     @Overwrite
     @Final
     public final float getMaxHealth() {
+        if (Config.getListPlayersCantRespawn().contains(this.getUniqueID().toString()) && !hasInInventoryKaia(this)) {
+            Config.reloadConfigsOfFile();
+            return 0;
+        }
         EntityPlayer player;
         float StandardValue = (float) ((EntityLivingBase) (Object) this).getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getAttributeValue();
         if (this == null || !((EntityLivingBase) (Object) this instanceof EntityPlayer))
@@ -233,12 +242,14 @@ public abstract class MixinEntityLivingBase extends Entity {
     public void setHealth(float health) {
         EntityLivingBase entity = (EntityLivingBase) (Object) this;
         DamageSource lastDamage = entity.getLastDamageSource();
-        if (entity instanceof EntityPlayer && hasInInventoryKaia(entity))
+        if (UtilityHelper.isPlayer(entity) && hasInInventoryKaia(entity))
             this.dataManager.set(HEALTH, Float.valueOf(MathHelper.clamp(Integer.MAX_VALUE, 0.0F, entity.getMaxHealth())));
         else if (lastDamage != null && lastDamage.getTrueSource() != null) {
             Entity sourceOfDamage = lastDamage.getTrueSource();
             if (lastDamage.damageType.equals(new AbsoluteOfCreatorDamage(sourceOfDamage).damageType))
                 this.dataManager.set(HEALTH, Float.valueOf(MathHelper.clamp(0, 0.0F, entity.getMaxHealth())));
+            else
+                this.dataManager.set(HEALTH, Float.valueOf(MathHelper.clamp(health, 0.0F, entity.getMaxHealth())));
         } else
             this.dataManager.set(HEALTH, Float.valueOf(MathHelper.clamp(health, 0.0F, entity.getMaxHealth())));
     }

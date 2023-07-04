@@ -72,32 +72,30 @@ public class Kaia extends ItemPickaxe implements IContainer {
             if (!tagCompoundOfKaia.hasKey(nbtName)) {
                 NBTTagCompound status = tagCompoundOfKaia;
                 if (!nbtName.equals(killFriendEntities))
-                    status.setBoolean(nbtName, true);
-                else
                     status.setBoolean(nbtName, false);
+                else
+                    status.setBoolean(nbtName, true);
             }
         }
         if (!isOwnerOfKaia(stack, player)) {
             player.world.spawnEntity(new EntityItem(worldIn, player.posX, player.posY, player.posZ + 5, stack));
             player.inventory.deleteStack(stack);
         }
-        if (!tagCompoundOfKaia.hasKey(blockBreakArea) || tagCompoundOfKaia.getInteger(blockBreakArea) < 1) {
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, blockBreakArea, 1);
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAttack, 1);
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, maxCountSlot, 200_000_000);
+        player.setEntityInvulnerable(true);
+    }
+
+    private static void checkAndSetIntegerNbtTag(NBTTagCompound tagCompoundOfKaia, String nbtTag, int nbtCount) {
+        if (!tagCompoundOfKaia.hasKey(nbtTag) || tagCompoundOfKaia.getInteger(nbtTag) < nbtCount) {
             NBTTagCompound status = tagCompoundOfKaia;
-            status.setInteger(blockBreakArea, 1);
-        }
-        if (!tagCompoundOfKaia.hasKey(rangeAttack) || tagCompoundOfKaia.getInteger(rangeAttack) < 1) {
-            NBTTagCompound status = tagCompoundOfKaia;
-            status.setInteger(rangeAttack, 1);
-        }
-        if (!tagCompoundOfKaia.hasKey(maxCountSlot)) {
-            NBTTagCompound status = tagCompoundOfKaia;
-            status.setInteger(maxCountSlot, 200_000_000);
+            status.setInteger(nbtTag, nbtCount);
         }
     }
 
     @Override
     public boolean onEntityItemUpdate(EntityItem entityItem) {
-        ItemStack kaiaItem = entityItem.getItem();
         World world = entityItem.getEntityWorld();
         if (!world.isRemote) {
             if (entityItem.getPosition().getY() < -5) {

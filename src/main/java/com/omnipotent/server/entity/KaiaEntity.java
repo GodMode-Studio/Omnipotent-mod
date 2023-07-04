@@ -22,24 +22,14 @@ public class KaiaEntity extends EntityItem implements IForgeRegistryEntry {
     }
 
     @Override
-    public void onUpdate() {
-        super.onUpdate();
-    }
-
-    @Override
-    public void setDead() {
-        super.setDead();
-    }
-
-    @Override
     public Object setRegistryName(ResourceLocation name) {
-        return new ResourceLocation("entity2226");
+        return new ResourceLocation("kaia");
     }
 
     @Nullable
     @Override
     public ResourceLocation getRegistryName() {
-        return new ResourceLocation("entity2226");
+        return new ResourceLocation("kaia");
     }
 
     @Override

@@ -1,13 +1,12 @@
 package com.omnipotent.server.event;
 
-import com.omnipotent.Config;
 import com.omnipotent.server.capability.IKaiaBrand;
 import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.server.tool.Kaia;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
-import net.minecraft.client.resources.I18n;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
@@ -19,8 +18,7 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
+import net.minecraft.world.GameType;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.item.ItemExpireEvent;
@@ -35,8 +33,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import java.util.*;
 
 import static com.omnipotent.Omnipotent.KAIACAP;
-import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
-import static com.omnipotent.util.KaiaUtil.isOwnerOfKaia;
+import static com.omnipotent.util.KaiaUtil.*;
 
 public class UpdateEntity {
     public static final Set<String> entitiesWithKaia = new HashSet<>();
@@ -46,7 +43,7 @@ public class UpdateEntity {
 
     @SubscribeEvent
     public void updateAbilities(LivingEvent.LivingUpdateEvent event) {
-        if (!(event.getEntity() instanceof EntityPlayer)) {
+        if (!UtilityHelper.isPlayer(event.getEntityLiving())) {
             defineTimeAndListEasterEggMkll(event);
             return;
         }
@@ -63,9 +60,8 @@ public class UpdateEntity {
             player.onDeath(new AbsoluteOfCreatorDamage(player));
         }
         if (hasKaia) {
-            if (player.isBurning()) {
+            if (player.isBurning())
                 player.extinguish();
-            }
             entitiesWithKaia.add(keyUID);
             handleKaiaStateChange(player, true);
         }
@@ -89,7 +85,7 @@ public class UpdateEntity {
 
     private static void handleKaiaStateChange(EntityLivingBase entity, boolean isNew) {
         String keyUID = entity.getCachedUniqueIdString() + "|" + entity.world.isRemote;
-        if (entity instanceof EntityPlayer) {
+        if (UtilityHelper.isPlayer(entity)) {
             EntityPlayer player = ((EntityPlayer) entity);
             if (isNew) {
                 player.capabilities.allowFlying = true;
@@ -124,7 +120,7 @@ public class UpdateEntity {
         ItemStack kaia = event.getItem().getItem();
         if (!kaia.hasTagCompound())
             return;
-        if (!KaiaUtil.isOwnerOfKaia(kaia, player))
+        if (kaia.getTagCompound().hasKey(KaiaConstantsNbt.ownerID) && kaia.getTagCompound().hasKey(KaiaConstantsNbt.ownerName) && !KaiaUtil.isOwnerOfKaia(kaia, player))
             event.setCanceled(true);
     }
 
@@ -132,18 +128,23 @@ public class UpdateEntity {
     public void onEntityItemJoinWorld(EntityJoinWorldEvent event) {
         if (event.getEntity() != null && event.getEntity() instanceof EntityItem && !event.getEntity().getEntityWorld().isRemote) {
             EntityItem entityItem = (EntityItem) event.getEntity();
-            if (!entityItem.getItem().isEmpty() && entityItem.getItem().getItem() instanceof Kaia) {
-                entityItem.setEntityInvulnerable(true);
-                entityItem.setNoPickupDelay();
-                UUID uuid = UUID.fromString(entityItem.getItem().getTagCompound().getString(KaiaConstantsNbt.ownerID));
+            ItemStack kaia = entityItem.getItem();
+            if (!kaia.isEmpty() && kaia.getItem() instanceof Kaia) {
+                createTagCompoundStatusIfNecessary(kaia);
+                if (!kaia.getTagCompound().hasKey(KaiaConstantsNbt.ownerID) || !kaia.getTagCompound().hasKey(KaiaConstantsNbt.ownerName)) {
+                    entityItem.setEntityInvulnerable(true);
+                    entityItem.setNoPickupDelay();
+                    return;
+                }
+                UUID uuid = UUID.fromString(kaia.getTagCompound().getString(KaiaConstantsNbt.ownerID));
                 EntityPlayer player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(uuid);
                 List<ItemStack> kaiaItems = null;
-                if (player != null && isOwnerOfKaia(entityItem.getItem(), player)) {
-                    player.sendMessage(new TextComponentString(TextFormatting.AQUA+"press G for return Kaia"));
+                if (player != null && isOwnerOfKaia(kaia, player)) {
+                    player.sendMessage(new TextComponentString(TextFormatting.AQUA + "press G for return Kaia"));
                     kaiaItems = player.getCapability(KaiaProvider.KaiaBrand, null).returnList();
-                    kaiaItems.add(entityItem.getItem());
+                    kaiaItems.add(kaia);
+                    entityItem.setDead();
                 }
-                entityItem.setDead();
             }
         }
         if (KaiaUtil.antiEntity.contains(event.getEntity().getClass())) {
@@ -159,11 +160,7 @@ public class UpdateEntity {
     }
 
     @SubscribeEvent
-    public void onPlayerClone(PlayerEvent.Clone event) {
-        EntityPlayerMP playerByUUID = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(event.getEntityPlayer().getUniqueID());
-        if(Config.playerscantrespawn.contains(playerByUUID.getUniqueID().toString()) && !hasInInventoryKaia(playerByUUID)){
-            event.setCanceled(true);
-        }
+    public void PlayerClone(PlayerEvent.Clone event) {
         EntityPlayer player = event.getEntityPlayer();
         IKaiaBrand kaiaBrand = player.getCapability(KaiaProvider.KaiaBrand, null);
         IKaiaBrand oldKaiaBrand = event.getOriginal().getCapability(KaiaProvider.KaiaBrand, null);
@@ -172,6 +169,11 @@ public class UpdateEntity {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void tickUpdate(TickEvent.WorldTickEvent event) {
+        List<EntityPlayer> playerEntities = event.world.playerEntities;
+        for (EntityPlayer player : playerEntities) {
+            if ((((EntityPlayerMP) player).interactionManager.getGameType() == GameType.ADVENTURE || ((EntityPlayerMP) player).interactionManager.getGameType() == GameType.SPECTATOR) && hasInInventoryKaia(player))
+                player.setGameType(GameType.SURVIVAL);
+        }
         easterEggFunctionMkllVerify();
     }
 
@@ -187,8 +189,7 @@ public class UpdateEntity {
                     entity.attemptTeleport(entity.posX + 10, entity.posY + 3, entity.posZ + 10);
                     entity.world.spawnAlwaysVisibleParticle(EnumParticleTypes.PORTAL.getParticleID(), entity.posX, entity.posY, entity.posZ, 0, 0, 0, new int[0]);
                     entity.world.playSound(null, entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_ENDERMEN_TELEPORT, SoundCategory.HOSTILE, 5.0f, 1.0f);
-                    int timeTeleportationEntity = timeTeleportation.get(entity);
-                    timeTeleportationEntity = 1;
+                    int timeTeleportationEntity = 1;
                     timeTeleportation.put(entity, timeTeleportationEntity);
                 } else {
                     int timeTeleportationEntity = timeTeleportation.get(entity);

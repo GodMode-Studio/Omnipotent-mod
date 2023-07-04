@@ -3,7 +3,6 @@ package com.omnipotent.client.gui;
 import com.omnipotent.server.network.NetworkRegister;
 import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.KaiaConstantsNbt;
-import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -101,14 +100,12 @@ public class InitButtonsForGuiKaia {
         buttonsList.add(new GuiButton(++buttonID, width / 2 - 47, height / 2 - -80, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(noBreakTileEntity))));
         buttonsList.add(new GuiButton(++buttonID, width / 2 - 90, height / 2 - -100, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPack))));
         buttonsList.add(new GuiButton(++buttonID, width - width / 3, height / 2 + 40, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities))));
-        buttonsList.add(new GuiButton(++buttonID, getEquivalentValueOfscreenWidth(324, width), getEquivalentValueOfscreenHeight(218, height), 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn))));
+        buttonsList.add(new GuiButton(++buttonID, getEquivalentValueOfscreenWidth(345, width), getEquivalentValueOfscreenHeight(227, height), 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn))));
     }
 
     private void setGuiButtonList() {
-        int c = 0;
-        for (String name : namesOfButtons) {
-            guiButtonList.put(name, buttonsList.get(c));
-            c++;
+        for (int c = 0; c < namesOfButtons.size(); c++) {
+            guiButtonList.put(namesOfButtons.get(c), buttonsList.get(c));
         }
     }
 
@@ -132,7 +129,7 @@ public class InitButtonsForGuiKaia {
         fontRenderer.drawString(I18n.format("guikaia.config.maxslotcount"), width / 2 - 75, height / 2 - -25, Color.WHITE.getRGB());
         fontRenderer.drawString(I18n.format("guikaia.config.autobackpack"), width / 2 - 200, height / 2 - -105, Color.WHITE.getRGB());
         fontRenderer.drawString(I18n.format("guikaia.config.autobackpackentities"), width / 3, height / 2 + 45, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.playerscantrespawn"), getEquivalentValueOfscreenWidth(160, width), getEquivalentValueOfscreenHeight(223, height), Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.playerscantrespawn"), getEquivalentValueOfscreenWidth(182, width), getEquivalentValueOfscreenHeight(230, height), Color.WHITE.getRGB());
     }
 
     private void setNamesOfGuiTextList() {

@@ -5,7 +5,6 @@ import com.omnipotent.client.event.EventInitTextures;
 import com.omnipotent.server.CommonProxy;
 import com.omnipotent.client.event.KaiaToolTip;
 import com.omnipotent.client.key.KeyEvent;
-import com.omnipotent.client.render.RenderTextures;
 import com.omnipotent.client.key.KeyInit;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;

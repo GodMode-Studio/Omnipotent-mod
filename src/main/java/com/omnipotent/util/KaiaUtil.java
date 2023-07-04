@@ -126,7 +126,7 @@ public class KaiaUtil {
             playerEnemie.attackEntityFrom(ds, Float.MAX_VALUE);
             playerEnemie.onDeath(ds);
             if (kaia.getTagCompound().getBoolean(playersCantRespawn))
-                Config.addPlayerInListThatCantRespawn(playerEnemie.getUniqueID().toString());
+                Config.addPlayerInListThatCantRespawn(playerEnemie);
         } else if (entity instanceof EntityLivingBase && !(entity.world.isRemote || entity.isDead || ((EntityLivingBase) entity).getHealth() == 0.0F)) {
             EntityLivingBase entityCreature = (EntityLivingBase) entity;
             DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
@@ -135,7 +135,7 @@ public class KaiaUtil {
             if (enchantmentFire != 0) {
                 entityCreature.setFire(Integer.MAX_VALUE / 25);
             }
-            antiEntity.add(antiEntity.getClass());
+            antiEntity.add(entityCreature.getClass());
             if (autoBackpackEntities) {
                 entityCreature.captureDrops = false;
                 entityCreature.captureDropsAbsolute = true;
@@ -150,7 +150,7 @@ public class KaiaUtil {
                 entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
                 entityCreature.onDeath(ds);
             }
-            antiEntity.remove(antiEntity.getClass());
+            antiEntity.remove(entityCreature.getClass());
             entityCreature.setHealth(0.0F);
         } else if (killAllEntities) {
             entity.setDead();
@@ -281,10 +281,8 @@ public class KaiaUtil {
     }
 
     public static void createTagCompoundStatusIfNecessary(ItemStack stack) {
-        if (stack.getTagCompound() == null) {
-            NBTTagCompound status = new NBTTagCompound();
-            stack.setTagCompound(status);
-        }
+        if (stack.getTagCompound() == null)
+            stack.setTagCompound(new NBTTagCompound());
     }
 
     public static void createOwnerIfNecessary(ItemStack stack, Entity entityIn) {
@@ -306,6 +304,7 @@ public class KaiaUtil {
      * Este método retorna a entidade responsavel pelo dano de AbsoluteOfCreator.
      * Retorna null caso o ultimo dano na entidade recebiada não seja do tipo AbsoluteOfCreator, sua verdadeira fonte de dano seja null ou não seja uma instancia de entityPlayer
      * e caso o ultimo dano seja null
+     *
      * @Author gamerYToffi
      */
     public static Entity ReturnDamageSourceByKaia(EntityLivingBase entity) {
