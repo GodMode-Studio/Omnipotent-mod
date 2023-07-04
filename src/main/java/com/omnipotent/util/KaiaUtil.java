@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 
 public class KaiaUtil {
-    public static List<Class> antiEntity = new ArrayList();
+    public static List<Class> antiEntity = new ArrayList<>();
 
     public static boolean hasInInventoryKaia(Entity entity) {
         if (!UtilityHelper.isPlayer(entity)) {
@@ -111,14 +111,13 @@ public class KaiaUtil {
     }
 
     public static void kill(Entity entity, EntityPlayer playerSource, boolean killAllEntities) {
-        boolean attackYourWolf = getKaiaInInventory(playerSource).getTagCompound().getBoolean(KaiaConstantsNbt.attackYourWolf);
-        if (!attackYourWolf) {
+        ItemStack kaia = getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource);
+        if (!kaia.getTagCompound().getBoolean(KaiaConstantsNbt.attackYourWolf)) {
             if (entity instanceof EntityWolf && ((EntityWolf) entity).isOwner(playerSource))
                 return;
         }
-        ItemStack kaia = getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource);
         boolean autoBackpackEntities = kaia.getTagCompound().getBoolean(autoBackPackEntities);
-        if (entity instanceof EntityPlayer && !hasInInventoryKaia(entity)) {
+        if (UtilityHelper.isPlayer(entity) && !hasInInventoryKaia(entity)) {
             EntityPlayer playerEnemie = (EntityPlayer) entity;
             DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
             playerEnemie.getCombatTracker().trackDamage(ds, Float.MAX_VALUE, Float.MAX_VALUE);
@@ -132,9 +131,7 @@ public class KaiaUtil {
             DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
             entityCreature.getCombatTracker().trackDamage(ds, Float.MAX_VALUE, Float.MAX_VALUE);
             int enchantmentFire = EnchantmentHelper.getEnchantmentLevel(Enchantments.FIRE_ASPECT, getKaiaInInventory(playerSource));
-            if (enchantmentFire != 0) {
-                entityCreature.setFire(Integer.MAX_VALUE / 25);
-            }
+            if (enchantmentFire != 0) entityCreature.setFire(Integer.MAX_VALUE / 25);
             antiEntity.add(entityCreature.getClass());
             if (autoBackpackEntities) {
                 entityCreature.captureDrops = false;
@@ -275,14 +272,8 @@ public class KaiaUtil {
         }
     }
 
-    public static void dropKaiaOfInventory(ItemStack stack, EntityPlayer player) {
-        player.dropItem(stack, false);
-        player.inventory.deleteStack(stack);
-    }
-
     public static void createTagCompoundStatusIfNecessary(ItemStack stack) {
-        if (stack.getTagCompound() == null)
-            stack.setTagCompound(new NBTTagCompound());
+        if (stack.getTagCompound() == null) stack.setTagCompound(new NBTTagCompound());
     }
 
     public static void createOwnerIfNecessary(ItemStack stack, Entity entityIn) {
@@ -379,11 +370,8 @@ public class KaiaUtil {
                 Field languageField = EntityPlayerMP.class.getDeclaredField("language");
                 languageField.setAccessible(true);
                 String playerLanguage = (String) languageField.get(player);
-                if (playerLanguage.equals("pt_br")) {
-                    player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA NAO PODE SER MORTA"));
-                } else {
-                    player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA CANNOT BE KILLED"));
-                }
+                if (playerLanguage.equals("pt_br")) player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA NAO PODE SER MORTA"));
+                else player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA CANNOT BE KILLED"));
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 e.printStackTrace();
                 player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA CANNOT BE KILLED"));
