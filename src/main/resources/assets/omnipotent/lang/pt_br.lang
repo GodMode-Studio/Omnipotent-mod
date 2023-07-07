@@ -15,7 +15,11 @@ guikaia.potion.nextpage=Próxima página
 guikaia.potion.label0=Nível padrão
 guikaia.potion.message=O nivel não pode ser acimada de 32767 e deve conter apenas numeros.
 guikaia.dimension=Dimensões
-
+guikaia.playermanager=Menu de Jogadores
+guikaia.playermanager.input=Digite o nome do jogador aqui
+guikaia.playermanager.save=Salvar
+guikaia.playermanager.dontcounterattack=Se a função estiver ativada, os jogadores que te atacarem e estiverem na lista não serão eliminados, mesmo que a função de contra-ataque esteja habilitada.
+guikaia.playermanager.dontDirectAttackKillPlayer=Se essa função estiver ativada, os jogadores que você atacar diretamente e estiverem na lista não serão eliminados.
 guikaia.config=Configurações Kaia
 guikaia.config.minerationarea=Área de mineração
 guikaia.config.rangeattack=Alcance do ataque
@@ -38,6 +42,7 @@ keykaia.enchantmentkaia=Encantamentos Kaia
 keykaia.potion=Menu de poções
 keykaia.dimension=Menu de dimensões
 keykaia.backpack=Mochila da kaia
+keykaia.player=Menu de jogadores
 #messages in chat
 kaia.message.void=PARADEIRO Y150
 kaia.message.returndropitems=item dropado na posição

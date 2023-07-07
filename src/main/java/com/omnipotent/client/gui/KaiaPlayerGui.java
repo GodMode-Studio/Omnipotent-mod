@@ -9,12 +9,10 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.awt.*;
 import java.io.IOException;
@@ -46,9 +44,9 @@ public class KaiaPlayerGui extends GuiScreen {
         addButtonsPage();
         playerAdded();
         listGuiTextField.add(new GuiTextField(23930292, fontRenderer, getEquivalentValueOfscreenWidth(110, width), getEquivalentValueOfscreenHeight(240, height), 160, 10));
-        listGuiTextField.get(0).setText("Digite o nome do player aqui");
+        listGuiTextField.get(0).setText(I18n.format("guikaia.playermanager.input"));
         ItemStack kaiaInMainHand = KaiaUtil.getKaiaInMainHand(player);
-        GuiButton button = new GuiButton(++idButtons, getEquivalentValueOfscreenWidth(273, width), getEquivalentValueOfscreenHeight(238, height), "Salvar");
+        GuiButton button = new GuiButton(++idButtons, getEquivalentValueOfscreenWidth(273, width), getEquivalentValueOfscreenHeight(238, height), I18n.format("guikaia.playermanager.save"));
         button.height = 12;
         button.width = button.displayString.length() * 7;
         buttonList.add(button);
@@ -75,7 +73,7 @@ public class KaiaPlayerGui extends GuiScreen {
                 button.displayString = String.valueOf(tagCompound.getBoolean(playerDontKillInDirectAttack));
             button.drawButton(Minecraft.getMinecraft(), mouseX, mouseY, partialTicks);
         }
-        drawString(fontRenderer, I18n.format("guikaia.dimension"), 220, 5, Color.WHITE.getRGB());
+        drawString(fontRenderer, I18n.format("guikaia.playermanager"), 220, 5, Color.WHITE.getRGB());
         //cor pega com base nas cores normais do minecraft em GuiScreen
         drawGradientRect(getEquivalentValueOfscreenWidth(33, width), getEquivalentValueOfscreenHeight(26, height), getEquivalentValueOfscreenWidth(470, width), getEquivalentValueOfscreenHeight(226, height), -1072689136, -804253680);
         if (page != oldValueOfPage) {
@@ -87,9 +85,9 @@ public class KaiaPlayerGui extends GuiScreen {
         }
         for (GuiButton button : buttonList) {
             if (button.isMouseOver() && button.id == 3)
-                drawHoveringText("Caso essa função esteja ativada os players que te atacarem e estiverem na lista não irão morrer mesmo que a função de contra ataque esteja habilitada", mouseX, mouseY);
+                drawHoveringText(I18n.format("guikaia.playermanager.dontcounterattack"), mouseX, mouseY);
             else if (button.isMouseOver() && button.id == 4)
-                drawHoveringText("Caso essa função esteja ativada os players que voce atacar diretamente e estiverem na lista não irão morrer", mouseX, mouseY);
+                drawHoveringText(I18n.format("guikaia.playermanager.dontDirectAttackKillPlayer"), mouseX, mouseY);
         }
     }
 
