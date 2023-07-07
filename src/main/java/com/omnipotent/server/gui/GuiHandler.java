@@ -1,9 +1,6 @@
 package com.omnipotent.server.gui;
 
-import com.omnipotent.client.gui.KaiaGui;
-import com.omnipotent.client.gui.KaiaGuiDimension;
-import com.omnipotent.client.gui.KaiaGuiEnchantment;
-import com.omnipotent.client.gui.KaiaGuiPotion;
+import com.omnipotent.client.gui.*;
 import com.omnipotent.server.specialgui.ContainerKaia;
 import com.omnipotent.server.specialgui.GUIContainerKaia;
 import net.minecraft.entity.player.EntityPlayer;
@@ -27,7 +24,7 @@ public class GuiHandler implements IGuiHandler {
             case 3:
                 return new ContainerKaia(player, player.getHeldItem(y == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND), x);
         }
-        throw new IllegalArgumentException("sem gui com o id" + ID);
+        throw new IllegalArgumentException("sem gui com o id " + ID);
     }
     @Nullable
     @Override
@@ -43,6 +40,8 @@ public class GuiHandler implements IGuiHandler {
                 return new KaiaGuiPotion(player);
             case 5:
                 return new KaiaGuiDimension(player);
+            case 6:
+                return new KaiaPlayerGui(player);
         }
         throw new IllegalArgumentException("sem gui com o id" + ID);
     }

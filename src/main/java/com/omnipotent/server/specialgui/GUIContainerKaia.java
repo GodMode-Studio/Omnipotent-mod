@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.omnipotent.server.network.NetworkRegister;
-import com.omnipotent.server.specialgui.net.KaiaContainerPackte;
+import com.omnipotent.server.specialgui.net.KaiaContainerPacket;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -48,11 +48,11 @@ public class GUIContainerKaia extends GuiContainer {
             switch (button.id) {
                 case 0:
                     containerKaia.prePage();
-                    NetworkRegister.ACESS.sendToServer(new KaiaContainerPackte(false));
+                    NetworkRegister.ACESS.sendToServer(new KaiaContainerPacket(false));
                     break;
                 case 1:
                     containerKaia.nextPage();
-                    NetworkRegister.ACESS.sendToServer(new KaiaContainerPackte(true));
+                    NetworkRegister.ACESS.sendToServer(new KaiaContainerPacket(true));
                     break;
                 default:
                     break;
