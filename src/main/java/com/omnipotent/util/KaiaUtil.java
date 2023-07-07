@@ -2,6 +2,7 @@ package com.omnipotent.util;
 
 import com.google.common.collect.Lists;
 import com.omnipotent.Config;
+import com.omnipotent.client.gui.KaiaPlayerGui;
 import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.server.specialgui.IContainer;
@@ -27,6 +28,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Enchantments;
 import net.minecraft.item.ItemAir;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
@@ -102,6 +104,14 @@ public class KaiaUtil {
                 idEntitiesList.add(nextEntity.getUniqueID().toString());
             }
         }
+        Iterator<NBTBase> iterator = tagCompoundOfKaia.getTagList(playersDontKill, 8).iterator();
+        while (iterator.hasNext()) {
+            String string = iterator.next().toString();
+            if (string.startsWith("\"") && string.endsWith("\""))
+                string = string.substring(1, string.length() - 1);
+            String playerCantKill = string.split(KaiaPlayerGui.divisionUUIDAndNameOfPlayer)[0];
+            entities.removeIf(entity -> entity.getUniqueID().toString().equals(playerCantKill));
+        }
         if (!killFriendEntities) {
             entities.removeIf(entity -> entity instanceof EntityBat || entity instanceof EntitySquid || entity instanceof EntityAgeable || entity instanceof EntityAnimal || entity instanceof EntitySnowman || entity instanceof EntityGolem);
         }
@@ -112,10 +122,9 @@ public class KaiaUtil {
 
     public static void kill(Entity entity, EntityPlayer playerSource, boolean killAllEntities) {
         ItemStack kaia = getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource);
-        if (!kaia.getTagCompound().getBoolean(KaiaConstantsNbt.attackYourWolf)) {
+        if (!kaia.getTagCompound().getBoolean(KaiaConstantsNbt.attackYourWolf))
             if (entity instanceof EntityWolf && ((EntityWolf) entity).isOwner(playerSource))
                 return;
-        }
         boolean autoBackpackEntities = kaia.getTagCompound().getBoolean(autoBackPackEntities);
         if (UtilityHelper.isPlayer(entity) && !hasInInventoryKaia(entity)) {
             EntityPlayer playerEnemie = (EntityPlayer) entity;
@@ -370,7 +379,8 @@ public class KaiaUtil {
                 Field languageField = EntityPlayerMP.class.getDeclaredField("language");
                 languageField.setAccessible(true);
                 String playerLanguage = (String) languageField.get(player);
-                if (playerLanguage.equals("pt_br")) player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA NAO PODE SER MORTA"));
+                if (playerLanguage.equals("pt_br"))
+                    player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA NAO PODE SER MORTA"));
                 else player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA CANNOT BE KILLED"));
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 e.printStackTrace();

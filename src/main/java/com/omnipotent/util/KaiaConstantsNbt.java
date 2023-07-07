@@ -19,4 +19,9 @@ public class KaiaConstantsNbt {
     public static final String autoBackPack = "autobackpack";
     public static final String autoBackPackEntities = "autobackpackentities";
     public static final String blockReachDistance = "blockReachDistance";
+    public static final String playersDontKill = "playersdontkill";
+    public static final String playerDontKillCounter = "playerdontkillcounter";
+    public static final String playerDontKillInDirectAttack = "playerdontkillindirectAttack";
+    public static final String rangeAutoKill = "rangeautokill";
+
 }

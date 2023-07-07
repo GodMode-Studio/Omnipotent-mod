@@ -2,7 +2,7 @@ package com.omnipotent.server.network;
 
 import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.server.specialgui.net.KaiaContainerOpenPackte;
-import com.omnipotent.server.specialgui.net.KaiaContainerPackte;
+import com.omnipotent.server.specialgui.net.KaiaContainerPacket;
 import com.omnipotent.server.specialgui.net.KaiaSlotChangePacket;
 import com.omnipotent.server.specialgui.net.OmnipotentContainerPacket;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -23,7 +23,7 @@ public enum NetworkRegister {
         channel.registerMessage(KaiaNbtPacket.KaiaNbtPacketHandler.class, KaiaNbtPacket.class, index++, Side.SERVER);
         channel.registerMessage(KillPacket.killPacketHandler.class, KillPacket.class, index++, Side.SERVER);
 
-        channel.registerMessage(KaiaContainerPackte.MessageHandler.class, KaiaContainerPackte.class, index++, Side.SERVER);
+        channel.registerMessage(KaiaContainerPacket.MessageHandler.class, KaiaContainerPacket.class, index++, Side.SERVER);
         channel.registerMessage(KaiaSlotChangePacket.MessageHandler.class, KaiaSlotChangePacket.class, index++, Side.CLIENT);
         channel.registerMessage(KaiaContainerOpenPackte.MessageHandler.class, KaiaContainerOpenPackte.class, index++, Side.SERVER);
     }

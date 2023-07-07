@@ -7,10 +7,15 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -18,8 +23,10 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 
+import static com.omnipotent.client.gui.KaiaPlayerGui.divisionUUIDAndNameOfPlayer;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 
 public class KaiaNbtPacket implements IMessage {
@@ -83,11 +90,13 @@ public class KaiaNbtPacket implements IMessage {
         @Override
         public IMessage onMessage(KaiaNbtPacket message, MessageContext ctx) {
             MinecraftServer server = ctx.getServerHandler().player.getServer();
-            if (!server.isCallingFromMinecraftThread()) ctx.getServerHandler().player.getServer().addScheduledTask(() -> this.onMessage(message, ctx));
+            if (!server.isCallingFromMinecraftThread())
+                ctx.getServerHandler().player.getServer().addScheduledTask(() -> this.onMessage(message, ctx));
             else {
                 EntityPlayer player = ctx.getServerHandler().player;
-                if (message.type.equals(blockReachDistance)) UtilityHelper.modifyBlockReachDistance(ctx.getServerHandler().player, message.intValue);
-                 else if (message.type.equals(kaiaEnchant)) {
+                if (message.type.equals(blockReachDistance))
+                    UtilityHelper.modifyBlockReachDistance(ctx.getServerHandler().player, message.intValue);
+                else if (message.type.equals(kaiaEnchant)) {
                     ItemStack kaiaItem = KaiaUtil.getKaiaInMainHand(player);
                     if (message.intValue == 0) {
                         Enchantment enchantmentByLocation = Enchantment.getEnchantmentByLocation(message.text);
@@ -103,7 +112,8 @@ public class KaiaNbtPacket implements IMessage {
                 } else if (message.type.equals(kaiaPotion)) {
                     Potion potionFromResourceLocation = Potion.getPotionFromResourceLocation(message.text);
                     if (message.intValue == 0) player.removePotionEffect(potionFromResourceLocation);
-                    else player.addPotionEffect(new PotionEffect(potionFromResourceLocation, Integer.MAX_VALUE / 5, message.intValue, false, false));
+                    else
+                        player.addPotionEffect(new PotionEffect(potionFromResourceLocation, Integer.MAX_VALUE / 5, message.intValue, false, false));
                 } else if (message.type.equals(kaiaDimension)) {
                     int i = message.text.indexOf(',');
                     int posX = Integer.parseInt(message.text.substring(0, i));
@@ -113,9 +123,41 @@ public class KaiaNbtPacket implements IMessage {
                         player.dismountRidingEntity();
                         player.setPositionAndUpdate(posX, posY, posZ);
                     } else player.changeDimension(message.intValue, new Teleporte(posX, posY, posZ));
+                } else if (message.type.equals(playersDontKill)) {
+                    NBTTagList tagList = KaiaUtil.getKaiaInMainHand(player).getTagCompound().getTagList(playersDontKill, 8);
+                    Iterator<NBTBase> iterator = tagList.iterator();
+                    ArrayList<String> names = new ArrayList<>();
+                    String tagForRemoved = null;
+                    int pos = -1;
+                    if (message.intValue == 1) {
+                        while (iterator.hasNext()) {
+                            pos++;
+                            String string = iterator.next().toString();
+                            string = string.substring(1, string.length() - 1);
+                            String[] split = string.split(divisionUUIDAndNameOfPlayer);
+                            if (split[1].equals(message.text)) {
+                                tagForRemoved = string;
+                                break;
+                            }
+                        }
+                        if (tagForRemoved != null)
+                            tagList.removeTag(pos);
+                    } else {
+                        EntityPlayerMP playerTarget = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername(message.text);
+                        if (playerTarget == null)
+                            return null;
+                        message.text = playerTarget.getUniqueID().toString()+divisionUUIDAndNameOfPlayer+message.text;
+                        while (iterator.hasNext()) {
+                            String string = iterator.next().toString();
+                            string = string.substring(1, string.length() - 1);
+                            names.add(string);
+                        }
+                        if (!names.contains(message.text))
+                            tagList.appendTag(new NBTTagString(message.text));
+                    }
                 } else {
                     ArrayList<String> listNBTBoolean = new ArrayList<>();
-                    listNBTBoolean.addAll(Arrays.asList(counterAttack, killAllEntities, killFriendEntities, attackYourWolf, interactLiquid, noBreakTileEntity, autoBackPack, autoBackPackEntities, playersCantRespawn));
+                    listNBTBoolean.addAll(Arrays.asList(counterAttack, killAllEntities, killFriendEntities, attackYourWolf, interactLiquid, noBreakTileEntity, autoBackPack, autoBackPackEntities, playersCantRespawn, playerDontKillCounter, playerDontKillInDirectAttack));
                     for (String nbt : listNBTBoolean) {
                         if (message.type.equals(nbt)) {
                             KaiaUtil.getKaiaInMainHand(player).getTagCompound().setBoolean(nbt, message.booleanValue);

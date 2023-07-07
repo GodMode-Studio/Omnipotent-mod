@@ -1,5 +1,6 @@
 package com.omnipotent.server.tool;
 
+import com.omnipotent.client.gui.KaiaPlayerGui;
 import com.omnipotent.server.entity.KaiaEntity;
 import com.omnipotent.server.specialgui.IContainer;
 import com.omnipotent.server.specialgui.InventoryKaia;
@@ -13,7 +14,9 @@ import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.text.TextFormatting;
@@ -25,6 +28,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import static com.omnipotent.Omnipotent.omnipotentTab;
@@ -63,31 +67,35 @@ public class Kaia extends ItemPickaxe implements IContainer {
         if (!isPlayer(entityIn) || worldIn.isRemote)
             return;
         EntityPlayer player = (EntityPlayer) entityIn;
+        nbtManager(stack, entityIn);
+        if (!isOwnerOfKaia(stack, player)) {
+            player.world.spawnEntity(new EntityItem(worldIn, player.posX, player.posY, player.posZ + 5, stack));
+            player.inventory.deleteStack(stack);
+        }
+    }
+
+    private static void nbtManager(ItemStack stack, Entity entityIn) {
         KaiaUtil.createTagCompoundStatusIfNecessary(stack);
         KaiaUtil.createOwnerIfNecessary(stack, entityIn);
         NBTTagCompound tagCompoundOfKaia = stack.getTagCompound();
         ArrayList<String> nbtBoolean = new ArrayList<>();
-        nbtBoolean.addAll(Arrays.asList(noBreakTileEntity, interactLiquid, attackYourWolf, counterAttack, killAllEntities, killFriendEntities, autoBackPack, autoBackPackEntities, playersCantRespawn));
+        nbtBoolean.addAll(Arrays.asList(noBreakTileEntity, interactLiquid, attackYourWolf, counterAttack, killAllEntities, killFriendEntities, autoBackPack, autoBackPackEntities, playersCantRespawn, playerDontKillCounter, playerDontKillInDirectAttack));
+        NBTTagCompound status = tagCompoundOfKaia;
         for (String nbtName : nbtBoolean) {
             if (!tagCompoundOfKaia.hasKey(nbtName)) {
-                NBTTagCompound status = tagCompoundOfKaia;
                 if (!nbtName.equals(killFriendEntities))
                     status.setBoolean(nbtName, false);
                 else
                     status.setBoolean(nbtName, true);
             }
         }
-        if (!isOwnerOfKaia(stack, player)) {
-            player.world.spawnEntity(new EntityItem(worldIn, player.posX, player.posY, player.posZ + 5, stack));
-            player.inventory.deleteStack(stack);
-        }
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, blockBreakArea, 1);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAttack, 1);
-        if (!tagCompoundOfKaia.hasKey(maxCountSlot) || tagCompoundOfKaia.getInteger(maxCountSlot) < 1) {
-            NBTTagCompound status = tagCompoundOfKaia;
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, playerDontKillInDirectAttack, 0);
+        if (!tagCompoundOfKaia.hasKey(maxCountSlot) || tagCompoundOfKaia.getInteger(maxCountSlot) < 1)
             status.setInteger(maxCountSlot, 200_000_000);
-        }
-        player.setEntityInvulnerable(true);
+        if (!tagCompoundOfKaia.hasKey(playersDontKill))
+            status.setTag(playersDontKill, new NBTTagList());
     }
 
     private static void checkAndSetIntegerNbtTag(NBTTagCompound tagCompoundOfKaia, String nbtTag, int nbtCount) {
@@ -111,6 +119,17 @@ public class Kaia extends ItemPickaxe implements IContainer {
 
     @Override
     public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entityAttacked) {
+        Iterator<NBTBase> iterator;
+        if (UtilityHelper.isPlayer(entityAttacked) && stack.getTagCompound().getBoolean(playerDontKillInDirectAttack)) {
+            iterator = stack.getTagCompound().getTagList(playersDontKill, 8).iterator();
+            while (iterator.hasNext()) {
+                String string = iterator.next().toString();
+                if (string.startsWith("\"") && string.endsWith("\""))
+                    string = string.substring(1, string.length() - 1);
+                if (string.split(KaiaPlayerGui.divisionUUIDAndNameOfPlayer)[0].equals(entityAttacked.getUniqueID().toString()))
+                    return true;
+            }
+        }
         if (!player.world.isRemote && !KaiaUtil.hasInInventoryKaia(entityAttacked)) {
             boolean killAll = getKaiaInMainHand(player).getTagCompound().getBoolean(killAllEntities);
             KaiaUtil.kill(entityAttacked, player, killAll);

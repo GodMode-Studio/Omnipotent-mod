@@ -1,5 +1,8 @@
 package com.omnipotent.server.mixin;
 
+import com.omnipotent.client.gui.KaiaPlayerGui;
+import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -7,6 +10,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.player.PlayerCapabilities;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.DamageSource;
@@ -17,10 +21,15 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 
-import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
+import static com.omnipotent.util.KaiaConstantsNbt.*;
+import static com.omnipotent.util.KaiaUtil.*;
 
 @Mixin(EntityPlayer.class)
 public abstract class MixinEntityPlayer extends EntityLivingBase {
@@ -29,6 +38,7 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
     public MixinEntityPlayer(World worldIn) {
         super(worldIn);
     }
+
     @Shadow
     protected abstract void destroyVanishingCursedItems();
 
@@ -55,14 +65,16 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
 
     @Shadow
     protected abstract void playShoulderEntityAmbientSound(@Nullable NBTTagCompound p_192028_1_);
+
     /**
      * @author
      * @reason
      */
-    @Overwrite @Final
+    @Overwrite
+    @Final
     public void onDeath(DamageSource cause) {
         EntityPlayer player = (EntityPlayer) (Object) this;
-        if(hasInInventoryKaia(player) && player.isDead){
+        if (hasInInventoryKaia(player) && player.isDead) {
             isDead = false;
             return;
         }
@@ -101,5 +113,32 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
         player.takeStat(StatList.TIME_SINCE_DEATH);
         this.extinguish();
         this.setFlag(0, false);
+    }
+
+    @Inject(method = "attackEntityFrom", at = @At("HEAD"), cancellable = true)
+    public void attackEntityFrom(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        EntityPlayer player = (EntityPlayer) (Object) this;
+        if (hasInInventoryKaia(player)) {
+            ItemStack kaia = getKaiaInMainHand(player) == null ? getKaiaInInventory(player) : getKaiaInMainHand(player);
+            Entity enemie;
+            if (source != null && source.getTrueSource() != null) {
+                enemie = source.getTrueSource();
+                if (UtilityHelper.isPlayer(enemie) && kaia.getTagCompound().getBoolean(playerDontKillCounter)) {
+                    Iterator<NBTBase> iterator = kaia.getTagCompound().getTagList(playersDontKill, 8).iterator();
+                    while (iterator.hasNext()) {
+                        String string = iterator.next().toString();
+                        if (string.startsWith("\"") && string.endsWith("\""))
+                            string = string.substring(1, string.length() - 1);
+                        if (string.split(KaiaPlayerGui.divisionUUIDAndNameOfPlayer)[0].equals(enemie.getUniqueID().toString())){
+                            cir.cancel();
+                            return;
+                        }
+                    }
+                }
+                if (kaia.getTagCompound().getBoolean(counterAttack))
+                    KaiaUtil.kill(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities));
+            }
+            cir.cancel();
+        }
     }
 }

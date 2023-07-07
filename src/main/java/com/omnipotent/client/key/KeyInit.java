@@ -16,7 +16,7 @@ public class KeyInit {
     public static List<KeyBinding> keyBindingList = new ArrayList<KeyBinding>();
     public static KeyBinding kaiaGuiPotion = new KeyBinding(I18n.format("keykaia.potion"), Keyboard.KEY_O, I18n.format("keykaia.category"));
     public static KeyBinding kaiaGuiDimension = new KeyBinding(I18n.format("keykaia.dimension"), Keyboard.KEY_K, I18n.format("keykaia.category"));
-
+    public static KeyBinding kaiaPlayerGui = new KeyBinding(I18n.format("keykaia.player"), Keyboard.KEY_H, I18n.format("keykaia.category"));
 
     public static void initKeys(){
         keyBindingList.add(KaiaGui);
@@ -25,6 +25,7 @@ public class KeyInit {
         keyBindingList.add(kaiaGuiBackpack);
         keyBindingList.add(kaiaGuiPotion);
         keyBindingList.add(kaiaGuiDimension);
+        keyBindingList.add(kaiaPlayerGui);
         for(KeyBinding keyBinding :keyBindingList){
             ClientRegistry.registerKeyBinding(keyBinding);
         }

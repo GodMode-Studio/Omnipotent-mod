@@ -12,6 +12,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
@@ -40,32 +41,6 @@ public class KaiaEvent {
                 player.setHealth(Integer.MAX_VALUE);
                 event.setCanceled(true);
             }
-        }
-    }
-
-    @SubscribeEvent(receiveCanceled = true, priority = EventPriority.LOWEST)
-    public void attackEvent(LivingAttackEvent event) {
-        if (UtilityHelper.isPlayer(event.getEntity())) {
-            EntityPlayer player = (EntityPlayer) event.getEntity();
-            if (hasInInventoryKaia(player)) {
-                player.setHealth(Integer.MAX_VALUE);
-                event.setCanceled(true);
-                NBTTagCompound tagCompoundOfKaia = (getKaiaInMainHand(player) == null ? getKaiaInInventory(player) : getKaiaInMainHand(player)).getTagCompound();
-                if (tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.counterAttack)) {
-                    if (event.getSource().getTrueSource() != null && !UtilityHelper.isPlayer(event.getSource().getTrueSource()) || (UtilityHelper.isPlayer(event.getSource().getTrueSource()) && !hasInInventoryKaia(event.getSource().getTrueSource()))) {
-                        KaiaUtil.kill(event.getSource().getTrueSource(), player, tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.killAllEntities));
-                    }
-                }
-            }
-        }
-    }
-
-    @SubscribeEvent(receiveCanceled = true, priority = EventPriority.LOWEST)
-    public void damageHurt(LivingHurtEvent event) {
-        if (UtilityHelper.isPlayer(event.getEntity()) && hasInInventoryKaia((EntityPlayer) event.getEntity())) {
-            event.setCanceled(true);
-        } else if (event.getSource().getTrueSource() != null && UtilityHelper.isPlayer(event.getSource().getTrueSource()) && withKaiaMainHand((EntityPlayer) event.getSource().getTrueSource())) {
-            event.setCanceled(false);
         }
     }
 

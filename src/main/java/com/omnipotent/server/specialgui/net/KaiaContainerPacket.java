@@ -7,14 +7,14 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class KaiaContainerPackte implements IMessage {
+public class KaiaContainerPacket implements IMessage {
 
     private boolean next;
 
-    public KaiaContainerPackte() {
+    public KaiaContainerPacket() {
     }
 
-    public KaiaContainerPackte(boolean next) {
+    public KaiaContainerPacket(boolean next) {
         this.next = next;
     }
 
@@ -32,10 +32,10 @@ public class KaiaContainerPackte implements IMessage {
         return next;
     }
 
-    public static class MessageHandler implements IMessageHandler<KaiaContainerPackte, IMessage> {
+    public static class MessageHandler implements IMessageHandler<KaiaContainerPacket, IMessage> {
 
         @Override
-        public IMessage onMessage(KaiaContainerPackte message, MessageContext ctx) {
+        public IMessage onMessage(KaiaContainerPacket message, MessageContext ctx) {
             Container container = ctx.getServerHandler().player.openContainer;
             if (container instanceof ContainerKaia) {
                 if (message.isNext()) {
