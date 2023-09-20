@@ -26,6 +26,7 @@ public class GuiHandler implements IGuiHandler {
         }
         throw new IllegalArgumentException("sem gui com o id " + ID);
     }
+
     @Nullable
     @Override
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
@@ -42,6 +43,8 @@ public class GuiHandler implements IGuiHandler {
                 return new KaiaGuiDimension(player);
             case 6:
                 return new KaiaPlayerGui(player);
+            case 7:
+                return new KaiaGuiAntiEntities(player);
         }
         throw new IllegalArgumentException("sem gui com o id" + ID);
     }
