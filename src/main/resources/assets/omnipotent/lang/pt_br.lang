@@ -34,6 +34,8 @@ guikaia.config.maxslotcount=Tamanho maximo de pilha na mochila
 guikaia.config.autobackpack=Mochila automatica
 guikaia.config.autobackpackentities=Mochila automatica entidades
 guikaia.config.playerscantrespawn=Jogadores não podem renascer
+guikaia.config.chargeitemsininventory=Energizar itens
+guikaia.config.summonlightbolstinkill=Invocar raios no ataque
 #keys
 keykaia.category=Botões Kaia
 keykaia.config=Configurações
@@ -43,6 +45,8 @@ keykaia.potion=Menu de poções
 keykaia.dimension=Menu de dimensões
 keykaia.backpack=Mochila da kaia
 keykaia.player=Menu de jogadores
+keykaia.spectate=Bloquear modo espectador
+keykaia.creative=Bloquear modo creativo
 #messages in chat
 kaia.message.void=PARADEIRO Y150
 kaia.message.returndropitems=item dropado na posição

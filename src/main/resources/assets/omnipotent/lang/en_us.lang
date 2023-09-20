@@ -34,6 +34,8 @@ guikaia.config.maxslotcount=The maximum stack size
 guikaia.config.autobackpack=Auto Backpack
 guikaia.config.autobackpackentities=Auto Backpack Entities
 guikaia.config.playerscantrespawn=Players can´t respawn
+guikaia.config.chargeitemsininventory=Energize items
+guikaia.config.summonlightbolstinkill=Summon LightBolts in attack
 #keys
 keykaia.category=Kaia Keys
 keykaia.config=Settings
@@ -43,6 +45,8 @@ keykaia.potion=potions menu
 keykaia.dimension=Dimension menu
 keykaia.backpack=Kaia Backpack
 keykaia.player=Player menu
+keykaia.spectate=Block spectate mode
+keykaia.creative=Block creative mode
 #messages in chat
 kaia.message.void=WHEREABOUTS Y150
 kaia.message.returndropitems=Item dropped at position
