@@ -28,7 +28,7 @@ public class CommandOmni extends CommandBase {
 
     @Override
     public int getRequiredPermissionLevel() {
-        return 2;
+        return 0;
     }
 
     @Override
@@ -80,6 +80,13 @@ public class CommandOmni extends CommandBase {
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos) {
         List<String> list = new ArrayList<>();
+        if (!server.getServerOwner().equals(sender.getName())) {
+            try {
+                throw new WrongUsageException(I18n.format("You no are The Owner of server"));
+            } catch (WrongUsageException e) {
+                throw new RuntimeException(e);
+            }
+        }
         switch (args.length) {
             case 1:
                 list.add("reload");
