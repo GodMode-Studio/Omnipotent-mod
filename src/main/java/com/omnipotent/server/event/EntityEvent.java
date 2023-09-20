@@ -1,5 +1,6 @@
 package com.omnipotent.server.event;
 
+import com.omnipotent.server.capability.BlockModeProvider;
 import com.omnipotent.server.capability.IKaiaBrand;
 import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
@@ -11,14 +12,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.GameType;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.item.ItemExpireEvent;
@@ -32,10 +31,11 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.*;
 
+import static com.omnipotent.Omnipotent.BLOCK_MODES_OF_PLAYER;
 import static com.omnipotent.Omnipotent.KAIACAP;
 import static com.omnipotent.util.KaiaUtil.*;
 
-public class UpdateEntity {
+public class EntityEvent {
     public static final Set<String> entitiesWithKaia = new HashSet<>();
     public static final Set<String> entitiesFlightKaia = new HashSet<>();
     public static ArrayList<EntityLivingBase> mobsNamedMkll = new ArrayList<>();
@@ -147,8 +147,11 @@ public class UpdateEntity {
                 }
             }
         }
-        if (KaiaUtil.antiEntity.contains(event.getEntity().getClass())) {
-            event.setCanceled(true);
+        for (Class<? extends Entity> clazz : antiEntity) {
+            if (clazz.isInstance(event.getEntity())) {
+                event.setCanceled(true);
+                return;
+            }
         }
     }
 
@@ -156,7 +159,10 @@ public class UpdateEntity {
     public void attachCapabilityEntity(AttachCapabilitiesEvent<Entity> event) {
         if (!(event.getObject() instanceof EntityPlayer))
             return;
+        if (((EntityPlayer) event.getObject()).world.isRemote)
+            return;
         event.addCapability(KAIACAP, new KaiaProvider());
+        event.addCapability(BLOCK_MODES_OF_PLAYER, new BlockModeProvider());
     }
 
     @SubscribeEvent
@@ -169,11 +175,6 @@ public class UpdateEntity {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void tickUpdate(TickEvent.WorldTickEvent event) {
-        List<EntityPlayer> playerEntities = event.world.playerEntities;
-        for (EntityPlayer player : playerEntities) {
-            if ((((EntityPlayerMP) player).interactionManager.getGameType() == GameType.ADVENTURE || ((EntityPlayerMP) player).interactionManager.getGameType() == GameType.SPECTATOR) && hasInInventoryKaia(player))
-                player.setGameType(GameType.SURVIVAL);
-        }
         easterEggFunctionMkllVerify();
     }
 
