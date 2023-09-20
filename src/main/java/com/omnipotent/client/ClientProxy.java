@@ -2,10 +2,10 @@ package com.omnipotent.client;
 
 import com.omnipotent.client.event.EventClient;
 import com.omnipotent.client.event.EventInitTextures;
-import com.omnipotent.server.CommonProxy;
 import com.omnipotent.client.event.KaiaToolTip;
 import com.omnipotent.client.key.KeyEvent;
 import com.omnipotent.client.key.KeyInit;
+import com.omnipotent.server.CommonProxy;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
