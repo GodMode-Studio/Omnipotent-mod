@@ -1,6 +1,7 @@
 package com.omnipotent.server.mixin;
 
 import com.omnipotent.Config;
+import com.omnipotent.acessor.IEntityLivingBaseAcessor;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.Entity;
@@ -25,7 +26,18 @@ import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
 import static com.omnipotent.util.UtilityHelper.isPlayer;
 
 @Mixin(EntityLivingBase.class)
-public abstract class MixinEntityLivingBase extends Entity {
+public abstract class MixinEntityLivingBase extends Entity implements IEntityLivingBaseAcessor {
+
+
+    @Override
+    public int getRecentlyHit() {
+        return recentlyHit;
+    }
+
+    @Override
+    public void setRecentlyHit(int recentlyHit) {
+        this.recentlyHit = recentlyHit;
+    }
 
     @Shadow
     protected boolean dead;
