@@ -1,7 +1,7 @@
 package com.omnipotent.server.mixin;
 
-import com.omnipotent.client.gui.KaiaPlayerGui;
 import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.NbtListUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -123,20 +123,28 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
             Entity enemie;
             if (source != null && source.getTrueSource() != null) {
                 enemie = source.getTrueSource();
-                if (UtilityHelper.isPlayer(enemie) && kaia.getTagCompound().getBoolean(playerDontKillCounter)) {
+                if (UtilityHelper.isPlayer(enemie) && kaia.getTagCompound().getBoolean(playersWhoShouldNotKilledInCounterAttack)) {
                     Iterator<NBTBase> iterator = kaia.getTagCompound().getTagList(playersDontKill, 8).iterator();
                     while (iterator.hasNext()) {
                         String string = iterator.next().toString();
                         if (string.startsWith("\"") && string.endsWith("\""))
                             string = string.substring(1, string.length() - 1);
-                        if (string.split(KaiaPlayerGui.divisionUUIDAndNameOfPlayer)[0].equals(enemie.getUniqueID().toString())){
+                        if (string.split(NbtListUtil.divisionUUIDAndName)[0].equals(enemie.getUniqueID().toString())) {
                             cir.cancel();
                             return;
                         }
                     }
                 }
+//                NBTTagList tagList = kaia.getTagCompound().getTagList(entitiesCantKill, 8);
+//                if (tagList.tagCount() > 0)
+//                    for (String uuid : NbtListUtil.getUUIDOfNbtList(tagList)) {
+//                        if (uuid.equals(source.getTrueSource().getUniqueID().toString())) {
+//                            cir.cancel();
+//                            return;
+//                        }
+//                    }
                 if (kaia.getTagCompound().getBoolean(counterAttack))
-                    KaiaUtil.kill(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities));
+                    KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities));
             }
             cir.cancel();
         }
