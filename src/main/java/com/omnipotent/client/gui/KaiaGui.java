@@ -16,7 +16,7 @@ import net.minecraft.item.ItemStack;
 import java.io.IOException;
 
 import static com.omnipotent.util.KaiaConstantsNbt.blockReachDistance;
-import static com.omnipotent.util.UtilityHelper.sendmessageToPlayer;
+import static com.omnipotent.util.UtilityHelper.sendMessageToPlayer;
 
 public class KaiaGui extends GuiScreen {
     EntityPlayer player = null;
@@ -73,7 +73,7 @@ public class KaiaGui extends GuiScreen {
                 valueButtonBlockArea = Integer.parseInt(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(idComplement)).getText());
             } catch (NumberFormatException e) {
                 valueButtonBlockArea = 1;
-                sendmessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + valueButtonBlockArea);
+                sendMessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + valueButtonBlockArea);
             }
             if (valueButtonBlockArea % 2 == 0) {
                 --valueButtonBlockArea;
@@ -88,11 +88,11 @@ public class KaiaGui extends GuiScreen {
                 rangeAttack = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
                 if (rangeAttack > 10000) {
                     rangeAttack = 10000;
-                    sendmessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + rangeAttack);
+                    sendMessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + rangeAttack);
                 }
             } catch (NumberFormatException e) {
                 rangeAttack = 10;
-                sendmessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + rangeAttack);
+                sendMessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + rangeAttack);
             }
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.rangeAttack, rangeAttack));
         }
@@ -102,7 +102,7 @@ public class KaiaGui extends GuiScreen {
                 distance = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
             } catch (NumberFormatException e) {
                 distance = 5;
-                sendmessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + distance);
+                sendMessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + distance);
             }
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(blockReachDistance, distance));
         }
@@ -112,7 +112,7 @@ public class KaiaGui extends GuiScreen {
                 maxCountSlot = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
             } catch (NumberFormatException e) {
                 maxCountSlot = 200_000_000;
-                sendmessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + maxCountSlot);
+                sendMessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + maxCountSlot);
             }
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.maxCountSlot, maxCountSlot));
         }
