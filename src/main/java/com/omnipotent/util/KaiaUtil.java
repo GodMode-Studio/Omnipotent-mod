@@ -2,9 +2,10 @@ package com.omnipotent.util;
 
 import com.google.common.collect.Lists;
 import com.omnipotent.Config;
-import com.omnipotent.client.gui.KaiaPlayerGui;
+import com.omnipotent.acessor.IEntityLivingBaseAcessor;
 import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
+import com.omnipotent.server.entity.CustomLightningBolt;
 import com.omnipotent.server.specialgui.IContainer;
 import com.omnipotent.server.specialgui.InventoryKaia;
 import com.omnipotent.server.tool.Kaia;
@@ -18,8 +19,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.monster.EntityGolem;
-import net.minecraft.entity.monster.EntitySnowman;
-import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.passive.EntitySquid;
 import net.minecraft.entity.passive.EntityWolf;
@@ -28,7 +27,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Enchantments;
 import net.minecraft.item.ItemAir;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
@@ -44,19 +42,22 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.DoubleSupplier;
 import java.util.stream.Collectors;
 
 import static com.omnipotent.util.KaiaConstantsNbt.*;
+import static com.omnipotent.util.NbtListUtil.getUUIDOfNbtList;
 
 public class KaiaUtil {
     public static List<Class> antiEntity = new ArrayList<>();
 
     public static boolean hasInInventoryKaia(Entity entity) {
-        if (!UtilityHelper.isPlayer(entity)) {
+        if (!UtilityHelper.isPlayer(entity))
             return false;
-        }
         try {
             EntityPlayer player = (EntityPlayer) entity;
             if (player.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof Kaia)
@@ -89,80 +90,169 @@ public class KaiaUtil {
             List<Entity> list = world.getEntitiesWithinAABB(Entity.class, bb);
             entities.addAll(list);
         }
-        entities.removeIf(entity -> UtilityHelper.isPlayer(entity) && hasInInventoryKaia((EntityPlayer) entity));
-        List<String> idEntitiesList = new ArrayList<>();
-        Iterator<Entity> entityIterator = entities.iterator();
-        while (entityIterator.hasNext()) {
-            Entity nextEntity = entityIterator.next();
-            if (idEntitiesList != null) {
-                if (idEntitiesList.contains(nextEntity.getUniqueID().toString())) {
-                    entityIterator.remove();
-                } else {
-                    idEntitiesList.add(nextEntity.getUniqueID().toString());
-                }
-            } else {
-                idEntitiesList.add(nextEntity.getUniqueID().toString());
-            }
-        }
-        Iterator<NBTBase> iterator = tagCompoundOfKaia.getTagList(playersDontKill, 8).iterator();
-        while (iterator.hasNext()) {
-            String string = iterator.next().toString();
-            if (string.startsWith("\"") && string.endsWith("\""))
-                string = string.substring(1, string.length() - 1);
-            String playerCantKill = string.split(KaiaPlayerGui.divisionUUIDAndNameOfPlayer)[0];
-            entities.removeIf(entity -> entity.getUniqueID().toString().equals(playerCantKill));
-        }
-        if (!killFriendEntities) {
-            entities.removeIf(entity -> entity instanceof EntityBat || entity instanceof EntitySquid || entity instanceof EntityAgeable || entity instanceof EntityAnimal || entity instanceof EntitySnowman || entity instanceof EntityGolem);
-        }
+//        List<String> idEntitiesList = new ArrayList<>();
+//        Iterator<Entity> entityIterator = entities.iterator();
+//        while (entityIterator.hasNext()) {
+//            Entity nextEntity = entityIterator.next();
+//            if (idEntitiesList != null) {
+//                if (idEntitiesList.contains(nextEntity.getUniqueID().toString())) {
+//                    entityIterator.remove();
+//                } else {
+//                    idEntitiesList.add(nextEntity.getUniqueID().toString());
+//                }
+//            } else {
+//                idEntitiesList.add(nextEntity.getUniqueID().toString());
+//            }
+//        }
+//        NBTTagList tagList = tagCompoundOfKaia.getTagList(entitiesCantKill, 8);
+//        if (tagList.tagCount() > 0)
+//            entities.removeIf(entity -> getUUIDOfNbtList(tagList).stream().filter(uuid -> uuid.equals(entity.getUniqueID().toString())).collect(Collectors.toList()).size() > 0);
+
+        entities.removeIf(entity -> UtilityHelper.isPlayer(entity) && hasInInventoryKaia(entity));
+        entities.removeIf(entity -> !entityIsPlayerAndKaiaCanKillPlayer(tagCompoundOfKaia, false, entity));
+        entities.removeIf(entity -> !entityIsFriendAndCanKilledByKaia(tagCompoundOfKaia, entity));
         for (Entity entity : entities) {
-            kill(entity, playerSource, killAllEntities);
+            killChoice(entity, playerSource, killAllEntities);
         }
     }
 
-    public static void kill(Entity entity, EntityPlayer playerSource, boolean killAllEntities) {
+    public static void killChoice(Entity entity, EntityPlayer playerSource, boolean killAllEntities) {
         ItemStack kaia = getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource);
-        if (!kaia.getTagCompound().getBoolean(KaiaConstantsNbt.attackYourWolf))
+        NBTTagCompound tagCompound = kaia.getTagCompound();
+        if (!tagCompound.getBoolean(KaiaConstantsNbt.attackYourWolf))
             if (entity instanceof EntityWolf && ((EntityWolf) entity).isOwner(playerSource))
                 return;
-        boolean autoBackpackEntities = kaia.getTagCompound().getBoolean(autoBackPackEntities);
         if (UtilityHelper.isPlayer(entity) && !hasInInventoryKaia(entity)) {
-            EntityPlayer playerEnemie = (EntityPlayer) entity;
-            DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
-            playerEnemie.getCombatTracker().trackDamage(ds, Float.MAX_VALUE, Float.MAX_VALUE);
-            playerEnemie.setHealth(0.0F);
-            playerEnemie.attackEntityFrom(ds, Float.MAX_VALUE);
-            playerEnemie.onDeath(ds);
-            if (kaia.getTagCompound().getBoolean(playersCantRespawn))
-                Config.addPlayerInListThatCantRespawn(playerEnemie);
+            killPlayer((EntityPlayer) entity, playerSource, tagCompound);
         } else if (entity instanceof EntityLivingBase && !(entity.world.isRemote || entity.isDead || ((EntityLivingBase) entity).getHealth() == 0.0F)) {
-            EntityLivingBase entityCreature = (EntityLivingBase) entity;
-            DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
-            entityCreature.getCombatTracker().trackDamage(ds, Float.MAX_VALUE, Float.MAX_VALUE);
-            int enchantmentFire = EnchantmentHelper.getEnchantmentLevel(Enchantments.FIRE_ASPECT, getKaiaInInventory(playerSource));
-            if (enchantmentFire != 0) entityCreature.setFire(Integer.MAX_VALUE / 25);
-            antiEntity.add(entityCreature.getClass());
-            if (autoBackpackEntities) {
-                entityCreature.captureDrops = false;
-                entityCreature.captureDropsAbsolute = true;
-                entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
-                entityCreature.onDeath(ds);
-                ArrayList<EntityItem> capturedDrops = entityCreature.capturedDrops;
-                NonNullList<ItemStack> drops = NonNullList.create();
-                capturedDrops.forEach(entityItem -> drops.add(entityItem.getItem()));
-                UtilityHelper.compactListItemStacks(drops);
-                addedItemsStacksInKaiaInventory(playerSource, drops, kaia);
-            } else {
-                entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
-                entityCreature.onDeath(ds);
-            }
-            antiEntity.remove(entityCreature.getClass());
-            entityCreature.setHealth(0.0F);
+            killMobs((EntityLivingBase) entity, playerSource, kaia);
         } else if (killAllEntities) {
             entity.setDead();
-            playerSource.world.onEntityRemoved(entity);
         }
+    }
 
+    public static boolean checkIfKaiaCanKill(Entity entityTarget, EntityPlayer playerSource, boolean directAttack, boolean isCounterAttack) {
+        if (playerSource == null)
+            throw new RuntimeException("Player is null in checkKaia");
+        ItemStack kaia = getKaiaInMainHand(playerSource) == null ? getKaiaInMainHand(playerSource) : getKaiaInInventory(playerSource);
+        if (kaia == null)
+            throw new RuntimeException("Use of method is incorrect, playerSource dont have Kaia");
+        if (entityTarget == null || (UtilityHelper.isPlayer(entityTarget) && hasInInventoryKaia(entityTarget)))
+            return false;
+
+        NBTTagCompound tagCompound = kaia.getTagCompound();
+        boolean kaiaCantKill = !(entityIsFriendAndCanKilledByKaia(tagCompound, entityTarget) &&
+                EntityNoIsNormalAndCanKilledByKaia(tagCompound, entityTarget) &&
+                EntityIsWolfAndKaiaCanKillPlayerOwnedWolf(tagCompound, entityTarget, playerSource) &&
+                entityIsPlayerAndKaiaCanKillPlayer(tagCompound, directAttack, entityTarget));
+
+        if (kaiaCantKill)
+            return false;
+        return true;
+    }
+
+    public static boolean entityIsFriendAndCanKilledByKaia(NBTTagCompound tagCompound, Entity entityTarget) {
+        if (!tagCompound.getBoolean(killFriendEntities) && (entityTarget instanceof EntityBat || entityTarget instanceof EntitySquid || entityTarget instanceof EntityAgeable || entityTarget instanceof EntityGolem))
+            return false;
+        return true;
+    }
+
+    public static boolean EntityNoIsNormalAndCanKilledByKaia(NBTTagCompound tagCompound, Entity entityTarget) {
+        if (!tagCompound.getBoolean(killAllEntities) || !(entityTarget instanceof EntityLivingBase))
+            return true;
+        return false;
+    }
+
+    public static boolean entityIsPlayerAndKaiaCanKillPlayer(NBTTagCompound tagCompound, boolean directAttack, Entity entityTarget) {
+        if (!(entityTarget instanceof EntityPlayer))
+            return true;
+        if (getUUIDOfNbtList(tagCompound.getTagList(playersDontKill, 8)).contains(entityTarget.getUniqueID().toString())) {
+            if (directAttack)
+                if (tagCompound.getBoolean(playerDontKillInDirectAttack))
+                    return false;
+                else
+                    return true;
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean EntityIsWolfAndKaiaCanKillPlayerOwnedWolf(NBTTagCompound tagCompound, Entity entityTarget, EntityPlayer playerSource) {
+        boolean kaiaCantKillYourWolf = !tagCompound.getBoolean(attackYourWolf);
+        if (kaiaCantKillYourWolf)
+            if (entityTarget instanceof EntityWolf && ((EntityWolf) entityTarget).isOwner(playerSource))
+                return false;
+        return true;
+    }
+
+    private static void killMobs(EntityLivingBase entity, EntityPlayer playerSource, ItemStack kaia) {
+        if (kaia.getTagCompound().getBoolean(summonLightBoltsInKill))
+            generateLightBolts(playerSource);
+        EntityLivingBase entityCreature = entity;
+        ((IEntityLivingBaseAcessor) entityCreature).setRecentlyHit(60);
+        DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
+        entityCreature.getCombatTracker().trackDamage(ds, Float.MAX_VALUE, Float.MAX_VALUE);
+        verifyFireEnchantmentAndExecute(playerSource, entityCreature);
+        entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
+        antiEntity.add(entityCreature.getClass());
+        verifyAndManagerAutoBackEntities(entityCreature, ds, playerSource, kaia);
+        antiEntity.remove(entityCreature.getClass());
+        entityCreature.setHealth(0.0F);
+    }
+
+    private static void verifyFireEnchantmentAndExecute(EntityPlayer playerSource, EntityLivingBase entityCreature) {
+        int enchantmentFire = EnchantmentHelper.getEnchantmentLevel(Enchantments.FIRE_ASPECT, getKaiaInInventory(playerSource));
+        if (enchantmentFire != 0) entityCreature.setFire(Integer.MAX_VALUE / 25);
+    }
+
+    private static void killPlayer(EntityPlayer playerEnemie, EntityPlayer playerSource, NBTTagCompound tagCompound) {
+        DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
+        playerEnemie.getCombatTracker().trackDamage(ds, Float.MAX_VALUE, Float.MAX_VALUE);
+        playerEnemie.setHealth(0.0F);
+        playerEnemie.attackEntityFrom(ds, Float.MAX_VALUE);
+        playerEnemie.onDeath(ds);
+        if (tagCompound.getBoolean(playersCantRespawn))
+            Config.addPlayerInListThatCantRespawn(playerEnemie);
+    }
+
+    private static void verifyAndManagerAutoBackEntities(EntityLivingBase entityCreature, DamageSource ds, EntityPlayer playerSource, ItemStack kaia) {
+        NBTTagCompound tagCompound = kaia.getTagCompound();
+        boolean autoBackpackEntities = tagCompound.getBoolean(autoBackPackEntities);
+        if (autoBackpackEntities) {
+            entityCreature.captureDrops = false;
+            entityCreature.captureDropsAbsolute = true;
+            entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
+            entityCreature.onDeath(ds);
+            ArrayList<EntityItem> capturedDrops = entityCreature.capturedDrops;
+            NonNullList<ItemStack> drops = NonNullList.create();
+            capturedDrops.forEach(entityItem -> drops.add(entityItem.getItem()));
+            UtilityHelper.compactListItemStacks(drops);
+            addedItemsStacksInKaiaInventory(playerSource, drops, kaia);
+        } else {
+            entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
+            entityCreature.onDeath(ds);
+        }
+    }
+
+    private static void generateLightBolts(EntityPlayer playerSource) {
+        Random rand = new Random();
+        Vec3d lookPlayer = playerSource.getLookVec().normalize();
+        DoubleSupplier posXLight = () -> playerSource.posX + lookPlayer.x * rand.nextInt(100) - 20;
+        DoubleSupplier posYLight = () -> playerSource.posY + lookPlayer.y * rand.nextInt(7);
+        DoubleSupplier posZLight = () -> playerSource.posZ + lookPlayer.z * rand.nextInt(100) - 20;
+        NBTTagCompound nbttagcompound = new NBTTagCompound();
+        nbttagcompound.setString("id", "omnipotent:customligth");
+        Consumer<Boolean> spawnLight = (value) -> {
+            playerSource.world.spawnEntity(new CustomLightningBolt(playerSource.world, posXLight.getAsDouble(), posYLight.getAsDouble(), posZLight.getAsDouble(), true));
+        };
+        BiConsumer<Integer, Object> loop = (quantityOfLoop, object) -> {
+            for (int c = 0; c < quantityOfLoop; c++) {
+                if (c % 4 == 0)
+                    spawnLight.accept(true);
+                spawnLight.accept(false);
+            }
+        };
+        loop.accept(30, spawnLight);
     }
 
     public static boolean withKaiaMainHand(EntityPlayer trueSource) {
@@ -198,6 +288,7 @@ public class KaiaUtil {
                 return;
             }
         }
+        long startTime = System.currentTimeMillis();
         for (int x = startX; x <= endX; x++) {
             for (int z = startZ; z <= endZ; z++) {
                 for (int y = startY; y <= endY; y++) {
@@ -358,17 +449,6 @@ public class KaiaUtil {
 
     public static boolean isOwnerOfKaia(ItemStack kaiaStack, EntityPlayer player) {
         return kaiaStack.getTagCompound().getString(ownerName).equals(player.getName()) && kaiaStack.getTagCompound().getString(ownerID).equals(player.getUniqueID().toString());
-    }
-
-    public static boolean checkIfKaiaCanKillPlayerOwnedWolf(Entity entity, EntityPlayer player) {
-        boolean attackYourWolf = KaiaUtil.getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.attackYourWolf);
-        if (!attackYourWolf) {
-            if (entity instanceof EntityWolf) {
-                EntityWolf wolf = (EntityWolf) entity;
-                return wolf.isOwner(player);
-            }
-        }
-        return false;
     }
 
     public static void kaiaKillCommandMessage() {
