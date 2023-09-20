@@ -12,7 +12,8 @@
       "MixinMinecraft",
       "MixinEntityLivingBase", "MixinEntityPlayer",
       "mods.MixinLoliPickaxeUtil",
-      "mods.MixinEntityLoli"
+      "mods.MixinEntityLoli",
+      "MixinIEntityLightningBolt"
     ],
     "client": [],
     "server": []
