@@ -1,6 +1,7 @@
 package com.omnipotent.server.tool;
 
-import com.omnipotent.client.gui.KaiaPlayerGui;
+import cofh.redstoneflux.RedstoneFluxProps;
+import cofh.redstoneflux.api.IEnergyContainerItem;
 import com.omnipotent.server.entity.KaiaEntity;
 import com.omnipotent.server.specialgui.IContainer;
 import com.omnipotent.server.specialgui.InventoryKaia;
@@ -14,7 +15,6 @@ import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ActionResult;
@@ -22,14 +22,18 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.EnumHelper;
+import net.minecraftforge.energy.CapabilityEnergy;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.omnipotent.Omnipotent.omnipotentTab;
 import static com.omnipotent.client.render.RenderTextures.texturesItemsInit;
@@ -38,7 +42,8 @@ import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.KaiaUtil.*;
 import static com.omnipotent.util.UtilityHelper.isPlayer;
 
-public class Kaia extends ItemPickaxe implements IContainer {
+@Optional.Interface(modid = RedstoneFluxProps.MOD_ID, iface = "cofh.redstoneflux.api.IEnergyContainerItem", striprefs = true)
+public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerItem {
     public Kaia() {
         super(EnumHelper.addToolMaterial("kaia", Integer.MAX_VALUE, Integer.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE, Integer.MAX_VALUE));
         setUnlocalizedName("kaia");
@@ -68,9 +73,37 @@ public class Kaia extends ItemPickaxe implements IContainer {
             return;
         EntityPlayer player = (EntityPlayer) entityIn;
         nbtManager(stack, entityIn);
+        if (stack.getTagCompound().getBoolean(chargeItemsInInventory)) {
+            chargeEnergyItems(player);
+            if (Loader.isModLoaded(RedstoneFluxProps.MOD_ID))
+                chargeRf(player);
+        }
         if (!isOwnerOfKaia(stack, player)) {
             player.world.spawnEntity(new EntityItem(worldIn, player.posX, player.posY, player.posZ + 5, stack));
             player.inventory.deleteStack(stack);
+        }
+    }
+
+    @Optional.Method(modid = RedstoneFluxProps.MOD_ID)
+    public void chargeRf(EntityPlayer player) {
+        List<ItemStack> itemsReceiverEnergy = player.inventory.mainInventory.stream().filter(item -> item.getItem() instanceof
+                IEnergyContainerItem).collect(Collectors.toList());
+        for (ItemStack item : itemsReceiverEnergy) {
+            IEnergyContainerItem itemToReceiverEnergy = (IEnergyContainerItem) item.getItem();
+            int energySended = itemToReceiverEnergy.receiveEnergy(item, itemToReceiverEnergy.getMaxEnergyStored(item)
+                    - itemToReceiverEnergy.getEnergyStored(item), false);
+            if (energySended < 0)
+                itemToReceiverEnergy.receiveEnergy(item, itemToReceiverEnergy.getMaxEnergyStored(item), false);
+        }
+    }
+
+    private void chargeEnergyItems(EntityPlayer player) {
+        List<ItemStack> itemsReceiverEnergy = player.inventory.mainInventory.stream().filter(item -> item.hasCapability
+                (CapabilityEnergy.ENERGY, null)).collect(Collectors.toList());
+        for (ItemStack item : itemsReceiverEnergy) {
+            IEnergyStorage cap = item.getCapability(CapabilityEnergy.ENERGY, null);
+            if (cap != null && cap.canReceive())
+                cap.receiveEnergy(cap.getMaxEnergyStored() - cap.getEnergyStored(), false);
         }
     }
 
@@ -79,7 +112,7 @@ public class Kaia extends ItemPickaxe implements IContainer {
         KaiaUtil.createOwnerIfNecessary(stack, entityIn);
         NBTTagCompound tagCompoundOfKaia = stack.getTagCompound();
         ArrayList<String> nbtBoolean = new ArrayList<>();
-        nbtBoolean.addAll(Arrays.asList(noBreakTileEntity, interactLiquid, attackYourWolf, counterAttack, killAllEntities, killFriendEntities, autoBackPack, autoBackPackEntities, playersCantRespawn, playerDontKillCounter, playerDontKillInDirectAttack));
+        nbtBoolean.addAll(Arrays.asList(noBreakTileEntity, interactLiquid, attackYourWolf, counterAttack, killAllEntities, killFriendEntities, autoBackPack, autoBackPackEntities, playersCantRespawn, playersWhoShouldNotKilledInCounterAttack, playerDontKillInDirectAttack, chargeItemsInInventory));
         NBTTagCompound status = tagCompoundOfKaia;
         for (String nbtName : nbtBoolean) {
             if (!tagCompoundOfKaia.hasKey(nbtName)) {
@@ -96,6 +129,8 @@ public class Kaia extends ItemPickaxe implements IContainer {
             status.setInteger(maxCountSlot, 200_000_000);
         if (!tagCompoundOfKaia.hasKey(playersDontKill))
             status.setTag(playersDontKill, new NBTTagList());
+        if (!tagCompoundOfKaia.hasKey(entitiesCantKill))
+            status.setTag(entitiesCantKill, new NBTTagList());
     }
 
     private static void checkAndSetIntegerNbtTag(NBTTagCompound tagCompoundOfKaia, String nbtTag, int nbtCount) {
@@ -119,26 +154,12 @@ public class Kaia extends ItemPickaxe implements IContainer {
 
     @Override
     public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entityAttacked) {
-        Iterator<NBTBase> iterator;
-        if (UtilityHelper.isPlayer(entityAttacked) && stack.getTagCompound().getBoolean(playerDontKillInDirectAttack)) {
-            iterator = stack.getTagCompound().getTagList(playersDontKill, 8).iterator();
-            while (iterator.hasNext()) {
-                String string = iterator.next().toString();
-                if (string.startsWith("\"") && string.endsWith("\""))
-                    string = string.substring(1, string.length() - 1);
-                if (string.split(KaiaPlayerGui.divisionUUIDAndNameOfPlayer)[0].equals(entityAttacked.getUniqueID().toString()))
-                    return true;
-            }
-        }
-        if (!player.world.isRemote && !KaiaUtil.hasInInventoryKaia(entityAttacked)) {
-            boolean killAll = getKaiaInMainHand(player).getTagCompound().getBoolean(killAllEntities);
-            KaiaUtil.kill(entityAttacked, player, killAll);
-            return checkIfKaiaCanKillPlayerOwnedWolf(entityAttacked, player);
-        }
-        if (player.world.isRemote && !KaiaUtil.hasInInventoryKaia(entityAttacked)) {
-            return checkIfKaiaCanKillPlayerOwnedWolf(entityAttacked, player);
-        }
-        return false;
+        boolean cancelAttack = !checkIfKaiaCanKill(entityAttacked, player, true, false);
+        if (cancelAttack)
+            return cancelAttack;
+        if (!player.world.isRemote)
+            killChoice(entityAttacked, player, getKaiaInMainHand(player).getTagCompound().getBoolean(killAllEntities));
+        return cancelAttack;
     }
 
     @Override
@@ -168,5 +189,29 @@ public class Kaia extends ItemPickaxe implements IContainer {
     @Override
     public InventoryKaia getInventory(ItemStack stack) {
         return new InventoryKaia(stack);
+    }
+
+    @Override
+    @Optional.Method(modid = RedstoneFluxProps.MOD_ID)
+    public int receiveEnergy(ItemStack itemStack, int i, boolean b) {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    @Optional.Method(modid = RedstoneFluxProps.MOD_ID)
+    public int extractEnergy(ItemStack itemStack, int i, boolean b) {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    @Optional.Method(modid = RedstoneFluxProps.MOD_ID)
+    public int getEnergyStored(ItemStack itemStack) {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    @Optional.Method(modid = RedstoneFluxProps.MOD_ID)
+    public int getMaxEnergyStored(ItemStack itemStack) {
+        return Integer.MAX_VALUE;
     }
 }
