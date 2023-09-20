@@ -5,11 +5,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.util.ArrayList;
@@ -20,6 +18,7 @@ public class UtilityHelper {
 
     /**
      * Este método retorna verdadeiro caso a string contenha apenas numeros inteiros e falso caso contrario.
+     *
      * @Author gamerYToffi
      */
     public static boolean isJustNumber(String text) {
@@ -28,6 +27,7 @@ public class UtilityHelper {
 
     /**
      * Este método com base no valor recebido e na altura da tela retorna um valor equivalente para qualquer monitor.
+     *
      * @Author gamerYToffi
      */
     public static int getEquivalentValueOfscreenHeight(int value, int height) {
@@ -37,7 +37,30 @@ public class UtilityHelper {
     }
 
     /**
+     * Este método usa como base o valor 480 para retorna um valor universal para qualquer monitor.
+     *
+     * @Author gamerYToffi
+     */
+    public static int getEquivalentValue(int value, int valueActualMonitor) {
+        final int heightFinal = 480;
+        float i = heightFinal / 100.0F;
+        float valueFixedOfPercentage = value / i;
+        float i1 = valueFixedOfPercentage / 100 * valueActualMonitor;
+        return Math.round(i1);
+    }
+//    public static int getEquivalentValue(int value, int valueActualMonitor) {
+//        final BigDecimal heightFinal = new BigDecimal("480").setScale(20);
+//        final BigDecimal bigDecimalPercentage = new BigDecimal("100").setScale(20);
+//        BigDecimal i = bigDecimalPercentage.divide(heightFinal).setScale(20);
+//        BigDecimal valueFixedOfPercentage = new BigDecimal(value).divide(i);
+//        BigDecimal multiply = (valueFixedOfPercentage.divide(bigDecimalPercentage).setScale(20)).multiply(new BigDecimal(valueActualMonitor).setScale(20)).setScale(20);
+//        return multiply.intValue();
+//    }
+
+
+    /**
      * Este método com base no valor recebido e na largura da tela retorna um valor equivalente para qualquer monitor.
+     *
      * @Author gamerYToffi
      */
     public static int getEquivalentValueOfscreenWidth(int value, int width) {
@@ -48,14 +71,16 @@ public class UtilityHelper {
 
     /**
      * Este método envia uma mensagem apenas para o player que lançou a própria mensagem, util quando se quer enviar informações que apenas um player deve ver.
+     *
      * @Author gamerYToffi
      */
-    public static void sendmessageToPlayer(String message) {
+    public static void sendMessageToPlayer(String message) {
         Minecraft.getMinecraft().player.sendMessage(new TextComponentString(message));
     }
 
     /**
      * Este método envia uma mensagem para todos os players.
+     *
      * @Author gamerYToffi
      */
     public static void sendMessageToAllPlayers(String message) {
@@ -63,15 +88,19 @@ public class UtilityHelper {
         List<EntityPlayerMP> players = server.getPlayerList().getPlayers();
         players.forEach(player -> player.sendMessage(new TextComponentString(message)));
     }
+
     /**
      * Este método envia verifica se os itemStack são iguais e suas tags, ele ignora a tag de contagem.
+     *
      * @Author gamerYToffi
      **/
     public static boolean itemsAreEquals(ItemStack item1, ItemStack item2) {
         return ItemStack.areItemStackTagsEqual(item1, item2) && item1.isItemEqual(item2);
     }
+
     /**
      * Este método tenta compactar todos os itemStack que são iguais e que tenham as mesmas tags ignorando a durabilidade em um unico itemStack, ele modifica a lista que recebe.
+     *
      * @Author gamerYToffi
      **/
     public static void compactListItemStacks(List<ItemStack> drops) {
@@ -120,6 +149,7 @@ public class UtilityHelper {
 
     /**
      * Este método verifica se a entidade é é uma instancia de EntityPlayer
+     *
      * @Author gamerYToffi
      */
     public static boolean isPlayer(Entity entity) {
@@ -128,6 +158,7 @@ public class UtilityHelper {
 
     /**
      * Este método modifica a distancia de interação dos blocos do player recebido
+     *
      * @Author gamerYToffi
      */
 
