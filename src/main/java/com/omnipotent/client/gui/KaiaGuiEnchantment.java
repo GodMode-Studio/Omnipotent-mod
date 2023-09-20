@@ -18,14 +18,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.omnipotent.util.UtilityHelper.isJustNumber;
 import static com.omnipotent.util.KaiaConstantsNbt.kaiaEnchant;
+import static com.omnipotent.util.UtilityHelper.isJustNumber;
 
 public class KaiaGuiEnchantment extends GuiScreen {
 
     private final EntityPlayer player;
-    private int mouseScrollStartTop = 40;
-    private int mouseScrollEndBottom = 55;
     private int page;
     private int pageRemoved;
     private int oldValueOfPage = 0;

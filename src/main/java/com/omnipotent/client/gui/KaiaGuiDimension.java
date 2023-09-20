@@ -21,8 +21,6 @@ import static com.omnipotent.util.UtilityHelper.*;
 public class KaiaGuiDimension extends GuiScreen {
 
     private final EntityPlayer player;
-    private int mouseScrollStartTop = 40;
-    private int mouseScrollEndBottom = 55;
     private int page;
     private int oldValueOfPage = 0;
     private List<GuiTextField> guiTextFieldList = new ArrayList<GuiTextField>();
@@ -48,7 +46,7 @@ public class KaiaGuiDimension extends GuiScreen {
         listButtonsTeleport.get(1).setText(String.valueOf((int) player.posY));
         listButtonsTeleport.add(new GuiTextField(23930294, fontRenderer, getEquivalentValueOfscreenWidth(340, width), getEquivalentValueOfscreenHeight(240, height), 100, 10));
         listButtonsTeleport.get(2).setText(String.valueOf((int) player.posZ));
-        UtilityHelper.sendmessageToPlayer(I18n.format("message.client.dimensionhelp"));
+        UtilityHelper.sendMessageToPlayer(I18n.format("message.client.dimensionhelp"));
     }
 
     @Override
