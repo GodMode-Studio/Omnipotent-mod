@@ -33,8 +33,10 @@ public class InitButtonsForGuiKaia {
     private int buttonID = 0;
     private final Map<String, GuiButton> guiButtonList = new HashMap<>();
 
-    /*Para adicionar um novo botão, adicione ele no método setButtonList, adicione o nome dele em setNamesInListNamesOfButtons, e o texto dele em
-    setTextButtonList e sua função em setFunctionsForButtonsList.
+    /*Para adicionar um novo botão, adicione ele no método setButtonList,
+    adicione o nome dele em setNamesInListNamesOfButtons,
+    e o texto dele em setTextButtonList
+    e sua função em setFunctionsForButtonsList.
     */
     public void init(EntityPlayer player, List<GuiButton> list) {
         guiButtonLogic(player, list);
@@ -66,6 +68,8 @@ public class InitButtonsForGuiKaia {
         namesOfButtons.add("autoBackPack");
         namesOfButtons.add("autoBackPackEntities");
         namesOfButtons.add("playerscantrespawn");
+        namesOfButtons.add("chargeitemsininventory");
+        namesOfButtons.add("summonlightboltsinkill");
     }
 
     public void drawButtons(Minecraft instance, int mouseX, int mouseY, int partialTicks) {
@@ -89,6 +93,8 @@ public class InitButtonsForGuiKaia {
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPack)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(chargeItemsInInventory)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(summonLightBoltsInKill)));
     }
 
     private void setButtonList(EntityPlayer player) {
@@ -101,6 +107,8 @@ public class InitButtonsForGuiKaia {
         buttonsList.add(new GuiButton(++buttonID, width / 2 - 90, height / 2 - -100, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPack))));
         buttonsList.add(new GuiButton(++buttonID, width - width / 3, height / 2 + 40, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities))));
         buttonsList.add(new GuiButton(++buttonID, getEquivalentValueOfscreenWidth(345, width), getEquivalentValueOfscreenHeight(227, height), 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn))));
+        buttonsList.add(new GuiButton(++buttonID, getEquivalentValueOfscreenWidth(360, width), getEquivalentValueOfscreenHeight(210, height), 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(chargeItemsInInventory))));
+        buttonsList.add(new GuiButton(++buttonID, getEquivalentValueOfscreenWidth(360, width), getEquivalentValueOfscreenHeight(190, height), 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(summonLightBoltsInKill))));
     }
 
     private void setGuiButtonList() {
@@ -130,6 +138,8 @@ public class InitButtonsForGuiKaia {
         fontRenderer.drawString(I18n.format("guikaia.config.autobackpack"), width / 2 - 200, height / 2 - -105, Color.WHITE.getRGB());
         fontRenderer.drawString(I18n.format("guikaia.config.autobackpackentities"), width / 3, height / 2 + 45, Color.WHITE.getRGB());
         fontRenderer.drawString(I18n.format("guikaia.config.playerscantrespawn"), getEquivalentValueOfscreenWidth(182, width), getEquivalentValueOfscreenHeight(230, height), Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.chargeitemsininventory"), getEquivalentValueOfscreenWidth(225, width), getEquivalentValueOfscreenHeight(210, height), Color.WHITE.getRGB());
+        fontRenderer.drawString(I18n.format("guikaia.config.summonlightbolstinkill"), getEquivalentValueOfscreenWidth(225, width), getEquivalentValueOfscreenHeight(190, height), Color.WHITE.getRGB());
     }
 
     private void setNamesOfGuiTextList() {
@@ -166,68 +176,49 @@ public class InitButtonsForGuiKaia {
 
     private void setFunctionsForButtonsList(EntityPlayer player) {
         int id = 0;
-        functionsForButtonsList.put(buttonsList.get(id), new Runnable() {
-            @Override
-            public void run() {
-                boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.killFriendEntities);
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.killFriendEntities, !value));
-            }
+        functionsForButtonsList.put(buttonsList.get(id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.killFriendEntities);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.killFriendEntities, !value));
         });
-        functionsForButtonsList.put(buttonsList.get(++id), new Runnable() {
-            @Override
-            public void run() {
-                boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.killAllEntities);
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.killAllEntities, !value));
-            }
+        functionsForButtonsList.put(buttonsList.get(++id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.killAllEntities);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.killAllEntities, !value));
         });
-        functionsForButtonsList.put(buttonsList.get(++id), new Runnable() {
-            @Override
-            public void run() {
-                boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.counterAttack);
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.counterAttack, !value));
-            }
+        functionsForButtonsList.put(buttonsList.get(++id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(KaiaConstantsNbt.counterAttack);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.counterAttack, !value));
         });
-        functionsForButtonsList.put(buttonsList.get(++id), new Runnable() {
-            @Override
-            public void run() {
-                boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(attackYourWolf);
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(attackYourWolf, !value));
-            }
+        functionsForButtonsList.put(buttonsList.get(++id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(attackYourWolf);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(attackYourWolf, !value));
         });
-        functionsForButtonsList.put(buttonsList.get(++id), new Runnable() {
-            @Override
-            public void run() {
-                boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(interactLiquid);
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(interactLiquid, !value));
-            }
+        functionsForButtonsList.put(buttonsList.get(++id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(interactLiquid);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(interactLiquid, !value));
         });
-        functionsForButtonsList.put(buttonsList.get(++id), new Runnable() {
-            @Override
-            public void run() {
-                boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(noBreakTileEntity);
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(noBreakTileEntity, !value));
-            }
+        functionsForButtonsList.put(buttonsList.get(++id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(noBreakTileEntity);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(noBreakTileEntity, !value));
         });
-        functionsForButtonsList.put(buttonsList.get(++id), new Runnable() {
-            @Override
-            public void run() {
-                boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPack);
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(autoBackPack, !value));
-            }
+        functionsForButtonsList.put(buttonsList.get(++id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPack);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(autoBackPack, !value));
         });
-        functionsForButtonsList.put(buttonsList.get(++id), new Runnable() {
-            @Override
-            public void run() {
-                boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities);
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(autoBackPackEntities, !value));
-            }
+        functionsForButtonsList.put(buttonsList.get(++id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(autoBackPackEntities, !value));
         });
-        functionsForButtonsList.put(buttonsList.get(++id), new Runnable() {
-            @Override
-            public void run() {
-                boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn);
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playersCantRespawn, !value));
-            }
+        functionsForButtonsList.put(buttonsList.get(++id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playersCantRespawn, !value));
+        });
+        functionsForButtonsList.put(buttonsList.get(++id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(chargeItemsInInventory);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(chargeItemsInInventory, !value));
+        });
+        functionsForButtonsList.put(buttonsList.get(++id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(summonLightBoltsInKill);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(summonLightBoltsInKill, !value));
         });
     }
 }
