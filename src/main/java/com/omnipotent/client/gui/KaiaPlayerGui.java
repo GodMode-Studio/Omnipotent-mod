@@ -3,6 +3,7 @@ package com.omnipotent.client.gui;
 import com.omnipotent.server.network.NetworkRegister;
 import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.NbtListUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -13,16 +14,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import org.lwjgl.input.Keyboard;
 
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.UtilityHelper.getEquivalentValueOfscreenHeight;
 import static com.omnipotent.util.UtilityHelper.getEquivalentValueOfscreenWidth;
+import static net.minecraft.command.CommandBase.getListOfStringsMatchingLastWord;
 
 public class KaiaPlayerGui extends GuiScreen {
 
@@ -31,7 +35,6 @@ public class KaiaPlayerGui extends GuiScreen {
     private int oldValueOfPage = 0;
     private List<GuiTextField> guiTextFieldList = new ArrayList<GuiTextField>();
     private List<GuiTextField> listGuiTextField = new ArrayList<>();
-    public static final String divisionUUIDAndNameOfPlayer = "::";
     int idButtons = -1;
 
     public KaiaPlayerGui(EntityPlayer player) {
@@ -50,7 +53,7 @@ public class KaiaPlayerGui extends GuiScreen {
         button.height = 12;
         button.width = button.displayString.length() * 7;
         buttonList.add(button);
-        GuiButton playerDontKillCounterButton = new GuiButton(++idButtons, getEquivalentValueOfscreenWidth(335, width), getEquivalentValueOfscreenHeight(233, height), String.valueOf(kaiaInMainHand.getTagCompound().getBoolean(playerDontKillCounter)));
+        GuiButton playerDontKillCounterButton = new GuiButton(++idButtons, getEquivalentValueOfscreenWidth(335, width), getEquivalentValueOfscreenHeight(233, height), String.valueOf(kaiaInMainHand.getTagCompound().getBoolean(playersWhoShouldNotKilledInCounterAttack)));
         playerDontKillCounterButton.height = 12;
         playerDontKillCounterButton.width = playerDontKillCounterButton.displayString.length() * 7;
         buttonList.add(playerDontKillCounterButton);
@@ -68,7 +71,7 @@ public class KaiaPlayerGui extends GuiScreen {
         NBTTagCompound tagCompound = KaiaUtil.getKaiaInMainHand(player).getTagCompound();
         for (GuiButton button : buttonList) {
             if (button.id == 3)
-                button.displayString = String.valueOf(tagCompound.getBoolean(playerDontKillCounter));
+                button.displayString = String.valueOf(tagCompound.getBoolean(playersWhoShouldNotKilledInCounterAttack));
             else if (button.id == 4)
                 button.displayString = String.valueOf(tagCompound.getBoolean(playerDontKillInDirectAttack));
             button.drawButton(Minecraft.getMinecraft(), mouseX, mouseY, partialTicks);
@@ -80,14 +83,16 @@ public class KaiaPlayerGui extends GuiScreen {
             playerAdded();
             oldValueOfPage = page;
         }
-        for (GuiTextField guiTextField : guiTextFieldList) {
-            guiTextField.drawTextBox();
-        }
+        guiTextFieldList.forEach(gui -> gui.drawTextBox());
         for (GuiButton button : buttonList) {
             if (button.isMouseOver() && button.id == 3)
                 drawHoveringText(I18n.format("guikaia.playermanager.dontcounterattack"), mouseX, mouseY);
             else if (button.isMouseOver() && button.id == 4)
                 drawHoveringText(I18n.format("guikaia.playermanager.dontDirectAttackKillPlayer"), mouseX, mouseY);
+        }
+        if (listGuiTextField.get(0).isFocused()) {
+            GuiTextField gui = listGuiTextField.get(0);
+            drawHoveringText("With auto-complete", gui.x - getEquivalentValueOfscreenHeight(10, height), gui.y);
         }
     }
 
@@ -100,7 +105,7 @@ public class KaiaPlayerGui extends GuiScreen {
             String string = iterator.next().toString();
             if (string.startsWith("\"") && string.endsWith("\""))
                 string = string.substring(1, string.length() - 1);
-            String[] split = string.split(divisionUUIDAndNameOfPlayer);
+            String[] split = string.split(NbtListUtil.divisionUUIDAndName);
             allPlayers.add(split[1]);
         }
         int idGuiText = -1;
@@ -151,8 +156,35 @@ public class KaiaPlayerGui extends GuiScreen {
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
-        listGuiTextField.forEach(guiTextField -> guiTextField.textboxKeyTyped(typedChar, keyCode));
         super.keyTyped(typedChar, keyCode);
+        for (GuiTextField field : listGuiTextField) {
+            if (field.isFocused() && field.getId() == 23930292 && keyCode == Keyboard.KEY_TAB) {
+                String args[] = new String[2];
+                args[0] = "";
+                args[1] = field.getText();
+                List<String> playersNames = null;
+                try {
+                    playersNames = Minecraft.getMinecraft().getConnection().getPlayerInfoMap().stream().map(playerInfo -> playerInfo.getGameProfile().getName().toString()).collect(Collectors.toList());
+                } catch (Exception e) {
+                }
+                boolean noExecute = false;
+                for (int c = 0; c < playersNames.size(); c++) {
+                    if (playersNames.get(c).equals(args[1])) {
+                        noExecute = true;
+                        try {
+                            field.setText(playersNames.get(++c));
+                        } catch (IndexOutOfBoundsException e) {
+                            field.setText(playersNames.get(c - 1));
+                        }
+                        break;
+                    }
+                }
+                List<String> listOfStringsMatchingLastWord = getListOfStringsMatchingLastWord(args, playersNames);
+                if (!listOfStringsMatchingLastWord.isEmpty() && !noExecute)
+                    field.setText(listOfStringsMatchingLastWord.get(0));
+            }
+            field.textboxKeyTyped(typedChar, keyCode);
+        }
     }
 
     @Override
@@ -160,19 +192,19 @@ public class KaiaPlayerGui extends GuiScreen {
         NBTTagCompound tagCompound = KaiaUtil.getKaiaInMainHand(player).getTagCompound();
         switch (button.id) {
             case 0:
-                if (!(page == 0)) {
+                if (!(page == 0))
                     this.page--;
-                }
                 break;
             case 1:
                 this.page++;
                 break;
             case 2:
                 String namePlayer = listGuiTextField.get(0).getText();
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playersDontKill, namePlayer, 0));
+                if (!player.getName().equals(namePlayer))
+                    NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playersDontKill, namePlayer, 0));
                 break;
             case 3:
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playerDontKillCounter, !tagCompound.getBoolean(playerDontKillCounter)));
+                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playersWhoShouldNotKilledInCounterAttack, !tagCompound.getBoolean(playersWhoShouldNotKilledInCounterAttack)));
                 break;
             case 4:
                 NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playerDontKillInDirectAttack, !tagCompound.getBoolean(playerDontKillInDirectAttack)));
