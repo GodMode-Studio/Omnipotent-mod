@@ -193,9 +193,8 @@ public class KaiaUtil {
         DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
         entityCreature.getCombatTracker().trackDamage(ds, Float.MAX_VALUE, Float.MAX_VALUE);
         verifyFireEnchantmentAndExecute(playerSource, entityCreature);
-        entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
         antiEntity.add(entityCreature.getClass());
-        verifyAndManagerAutoBackEntities(entityCreature, ds, playerSource, kaia);
+        verifyAndManagerAutoBackEntitiesAndApplyDamage(entityCreature, ds, playerSource, kaia);
         antiEntity.remove(entityCreature.getClass());
         entityCreature.setHealth(0.0F);
     }
@@ -215,7 +214,7 @@ public class KaiaUtil {
             Config.addPlayerInListThatCantRespawn(playerEnemie);
     }
 
-    private static void verifyAndManagerAutoBackEntities(EntityLivingBase entityCreature, DamageSource ds, EntityPlayer playerSource, ItemStack kaia) {
+    private static void verifyAndManagerAutoBackEntitiesAndApplyDamage(EntityLivingBase entityCreature, DamageSource ds, EntityPlayer playerSource, ItemStack kaia) {
         NBTTagCompound tagCompound = kaia.getTagCompound();
         boolean autoBackpackEntities = tagCompound.getBoolean(autoBackPackEntities);
         if (autoBackpackEntities) {
