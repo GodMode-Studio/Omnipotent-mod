@@ -20,8 +20,14 @@ public class KaiaConstantsNbt {
     public static final String autoBackPackEntities = "autobackpackentities";
     public static final String blockReachDistance = "blockReachDistance";
     public static final String playersDontKill = "playersdontkill";
-    public static final String playerDontKillCounter = "playerdontkillcounter";
+    public static final String playersWhoShouldNotKilledInCounterAttack = "playerdontkillcounter";
     public static final String playerDontKillInDirectAttack = "playerdontkillindirectAttack";
+    public static final String entitiesCantKill = "entitiescantkill";
     public static final String rangeAutoKill = "rangeautokill";
+    public static final String kaiaBlockSpectator = "kaiablockspectator";
+    public static final String kaiaBlockCreative = "kaiablockcreative";
+    public static final String chargeItemsInInventory = "chargeitemsininventory";
+    public static final String summonLightBoltsInKill = "summonlightboltsinkill";
+
 
 }
