@@ -1,18 +1,11 @@
 package com.omnipotent.server.mixin.mods;
 
-import com.anotherstar.common.LoliPickaxe;
 import com.anotherstar.common.entity.EntityLoli;
 import com.anotherstar.common.entity.IEntityLoli;
-import com.anotherstar.common.item.tool.ItemLoliPickaxe;
-import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemPickaxe;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Optional;
@@ -36,7 +29,8 @@ public abstract class MixinEntityLoli extends EntityCreature implements IEntityL
      * @author
      * @reason
      */
-    @Overwrite @Final
+    @Overwrite
+    @Final
     public void onRemovedFromWorld() {
         if (!dispersal && !world.isRemote) {
             EntityLoli loli = new EntityLoli(world);
@@ -46,7 +40,7 @@ public abstract class MixinEntityLoli extends EntityCreature implements IEntityL
             loli.readFromNBT(tagCompound);
             world.spawnEntity(loli);
             dispersal = true;
-            world.spawnEntity(new EntityItem(world, this.posX, this.posY, this.posZ, Item.REGISTRY.getObject(new ResourceLocation("lolipickaxe","loli_pickaxe")).getDefaultInstance()));
+            world.spawnEntity(new EntityItem(world, this.posX, this.posY, this.posZ, Item.REGISTRY.getObject(new ResourceLocation("lolipickaxe", "loli_pickaxe")).getDefaultInstance()));
         }
         super.onRemovedFromWorld();
     }
