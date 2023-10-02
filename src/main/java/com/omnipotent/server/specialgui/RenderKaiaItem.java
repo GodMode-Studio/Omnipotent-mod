@@ -1,6 +1,6 @@
 package com.omnipotent.server.specialgui;
 
-import com.omnipotent.acessor.MinecraftAcessor;
+import com.omnipotent.acessor.IMinecraftAcessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.RenderItem;
@@ -22,7 +22,7 @@ public class RenderKaiaItem extends RenderItem {
 
     public static void init() {
         Minecraft mc = Minecraft.getMinecraft();
-        instance = new RenderKaiaItem(mc.renderEngine, ((MinecraftAcessor) mc).acessorMinecraftInstance(), mc.getItemColors());
+        instance = new RenderKaiaItem(mc.renderEngine, ((IMinecraftAcessor) mc).acessorMinecraftInstance(), mc.getItemColors());
         ((IReloadableResourceManager) mc.getResourceManager()).registerReloadListener(instance);
     }
 
