@@ -14,6 +14,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextComponentString;
@@ -69,6 +70,16 @@ public class EntityEvent {
             entitiesWithKaia.remove(keyUID);
             handleKaiaStateChange(player, false);
         }
+        if (!player.world.isRemote && !player.getActivePotionEffects().isEmpty()) {
+            Iterator<Potion> iterator = Potion.REGISTRY.iterator();
+            while (iterator.hasNext()) {
+                Potion potion = iterator.next();
+                if (effectIsBlockedByKaia(player, potion))
+                    player.removePotionEffect(potion);
+            }
+        }
+        if (!player.world.isRemote && hasInInventoryKaia(player))
+            KaiaUtil.killInAreaConstantly(player);
     }
 
 
@@ -138,9 +149,9 @@ public class EntityEvent {
                 }
                 UUID uuid = UUID.fromString(kaia.getTagCompound().getString(KaiaConstantsNbt.ownerID));
                 EntityPlayer player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(uuid);
-                List<ItemStack> kaiaItems = null;
+                List<ItemStack> kaiaItems;
                 if (player != null && isOwnerOfKaia(kaia, player)) {
-                    player.sendMessage(new TextComponentString(TextFormatting.AQUA + "press G for return Kaia"));
+                    player.sendMessage(new TextComponentString(TextFormatting.AQUA + "Press G for return Kaia"));
                     kaiaItems = player.getCapability(KaiaProvider.KaiaBrand, null).returnList();
                     kaiaItems.add(kaia);
                     entityItem.setDead();
@@ -159,7 +170,7 @@ public class EntityEvent {
     public void attachCapabilityEntity(AttachCapabilitiesEvent<Entity> event) {
         if (!(event.getObject() instanceof EntityPlayer))
             return;
-        if (((EntityPlayer) event.getObject()).world.isRemote)
+        if (event.getObject().world.isRemote)
             return;
         event.addCapability(KAIACAP, new KaiaProvider());
         event.addCapability(BLOCK_MODES_OF_PLAYER, new BlockModeProvider());
@@ -187,9 +198,11 @@ public class EntityEvent {
                         timeTeleportation.remove(entity);
                         return;
                     }
-                    entity.attemptTeleport(entity.posX + 10, entity.posY + 3, entity.posZ + 10);
-                    entity.world.spawnAlwaysVisibleParticle(EnumParticleTypes.PORTAL.getParticleID(), entity.posX, entity.posY, entity.posZ, 0, 0, 0, new int[0]);
-                    entity.world.playSound(null, entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_ENDERMEN_TELEPORT, SoundCategory.HOSTILE, 5.0f, 1.0f);
+                    boolean b = entity.attemptTeleport(entity.posX + 10, entity.posY + 3, entity.posZ + 10);
+                    if (b) {
+                        entity.world.spawnAlwaysVisibleParticle(EnumParticleTypes.PORTAL.getParticleID(), entity.posX, entity.posY, entity.posZ, 0, 0, 0, new int[0]);
+                        entity.world.playSound(null, entity.posX, entity.posY, entity.posZ, SoundEvents.ENTITY_ENDERMEN_TELEPORT, SoundCategory.HOSTILE, 5.0f, 1.0f);
+                    }
                     int timeTeleportationEntity = 1;
                     timeTeleportation.put(entity, timeTeleportationEntity);
                 } else {
