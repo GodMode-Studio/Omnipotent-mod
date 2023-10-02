@@ -1,8 +1,10 @@
 package com.omnipotent.server.mixin;
 
 import com.omnipotent.util.KaiaUtil;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -17,7 +19,7 @@ import javax.annotation.Nullable;
 import static com.omnipotent.util.KaiaConstantsNbt.interactLiquid;
 
 @Mixin(Entity.class)
-public abstract class MixinEntity {
+public abstract class MixinEntity implements ICommandSender, net.minecraftforge.common.capabilities.ICapabilitySerializable<NBTTagCompound> {
     /**
      * @author
      * @reason
