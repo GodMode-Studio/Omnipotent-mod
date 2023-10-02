@@ -1,20 +1,24 @@
 {
-    "compatibilityLevel": "JAVA_8",
-    "package": "com.omnipotent.server.mixin",
-    "refmap": "refmap.omnipotent.json",
-    "mixins": [
-      "MixinForgeHooks",
-      "MixinEntityPlayerMp",
-      "MixinInventoryPlayer",
-      "MixinCommandBase",
-      "MixinKillCommand",
-      "MixinEntity",
-      "MixinMinecraft",
-      "MixinEntityLivingBase", "MixinEntityPlayer",
-      "mods.MixinLoliPickaxeUtil",
-      "mods.MixinEntityLoli",
-      "MixinIEntityLightningBolt"
-    ],
-    "client": [],
-    "server": []
+  "compatibilityLevel": "JAVA_8",
+  "package": "com.omnipotent.server.mixin",
+  "refmap": "refmap.omnipotent.json",
+  "mixins": [
+    "MixinCommandBase",
+    "MixinEntity",
+    "MixinEntityLivingBase",
+    "MixinEntityPlayer",
+    "MixinEntityPlayerMp",
+    "MixinForgeHooks",
+    "MixinGuiIngameForge",
+    "MixinGuiTextField",
+    "MixinIEntityLightningBolt",
+    "MixinInventoryPlayer",
+    "MixinKillCommand",
+    "MixinMinecraft",
+    "mods.MixinEntityLoli",
+    "mods.MixinLoliPickaxeUtil", "MixinGuiUtils"
+  ],
+  "client": [
+  ],
+  "server": []
 }
