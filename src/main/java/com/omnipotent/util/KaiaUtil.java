@@ -3,7 +3,10 @@ package com.omnipotent.util;
 import com.google.common.collect.Lists;
 import com.omnipotent.Config;
 import com.omnipotent.acessor.IEntityLivingBaseAcessor;
+import com.omnipotent.server.capability.AntiEntityProvider;
+import com.omnipotent.server.capability.IAntiEntitySpawn;
 import com.omnipotent.server.capability.KaiaProvider;
+import com.omnipotent.server.capability.UnbanEntitiesProvider;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.server.entity.CustomLightningBolt;
 import com.omnipotent.server.specialgui.IContainer;
@@ -28,6 +31,8 @@ import net.minecraft.init.Enchantments;
 import net.minecraft.item.ItemAir;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.potion.Potion;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
@@ -37,6 +42,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
@@ -73,13 +79,36 @@ public class KaiaUtil {
         return false;
     }
 
+    public static void killInAreaConstantly(EntityPlayer playerSource) {
+        World world = playerSource.getEntityWorld();
+        NBTTagCompound tagCompoundOfKaia = (getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource)).getTagCompound();
+        if (tagCompoundOfKaia == null) return;
+        boolean autoKill = tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.autoKill);
+        if (!autoKill)
+            return;
+        BlockPos position = playerSource.getPosition();
+        boolean killAllEntities = tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.killAllEntities);
+        int rangeOfBlocks = tagCompoundOfKaia.getInteger(rangeAutoKill);
+        int xNegative = position.getX() - rangeOfBlocks / 2;
+        int xPositive = position.getX() + rangeOfBlocks / 2;
+        int yNegative = position.getY() - rangeOfBlocks / 2;
+        int yPositive = position.getY() + rangeOfBlocks / 2;
+        int zNegative = position.getZ() - rangeOfBlocks / 2;
+        int zPositive = position.getZ() + rangeOfBlocks / 2;
+        AxisAlignedBB axisAlignedBB = new AxisAlignedBB(xNegative, yNegative, zNegative, xPositive, yPositive, zPositive);
+        List<Entity> entities = world.getEntitiesWithinAABB(Entity.class, axisAlignedBB);
+        filterEntities(entities, tagCompoundOfKaia);
+        for (Entity entity : entities) {
+            killChoice(entity, playerSource, killAllEntities);
+        }
+    }
+
     public static void killArea(EntityPlayer playerSource) {
         World world = playerSource.world;
         List<Entity> entities = Lists.newArrayList();
         NBTTagCompound tagCompoundOfKaia = (getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource)).getTagCompound();
         int range = tagCompoundOfKaia.getInteger(rangeAttack);
         boolean killAllEntities = tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.killAllEntities);
-        boolean killFriendEntities = tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.killFriendEntities);
         double slope = 0.1;
         for (int dist = 0; dist <= range; dist += 2) {
             AxisAlignedBB bb = playerSource.getEntityBoundingBox();
@@ -108,12 +137,16 @@ public class KaiaUtil {
 //        if (tagList.tagCount() > 0)
 //            entities.removeIf(entity -> getUUIDOfNbtList(tagList).stream().filter(uuid -> uuid.equals(entity.getUniqueID().toString())).collect(Collectors.toList()).size() > 0);
 
-        entities.removeIf(entity -> UtilityHelper.isPlayer(entity) && hasInInventoryKaia(entity));
-        entities.removeIf(entity -> !entityIsPlayerAndKaiaCanKillPlayer(tagCompoundOfKaia, false, entity));
-        entities.removeIf(entity -> !entityIsFriendAndCanKilledByKaia(tagCompoundOfKaia, entity));
+        filterEntities(entities, tagCompoundOfKaia);
         for (Entity entity : entities) {
             killChoice(entity, playerSource, killAllEntities);
         }
+    }
+
+    private static void filterEntities(List<Entity> entities, NBTTagCompound tagCompoundOfKaia) {
+        entities.removeIf(entity -> UtilityHelper.isPlayer(entity) && hasInInventoryKaia(entity));
+        entities.removeIf(entity -> UtilityHelper.isPlayer(entity) && !entityIsPlayerAndKaiaCanKillPlayer(tagCompoundOfKaia, false, entity));
+        entities.removeIf(entity -> entityIsFriendEntity(entity) && !entityFriendCanKilledByKaia(tagCompoundOfKaia, entity));
     }
 
     public static void killChoice(Entity entity, EntityPlayer playerSource, boolean killAllEntities) {
@@ -128,6 +161,8 @@ public class KaiaUtil {
             killMobs((EntityLivingBase) entity, playerSource, kaia);
         } else if (killAllEntities) {
             entity.setDead();
+            if (tagCompound.getBoolean(banEntitiesAttacked))
+                dennyEntitySpawnInWorld(playerSource.world, entity);
         }
     }
 
@@ -139,33 +174,43 @@ public class KaiaUtil {
             throw new RuntimeException("Use of method is incorrect, playerSource dont have Kaia");
         if (entityTarget == null || (UtilityHelper.isPlayer(entityTarget) && hasInInventoryKaia(entityTarget)))
             return false;
-
         NBTTagCompound tagCompound = kaia.getTagCompound();
-        boolean kaiaCantKill = !(entityIsFriendAndCanKilledByKaia(tagCompound, entityTarget) &&
-                EntityNoIsNormalAndCanKilledByKaia(tagCompound, entityTarget) &&
-                EntityIsWolfAndKaiaCanKillPlayerOwnedWolf(tagCompound, entityTarget, playerSource) &&
-                entityIsPlayerAndKaiaCanKillPlayer(tagCompound, directAttack, entityTarget));
-
-        if (kaiaCantKill)
+        if (!EntityIsWolfAndKaiaCanKillPlayerOwnedWolf(tagCompound, entityTarget, playerSource))
             return false;
-        return true;
-    }
-
-    public static boolean entityIsFriendAndCanKilledByKaia(NBTTagCompound tagCompound, Entity entityTarget) {
-        if (!tagCompound.getBoolean(killFriendEntities) && (entityTarget instanceof EntityBat || entityTarget instanceof EntitySquid || entityTarget instanceof EntityAgeable || entityTarget instanceof EntityGolem))
-            return false;
-        return true;
-    }
-
-    public static boolean EntityNoIsNormalAndCanKilledByKaia(NBTTagCompound tagCompound, Entity entityTarget) {
-        if (!tagCompound.getBoolean(killAllEntities) || !(entityTarget instanceof EntityLivingBase))
+        if (entityIsFriendEntity(entityTarget)) {
+            if (entityFriendCanKilledByKaia(tagCompound, entityTarget))
+                return true;
+            else
+                return false;
+        }
+        if (entityNoIsNormalAndCanKilledByKaia(tagCompound, entityTarget))
             return true;
-        return false;
+        if (UtilityHelper.isPlayer(entityTarget)) {
+            if (entityIsPlayerAndKaiaCanKillPlayer(tagCompound, directAttack, entityTarget))
+                return true;
+            else
+                return false;
+        } else
+            return true;
+    }
+
+    public static boolean entityFriendCanKilledByKaia(NBTTagCompound tagCompound, Entity entityTarget) {
+        return tagCompound.getBoolean(killFriendEntities) ? true : false;
+    }
+
+    public static boolean entityIsFriendEntity(Entity entityTarget) {
+        return (entityTarget instanceof EntityBat || entityTarget instanceof EntitySquid || entityTarget instanceof EntityAgeable || entityTarget instanceof EntityGolem);
+    }
+
+    public static boolean entityNoIsNormalAndCanKilledByKaia(NBTTagCompound tagCompound, Entity entityTarget) {
+        if (!tagCompound.getBoolean(killAllEntities) || entityTarget instanceof EntityLivingBase)
+            return false;
+        return true;
     }
 
     public static boolean entityIsPlayerAndKaiaCanKillPlayer(NBTTagCompound tagCompound, boolean directAttack, Entity entityTarget) {
         if (!(entityTarget instanceof EntityPlayer))
-            return true;
+            return false;
         if (getUUIDOfNbtList(tagCompound.getTagList(playersDontKill, 8)).contains(entityTarget.getUniqueID().toString())) {
             if (directAttack)
                 if (tagCompound.getBoolean(playerDontKillInDirectAttack))
@@ -197,6 +242,8 @@ public class KaiaUtil {
         verifyAndManagerAutoBackEntitiesAndApplyDamage(entityCreature, ds, playerSource, kaia);
         antiEntity.remove(entityCreature.getClass());
         entityCreature.setHealth(0.0F);
+        if (kaia.getTagCompound().getBoolean(banEntitiesAttacked))
+            dennyEntitySpawnInWorld(playerSource.world, entity);
     }
 
     private static void verifyFireEnchantmentAndExecute(EntityPlayer playerSource, EntityLivingBase entityCreature) {
@@ -231,6 +278,14 @@ public class KaiaUtil {
             entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
             entityCreature.onDeath(ds);
         }
+    }
+
+    private static void dennyEntitySpawnInWorld(World world, Entity entity) {
+        if (world.getCapability(AntiEntityProvider.antiEntitySpawn, null).entitiesDontSpawnInWorld().contains(entity.getClass()) || world.getCapability(UnbanEntitiesProvider.unbanEntities, null).entitiesCannotBannable().contains(entity.getClass()))
+            return;
+        UtilityHelper.sendMessageToAllPlayers("The Entity: " + entity.getName() + " are blocked spawn in " + DimensionType.getById(world.provider.getDimension()).getName());
+        IAntiEntitySpawn capability = world.getCapability(AntiEntityProvider.antiEntitySpawn, null);
+        capability.dennySpawnInWorld(entity.getClass());
     }
 
     private static void generateLightBolts(EntityPlayer playerSource) {
@@ -390,22 +445,6 @@ public class KaiaUtil {
         return entity.getLastDamageSource() != null && entity.getLastDamageSource().getTrueSource() != null && entity.getLastDamageSource().getDamageType().equals(new AbsoluteOfCreatorDamage(entity).getDamageType());
     }
 
-    /**
-     * Este método retorna a entidade responsavel pelo dano de AbsoluteOfCreator.
-     * Retorna null caso o ultimo dano na entidade recebiada não seja do tipo AbsoluteOfCreator, sua verdadeira fonte de dano seja null ou não seja uma instancia de entityPlayer
-     * e caso o ultimo dano seja null
-     *
-     * @Author gamerYToffi
-     */
-    public static Entity ReturnDamageSourceByKaia(EntityLivingBase entity) {
-        DamageSource source = entity.getLastDamageSource();
-        Entity trueSource = source.getTrueSource();
-        if (source != null && trueSource != null && UtilityHelper.isPlayer(trueSource)) {
-            return source.getDamageType().equals(new AbsoluteOfCreatorDamage(trueSource).getDamageType()) ? trueSource : null;
-        } else
-            return null;
-    }
-
     public static void returnKaiaOfOwner(EntityPlayer player) {
         List<ItemStack> kaiaList = player.getCapability(KaiaProvider.KaiaBrand, null).getAndExcludeAllKaiaInList();
         kaiaList = kaiaList.stream().filter(item -> item.getItem() instanceof Kaia).collect(Collectors.toList());
@@ -466,5 +505,13 @@ public class KaiaUtil {
                 player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA CANNOT BE KILLED"));
             }
         }
+    }
+
+    public static boolean effectIsBlockedByKaia(EntityPlayer player, Potion potion) {
+        if (!hasInInventoryKaia(player))
+            return false;
+        ItemStack kaia = getKaiaInMainHand(player) == null ? getKaiaInInventory(player) : getKaiaInMainHand(player);
+        NBTTagList tagList = kaia.getTagCompound().getTagList(effectsBlockeds, 8);
+        return NbtListUtil.isElementAlreadyExists(tagList, potion.getRegistryName().toString());
     }
 }
