@@ -77,6 +77,24 @@ public class NbtListUtil {
     }
 
     /**
+     * Este método remove da lista o elemento passado caso ele retorne true no equals, ele remove todas as ocorrencias do elemento na lista.
+     *
+     * @Author gamerYToffi
+     */
+    public static void removeElement(NBTTagList nbt, String element) {
+        while (removeRedudantChars(nbt).contains(element)) {
+            ArrayList<String> listElements = removeRedudantChars(nbt);
+            for (int c = 0; c < listElements.size(); c++) {
+                String next = listElements.get(c);
+                if (next.equals(element)) {
+                    nbt.removeTag(c);
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
      * Este remove os "" de String em NbtTasList ele não altera a lista original ele retorna uma cópia da lista aonde cada elemento esta sem as aspas.
      *
      * @Author gamerYToffi
