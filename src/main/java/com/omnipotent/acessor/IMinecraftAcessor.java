@@ -2,6 +2,6 @@ package com.omnipotent.acessor;
 
 import net.minecraft.client.renderer.block.model.ModelManager;
 
-public interface MinecraftAcessor {
+public interface IMinecraftAcessor {
     public ModelManager acessorMinecraftInstance();
 }
