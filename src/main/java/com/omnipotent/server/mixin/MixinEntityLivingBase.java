@@ -1,5 +1,6 @@
 package com.omnipotent.server.mixin;
 
+import com.google.common.collect.Maps;
 import com.omnipotent.Config;
 import com.omnipotent.acessor.IEntityLivingBaseAcessor;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
@@ -13,6 +14,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.MathHelper;
@@ -21,7 +24,13 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Map;
+
+import static com.omnipotent.util.KaiaUtil.effectIsBlockedByKaia;
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
 import static com.omnipotent.util.UtilityHelper.isPlayer;
 
@@ -264,5 +273,24 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
                 this.dataManager.set(HEALTH, Float.valueOf(MathHelper.clamp(health, 0.0F, entity.getMaxHealth())));
         } else
             this.dataManager.set(HEALTH, Float.valueOf(MathHelper.clamp(health, 0.0F, entity.getMaxHealth())));
+    }
+
+    @Shadow
+    public abstract boolean isPotionApplicable(PotionEffect potioneffectIn);
+
+    @Shadow
+    private final Map<Potion, PotionEffect> activePotionsMap = Maps.<Potion, PotionEffect>newHashMap();
+
+    @Shadow
+    protected abstract void onNewPotionEffect(PotionEffect id);
+
+    @Shadow
+    protected abstract void onChangedPotionEffect(PotionEffect id, boolean p_70695_2_);
+
+    @Inject(method = "addPotionEffect", at = @At(value = "HEAD"), cancellable = true)
+    public void addPotionEffect(PotionEffect potioneffectIn, CallbackInfo ci) {
+        if ((EntityLivingBase) (Object) this instanceof EntityPlayer)
+            if (effectIsBlockedByKaia((EntityPlayer) (Object) this, potioneffectIn.getPotion()))
+                ci.cancel();
     }
 }
