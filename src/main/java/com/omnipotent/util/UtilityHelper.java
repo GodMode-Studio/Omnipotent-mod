@@ -74,8 +74,8 @@ public class UtilityHelper {
      *
      * @Author gamerYToffi
      */
-    public static void sendMessageToPlayer(String message) {
-        Minecraft.getMinecraft().player.sendMessage(new TextComponentString(message));
+    public static void sendMessageToPlayer(String message, EntityPlayer player) {
+        player.sendMessage(new TextComponentString(message));
     }
 
     /**
