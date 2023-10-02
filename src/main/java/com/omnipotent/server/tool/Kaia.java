@@ -112,7 +112,7 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         KaiaUtil.createOwnerIfNecessary(stack, entityIn);
         NBTTagCompound tagCompoundOfKaia = stack.getTagCompound();
         ArrayList<String> nbtBoolean = new ArrayList<>();
-        nbtBoolean.addAll(Arrays.asList(noBreakTileEntity, interactLiquid, attackYourWolf, counterAttack, killAllEntities, killFriendEntities, autoBackPack, autoBackPackEntities, playersCantRespawn, playersWhoShouldNotKilledInCounterAttack, playerDontKillInDirectAttack, chargeItemsInInventory));
+        nbtBoolean.addAll(Arrays.asList(noBreakTileEntity, interactLiquid, attackYourWolf, counterAttack, killAllEntities, killFriendEntities, autoBackPack, autoBackPackEntities, playersCantRespawn, playersWhoShouldNotKilledInCounterAttack, playerDontKillInDirectAttack, chargeItemsInInventory, summonLightBoltsInKill, banEntitiesAttacked, autoKill));
         NBTTagCompound status = tagCompoundOfKaia;
         for (String nbtName : nbtBoolean) {
             if (!tagCompoundOfKaia.hasKey(nbtName)) {
@@ -125,12 +125,15 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, blockBreakArea, 1);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAttack, 1);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, playerDontKillInDirectAttack, 0);
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAutoKill, 10);
         if (!tagCompoundOfKaia.hasKey(maxCountSlot) || tagCompoundOfKaia.getInteger(maxCountSlot) < 1)
             status.setInteger(maxCountSlot, 200_000_000);
         if (!tagCompoundOfKaia.hasKey(playersDontKill))
             status.setTag(playersDontKill, new NBTTagList());
         if (!tagCompoundOfKaia.hasKey(entitiesCantKill))
             status.setTag(entitiesCantKill, new NBTTagList());
+        if (!tagCompoundOfKaia.hasKey(effectsBlockeds))
+            status.setTag(effectsBlockeds, new NBTTagList());
     }
 
     private static void checkAndSetIntegerNbtTag(NBTTagCompound tagCompoundOfKaia, String nbtTag, int nbtCount) {
