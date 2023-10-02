@@ -38,6 +38,9 @@ public class Omnipotent {
     public static SimpleNetworkWrapper channel = NetworkRegistry.INSTANCE.newSimpleChannel("omnipotent");
     public static final ResourceLocation KAIACAP = new ResourceLocation(MODID, "kaiabrand");
     public static final ResourceLocation BLOCK_MODES_OF_PLAYER = new ResourceLocation(MODID, "blockmodesplayer");
+    public static final ResourceLocation ANTIENTITYWORLD = new ResourceLocation(MODID, "antityentityworld");
+    public static final ResourceLocation ENTITIESUNBANNABLE = new ResourceLocation(MODID, "entitiesunbannable");
+
 
     @Mod.Instance(Omnipotent.MODID)
     public static Omnipotent instance;
@@ -50,6 +53,8 @@ public class Omnipotent {
         MinecraftForge.EVENT_BUS.register(instance);
         CapabilityManager.INSTANCE.register(IKaiaBrand.class, new KaiaStorage(), KaiaBrandItems.class);
         CapabilityManager.INSTANCE.register(IBlockMode.class, new BlockModeStorage(), BlockModePlayer.class);
+        CapabilityManager.INSTANCE.register(IAntiEntitySpawn.class, new AntiEntityStorage(), AntiEntitySpawn.class);
+        CapabilityManager.INSTANCE.register(IUnbanEntities.class, new UnbanEntitiesStorage(), UnbanEntities.class);
         proxy.preInit(event);
         Config.init(event);
         register();
