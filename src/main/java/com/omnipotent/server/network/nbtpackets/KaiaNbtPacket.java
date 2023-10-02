@@ -130,6 +130,9 @@ public class KaiaNbtPacket implements IMessage {
                         IBlockMode capability1 = player.getCapability(BlockModeProvider.blockMode, null);
                         capability1.setBlockCreativeMode(!capability1.getBlockCreativeMode());
                         break;
+                    case effectsBlockeds:
+                        functionManageEffectsBlocked(player, message);
+                        break;
                     default:
                         functionManageBooleansAndIntegersNbt(player, message);
                         break;
@@ -138,9 +141,20 @@ public class KaiaNbtPacket implements IMessage {
             return null;
         }
 
+        private void functionManageEffectsBlocked(EntityPlayer player, KaiaNbtPacket message) {
+            ItemStack kaia = KaiaUtil.getKaiaInMainHand(player);
+            NBTTagList tagList = kaia.getTagCompound().getTagList(effectsBlockeds, 8);
+            if (message.intValue == 0) {
+                tagList.appendTag(new NBTTagString(message.text));
+            } else {
+                if (NbtListUtil.isElementAlreadyExists(tagList, message.text))
+                    NbtListUtil.removeElement(tagList, message.text);
+            }
+        }
+
         private static void functionManageBooleansAndIntegersNbt(EntityPlayer player, KaiaNbtPacket message) {
             ArrayList<String> listNBTBoolean = new ArrayList<>();
-            listNBTBoolean.addAll(Arrays.asList(counterAttack, killAllEntities, killFriendEntities, attackYourWolf, interactLiquid, noBreakTileEntity, autoBackPack, autoBackPackEntities, playersCantRespawn, playersWhoShouldNotKilledInCounterAttack, playerDontKillInDirectAttack, chargeItemsInInventory, summonLightBoltsInKill));
+            listNBTBoolean.addAll(Arrays.asList(counterAttack, killAllEntities, killFriendEntities, attackYourWolf, interactLiquid, noBreakTileEntity, autoBackPack, autoBackPackEntities, playersCantRespawn, playersWhoShouldNotKilledInCounterAttack, playerDontKillInDirectAttack, chargeItemsInInventory, summonLightBoltsInKill, banEntitiesAttacked, autoKill));
             for (String nbt : listNBTBoolean) {
                 if (message.type.equals(nbt)) {
                     KaiaUtil.getKaiaInMainHand(player).getTagCompound().setBoolean(nbt, message.booleanValue);
@@ -148,7 +162,7 @@ public class KaiaNbtPacket implements IMessage {
                 }
             }
             ArrayList<String> listNBTInt = new ArrayList<>();
-            listNBTInt.addAll(Arrays.asList(blockBreakArea, rangeAttack, maxCountSlot));
+            listNBTInt.addAll(Arrays.asList(blockBreakArea, rangeAttack, maxCountSlot, rangeAutoKill));
             for (String nbt : listNBTInt) {
                 if (message.type.equals(nbt)) {
                     KaiaUtil.getKaiaInMainHand(player).getTagCompound().setInteger(nbt, message.intValue);
