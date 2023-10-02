@@ -18,13 +18,11 @@ import java.util.Map;
 
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.KaiaUtil.getKaiaInMainHand;
-import static com.omnipotent.util.UtilityHelper.getEquivalentValueOfscreenHeight;
-import static com.omnipotent.util.UtilityHelper.getEquivalentValueOfscreenWidth;
 
 public class InitButtonsForGuiKaia {
-    public List<GuiButton> buttonsList = new ArrayList<GuiButton>();
-    private List<String> namesOfButtons = new ArrayList<String>();
-    public List<String> namesOfGuiTextList = new ArrayList<String>();
+    public List<GuiButton> buttonsList = new ArrayList<>();
+    private List<String> namesOfButtons = new ArrayList<>();
+    public List<String> namesOfGuiTextList = new ArrayList<>();
     public Map<GuiButton, Runnable> functionsForButtonsList = new HashMap<>();
     public Map<String, GuiTextField> guiTextFieldList = new HashMap<>();
     private List<String> textButtonList = new ArrayList<>();
@@ -39,6 +37,8 @@ public class InitButtonsForGuiKaia {
     e sua função em setFunctionsForButtonsList.
     */
     public void init(EntityPlayer player, List<GuiButton> list) {
+        width = KaiaGui.width;
+        height = KaiaGui.height;
         guiButtonLogic(player, list);
         guiTextLogic(player);
     }
@@ -70,6 +70,8 @@ public class InitButtonsForGuiKaia {
         namesOfButtons.add("playerscantrespawn");
         namesOfButtons.add("chargeitemsininventory");
         namesOfButtons.add("summonlightboltsinkill");
+        namesOfButtons.add(banEntitiesAttacked);
+        namesOfButtons.add(autoKill);
     }
 
     public void drawButtons(Minecraft instance, int mouseX, int mouseY, int partialTicks) {
@@ -95,20 +97,27 @@ public class InitButtonsForGuiKaia {
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(chargeItemsInInventory)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(summonLightBoltsInKill)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(banEntitiesAttacked)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoKill)));
     }
 
     private void setButtonList(EntityPlayer player) {
-        buttonsList.add(new GuiButton(buttonID, width / 2 - 62, height / 2 - 38, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(killFriendEntities))));
-        buttonsList.add(new GuiButton(++buttonID, width / 2 - 62, height / 2 - 19, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(killAllEntities))));
-        buttonsList.add(new GuiButton(++buttonID, width / 2 - 115, height / 2 - -20, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(counterAttack))));
-        buttonsList.add(new GuiButton(++buttonID, width / 2 - 115, height / 2 - -40, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(attackYourWolf))));
-        buttonsList.add(new GuiButton(++buttonID, width / 2 - 50, height / 2 - -60, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(interactLiquid))));
-        buttonsList.add(new GuiButton(++buttonID, width / 2 - 47, height / 2 - -80, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(noBreakTileEntity))));
-        buttonsList.add(new GuiButton(++buttonID, width / 2 - 90, height / 2 - -100, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPack))));
-        buttonsList.add(new GuiButton(++buttonID, width - width / 3, height / 2 + 40, 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities))));
-        buttonsList.add(new GuiButton(++buttonID, getEquivalentValueOfscreenWidth(345, width), getEquivalentValueOfscreenHeight(227, height), 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn))));
-        buttonsList.add(new GuiButton(++buttonID, getEquivalentValueOfscreenWidth(360, width), getEquivalentValueOfscreenHeight(210, height), 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(chargeItemsInInventory))));
-        buttonsList.add(new GuiButton(++buttonID, getEquivalentValueOfscreenWidth(360, width), getEquivalentValueOfscreenHeight(190, height), 30, 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(summonLightBoltsInKill))));
+        buttonsList.add(new GuiButton(buttonID, (int) (width / 4.4), (int) (height / 4.7), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(killFriendEntities))));
+        buttonsList.add(new GuiButton(++buttonID, (int) (width / 4.6), (int) (height / 3.67), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(killAllEntities))));
+        buttonsList.add(new GuiButton(++buttonID, width / 8, (int) (height / 2.5), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(counterAttack))));
+
+        buttonsList.add(new GuiButton(++buttonID, (int) (width / 7.42), (int) (height / 2.2), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(attackYourWolf))));
+        buttonsList.add(new GuiButton(++buttonID, (int) (width / 4.2), (int) (height / 1.93), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(interactLiquid))));
+        buttonsList.add(new GuiButton(++buttonID, (int) (width / 5.3), (int) (height / 1.73), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(noBreakTileEntity))));
+
+        buttonsList.add(new GuiButton(++buttonID, (int) (width / 6.5), (int) (height / 1.58), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPack))));
+        buttonsList.add(new GuiButton(++buttonID, (int) (width / 4.3), (int) (height / 1.42), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities))));
+        buttonsList.add(new GuiButton(++buttonID, (int) (width / 3.8), (int) (height / 1.21), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn))));
+
+        buttonsList.add(new GuiButton(++buttonID, (int) (width / 7.5), (int) (height / 1.15), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(chargeItemsInInventory))));
+        buttonsList.add(new GuiButton(++buttonID, (int) (width / 4.9), (int) (height / 1.08), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(summonLightBoltsInKill))));
+        buttonsList.add(new GuiButton(++buttonID, (width / 2), (height / 9), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(banEntitiesAttacked))));
+        buttonsList.add(new GuiButton(++buttonID, (width / 2), (height / (9 - 3)), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoKill))));
     }
 
     private void setGuiButtonList() {
@@ -124,22 +133,32 @@ public class InitButtonsForGuiKaia {
     }
 
     public void drawLabels(FontRenderer fontRenderer) {
-        fontRenderer.drawString(I18n.format("guikaia.config"), (width - fontRenderer.getStringWidth(I18n.format("guikaia.config"))) / 2, height / 20, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.minerationarea"), width / 2 - 200, height / 2 - 85, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.rangeattack"), width / 2 - 200, height / 2 - 60, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.attackfriendentities"), width / 2 - 200, height / 2 - 35, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.attackallentities"), width / 2 - 200, height / 2 - 15, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.blockinteractiondistance"), width / 2 - 200, height / 2 - -5, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.counterattack"), width / 2 - 200, height / 2 - -25, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.attackyourwolf"), width / 2 - 200, height / 2 - -45, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.interactwithliquidblocks"), width / 2 - 200, height / 2 - -65, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.donotbreaktileentityblocks"), width / 2 - 200, height / 2 - -85, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.maxslotcount"), width / 2 - 75, height / 2 - -25, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.autobackpack"), width / 2 - 200, height / 2 - -105, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.autobackpackentities"), width / 3, height / 2 + 45, Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.playerscantrespawn"), getEquivalentValueOfscreenWidth(182, width), getEquivalentValueOfscreenHeight(230, height), Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.chargeitemsininventory"), getEquivalentValueOfscreenWidth(225, width), getEquivalentValueOfscreenHeight(210, height), Color.WHITE.getRGB());
-        fontRenderer.drawString(I18n.format("guikaia.config.summonlightbolstinkill"), getEquivalentValueOfscreenWidth(225, width), getEquivalentValueOfscreenHeight(190, height), Color.WHITE.getRGB());
+        int white = Color.WHITE.getRGB();
+        fontRenderer.drawString(I18n.format("guikaia.config"), (int) (width / 2.2), height / 45, white);
+        int yFirst = 9;
+        fontRenderer.drawString(I18n.format("guikaia.config.minerationarea"), width / 119, height / yFirst, white);
+        fontRenderer.drawString(I18n.format("guikaia.config.rangeattack"), width / 119, height / (yFirst - 3), white);
+        fontRenderer.drawString(I18n.format("guikaia.config.attackfriendentities"), width / 119, (int) (height / (yFirst - 4.5)), white);
+
+        fontRenderer.drawString(I18n.format("guikaia.config.attackallentities"), width / 119, (int) (height / (yFirst - 5.5)), white);
+        fontRenderer.drawString(I18n.format("guikaia.config.blockinteractiondistance"), width / 119, (int) (height / (yFirst - 6.1)), white);
+        fontRenderer.drawString(I18n.format("guikaia.config.counterattack"), width / 119, (int) (height / (yFirst - 6.53)), white);
+
+        fontRenderer.drawString(I18n.format("guikaia.config.attackyourwolf"), width / 119, (int) (height / (yFirst - 6.85)), white);
+        fontRenderer.drawString(I18n.format("guikaia.config.interactwithliquidblocks"), width / 119, (int) (height / (yFirst - 7.1)), white);
+        fontRenderer.drawString(I18n.format("guikaia.config.donotbreaktileentityblocks"), width / 119, (int) (height / (yFirst - 7.3)), white);
+
+        fontRenderer.drawString(I18n.format("guikaia.config.autobackpack"), width / 119, (int) (height / (yFirst - 7.45)), white);
+        fontRenderer.drawString(I18n.format("guikaia.config.autobackpackentities"), width / 119, (int) (height / (yFirst - 7.6)), white);
+        fontRenderer.drawString(I18n.format("guikaia.config.maxslotcount"), width / 119, (int) (height / (yFirst - 7.7)), white);
+
+        fontRenderer.drawString(I18n.format("guikaia.config.playerscantrespawn"), width / 119, (int) (height / (yFirst - 7.8)), white);
+        fontRenderer.drawString(I18n.format("guikaia.config.chargeitemsininventory"), width / 119, (int) (height / (yFirst - 7.87)), white);
+        fontRenderer.drawString(I18n.format("guikaia.config.summonlightbolstinkill"), width / 119, (int) (height / (yFirst - 7.93)), white);
+
+        fontRenderer.drawString(I18n.format("guikaia.config.banEntitiesAttacked"), (int) (width / 3.1), (height / 9), white);
+        fontRenderer.drawString(I18n.format("guikaia.config.autoKill"), (int) (width / 3.1), (height / (yFirst - 3)), white);
+        fontRenderer.drawString(I18n.format("guikaia.config.rangeautokill"), (int) (width / 3.1), (int) (height / (yFirst - 4.5)), white);
     }
 
     private void setNamesOfGuiTextList() {
@@ -147,31 +166,42 @@ public class InitButtonsForGuiKaia {
         namesOfGuiTextList.add("rangeattack");
         namesOfGuiTextList.add("blockreachdistance");
         namesOfGuiTextList.add("maxCountSlot");
+        namesOfGuiTextList.add(rangeAutoKill);
     }
 
     private void setGuiTextFieldList(EntityPlayer player) {
         int rangeAttack = getKaiaInMainHand(player).getTagCompound().getInteger(KaiaConstantsNbt.rangeAttack);
         int id = 0;
         int TEXFIELD_ID = 0;
-        guiTextFieldList.put(namesOfGuiTextList.get(id), new GuiTextField(TEXFIELD_ID, KaiaGui.fontRenderer, width / 2 - 100, height / 2 - 90, 200, 20));
+        guiTextFieldList.put(namesOfGuiTextList.get(id), new GuiTextField(TEXFIELD_ID, KaiaGui.fontRenderer, (int) (width / 5.8), (int) (height / 8.7), (int) (width / 6.85714285714), 20));
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).height = height / 39;
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setMaxStringLength(10);
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setFocused(false);
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setText(String.valueOf(getKaiaInMainHand(player).getTagCompound().getInteger(blockBreakArea)));
 
-        guiTextFieldList.put(namesOfGuiTextList.get(++id), new GuiTextField(TEXFIELD_ID++, KaiaGui.fontRenderer, width / 2 - 100, height / 2 - 65, 200, 20));
-        guiTextFieldList.get(namesOfGuiTextList.get(id)).setMaxStringLength(100);
+        guiTextFieldList.put(namesOfGuiTextList.get(++id), new GuiTextField(TEXFIELD_ID++, KaiaGui.fontRenderer, (int) (width / 6), (int) (height / 6), (int) (width / 6.85714285714), 20));
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).height = height / 39;
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).setMaxStringLength(10);
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setFocused(false);
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setText(String.valueOf(rangeAttack));
 
-        guiTextFieldList.put(namesOfGuiTextList.get(++id), new GuiTextField(TEXFIELD_ID++, KaiaGui.fontRenderer, width / 2 - 10, height / 2 - -3, 105, 10));
+        guiTextFieldList.put(namesOfGuiTextList.get(++id), new GuiTextField(TEXFIELD_ID++, KaiaGui.fontRenderer, (int) (width / 3.5), (int) (height / 2.9), (int) (width / 4.57142857143), 10));
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).height = height / 39;
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setMaxStringLength(100);
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setFocused(false);
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setText(String.valueOf((int) player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue()));
 
-        guiTextFieldList.put(namesOfGuiTextList.get(++id), new GuiTextField(TEXFIELD_ID++, KaiaGui.fontRenderer, width / 2 + 50, height / 2 - -25, 105, 10));
+        guiTextFieldList.put(namesOfGuiTextList.get(++id), new GuiTextField(TEXFIELD_ID++, KaiaGui.fontRenderer, (int) (width / 3.4), (int) (height / 1.3), (int) (width / 4.57142857143), 10));
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).height = height / 39;
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setMaxStringLength(100);
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setFocused(false);
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setText(String.valueOf(getKaiaInMainHand(player).getTagCompound().getInteger(maxCountSlot)));
+
+        guiTextFieldList.put(namesOfGuiTextList.get(++id), new GuiTextField(TEXFIELD_ID++, KaiaGui.fontRenderer, (int) (width / 2.4), (int) (height / (9 - 4.5)), (int) (width / 4.57142857143), 10));
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).height = height / 39;
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).setMaxStringLength(100);
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).setFocused(false);
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).setText(String.valueOf(getKaiaInMainHand(player).getTagCompound().getInteger(rangeAutoKill)));
     }
 
     private void setFunctionsForButtonsList(EntityPlayer player) {
@@ -219,6 +249,14 @@ public class InitButtonsForGuiKaia {
         functionsForButtonsList.put(buttonsList.get(++id), () -> {
             boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(summonLightBoltsInKill);
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(summonLightBoltsInKill, !value));
+        });
+        functionsForButtonsList.put(buttonsList.get(++id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(banEntitiesAttacked);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(banEntitiesAttacked, !value));
+        });
+        functionsForButtonsList.put(buttonsList.get(++id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(autoKill);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(autoKill, !value));
         });
     }
 }
