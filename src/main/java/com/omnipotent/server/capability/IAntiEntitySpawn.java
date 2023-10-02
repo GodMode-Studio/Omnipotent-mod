@@ -1,7 +1,5 @@
 package com.omnipotent.server.capability;
 
-import net.minecraft.entity.Entity;
-
 import java.util.List;
 
 public interface IAntiEntitySpawn {

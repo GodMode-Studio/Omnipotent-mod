@@ -10,27 +10,26 @@ import net.minecraftforge.common.capabilities.Capability;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 
-public class AntiEntityStorage implements Capability.IStorage<IAntiEntitySpawn> {
-
+public class UnbanEntitiesStorage implements Capability.IStorage<IUnbanEntities> {
     @Nullable
     @Override
-    public NBTBase writeNBT(Capability<IAntiEntitySpawn> capability, IAntiEntitySpawn instance, EnumFacing side) {
+    public NBTBase writeNBT(Capability<IUnbanEntities> capability, IUnbanEntities instance, EnumFacing side) {
         NBTTagList tagCompound = new NBTTagList();
-        for (Class classEntity : instance.entitiesDontSpawnInWorld()) {
+        for (Class classEntity : instance.entitiesCannotBannable()) {
             tagCompound.appendTag(new NBTTagString(classEntity.toString()));
         }
         return tagCompound;
     }
 
     @Override
-    public void readNBT(Capability<IAntiEntitySpawn> capability, IAntiEntitySpawn instance, EnumFacing side, NBTBase nbt) {
+    public void readNBT(Capability<IUnbanEntities> capability, IUnbanEntities instance, EnumFacing side, NBTBase nbt) {
         if (!(nbt instanceof NBTTagList))
             return;
         ArrayList<String> valueOfElementsOfNbtList = NbtListUtil.getValueOfElementsOfNbtList((NBTTagList) nbt);
         valueOfElementsOfNbtList.forEach(string ->
         {
             try {
-                instance.dennySpawnInWorld(Class.forName(string.split("class ")[1]));
+                instance.markEntitiAsUnBanable(Class.forName(string.split("class ")[1]));
             } catch (ClassNotFoundException e) {
             }
         });
