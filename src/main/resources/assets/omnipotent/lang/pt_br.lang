@@ -36,6 +36,9 @@ guikaia.config.autobackpackentities=Mochila automatica entidades
 guikaia.config.playerscantrespawn=Jogadores não podem renascer
 guikaia.config.chargeitemsininventory=Energizar itens
 guikaia.config.summonlightbolstinkill=Invocar raios no ataque
+guikaia.config.banEntitiesAttacked=Banir Entidades
+guikaia.config.autoKill=Auto kill entidades circundantes
+guikaia.config.rangeautokill=Alcance Auto Kill
 #keys
 keykaia.category=Botões Kaia
 keykaia.config=Configurações

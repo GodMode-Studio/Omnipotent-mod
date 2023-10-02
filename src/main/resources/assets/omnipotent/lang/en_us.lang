@@ -36,6 +36,9 @@ guikaia.config.autobackpackentities=Auto Backpack Entities
 guikaia.config.playerscantrespawn=Players can´t respawn
 guikaia.config.chargeitemsininventory=Energize items
 guikaia.config.summonlightbolstinkill=Summon LightBolts in attack
+guikaia.config.banEntitiesAttacked=Ban Entities
+guikaia.config.autoKill=Auto Kill
+guikaia.config.rangeautokill=Range auto Kill
 #keys
 keykaia.category=Kaia Keys
 keykaia.config=Settings
