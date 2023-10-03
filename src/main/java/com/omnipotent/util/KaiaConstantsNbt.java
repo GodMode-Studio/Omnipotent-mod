@@ -15,6 +15,7 @@ public class KaiaConstantsNbt {
     public static final String playersCantRespawn = "playerscantresSpawn";
     public static final String banEntitiesAttacked = "banEntitiesAttacked";
     public static final String autoKill = "autoKill";
+    public static final String showInfo = "showinfo";
 
 
     //number values

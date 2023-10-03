@@ -9,10 +9,7 @@ import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import org.lwjgl.input.Keyboard;
 
@@ -20,13 +17,11 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.omnipotent.util.KaiaConstantsNbt.entitiesCantKill;
+import static com.omnipotent.util.KaiaConstantsNbt.showInfo;
 import static com.omnipotent.util.KaiaUtil.withKaiaMainHand;
-import static com.omnipotent.util.NbtListUtil.divisionUUIDAndName;
 import static net.minecraftforge.client.settings.KeyConflictContext.IN_GAME;
 
 public class KeyInit {
@@ -95,7 +90,7 @@ public class KeyInit {
         if (KeyInit.kaiaPlayerGui.isPressed() && KaiaUtil.getKaiaInMainHand(player) != null)
             player.openGui(Omnipotent.instance, 6, player.world, 0, 0, 0);
     });
-//    private static final KeyBinding kaiaAntiEntities = new KeyMod(I18n.format("keykaia.antientities"), Keyboard.KEY_Y, I18n.format(translateKeyOfCategory), object -> {
+    //    private static final KeyBinding kaiaAntiEntities = new KeyMod(I18n.format("keykaia.antientities"), Keyboard.KEY_Y, I18n.format(translateKeyOfCategory), object -> {
 //        EntityPlayer player = (EntityPlayer) object;
 //        if (KeyInit.kaiaAntiEntitiesGui.isPressed() && KaiaUtil.getKaiaInMainHand(player) != null)
 //            player.openGui(Omnipotent.instance, 7, player.world, 0, 0, 0);
@@ -108,6 +103,11 @@ public class KeyInit {
     private static final KeyBinding kaiaBlockCreative = new KeyMod(I18n.format("keykaia.creative"), Keyboard.KEY_F, I18n.format(translateKeyOfCategory), object -> {
         if (KeyInit.kaiaBlockCreative.isPressed())
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.kaiaBlockCreative));
+    });
+    private static final KeyBinding kaiaShowOrHideInfo = new KeyMod(I18n.format("keykaia.kaiashowinfo"), Keyboard.KEY_MULTIPLY, I18n.format(translateKeyOfCategory), object -> {
+        EntityPlayer player = (EntityPlayer) object;
+        if (KeyInit.kaiaShowOrHideInfo.isPressed() && KaiaUtil.getKaiaInMainHand(player) != null)
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(showInfo, !KaiaUtil.getKaiaInMainHand(player).getTagCompound().getBoolean(showInfo)));
     });
 
     public static void initKeys() {

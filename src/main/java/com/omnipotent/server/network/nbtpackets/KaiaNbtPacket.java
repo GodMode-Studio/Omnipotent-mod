@@ -154,7 +154,7 @@ public class KaiaNbtPacket implements IMessage {
 
         private static void functionManageBooleansAndIntegersNbt(EntityPlayer player, KaiaNbtPacket message) {
             ArrayList<String> listNBTBoolean = new ArrayList<>();
-            listNBTBoolean.addAll(Arrays.asList(counterAttack, killAllEntities, killFriendEntities, attackYourWolf, interactLiquid, noBreakTileEntity, autoBackPack, autoBackPackEntities, playersCantRespawn, playersWhoShouldNotKilledInCounterAttack, playerDontKillInDirectAttack, chargeItemsInInventory, summonLightBoltsInKill, banEntitiesAttacked, autoKill));
+            listNBTBoolean.addAll(Arrays.asList(counterAttack, killAllEntities, killFriendEntities, attackYourWolf, interactLiquid, noBreakTileEntity, autoBackPack, autoBackPackEntities, playersCantRespawn, playersWhoShouldNotKilledInCounterAttack, playerDontKillInDirectAttack, chargeItemsInInventory, summonLightBoltsInKill, banEntitiesAttacked, autoKill, showInfo));
             for (String nbt : listNBTBoolean) {
                 if (message.type.equals(nbt)) {
                     KaiaUtil.getKaiaInMainHand(player).getTagCompound().setBoolean(nbt, message.booleanValue);

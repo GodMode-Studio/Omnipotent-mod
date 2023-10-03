@@ -57,6 +57,7 @@ public abstract class MixinGuiIngameForge extends GuiIngame {
         if (kaiaInMainHand == null) return;
         NBTTagCompound tagCompound = kaiaInMainHand.getTagCompound();
         if (tagCompound == null) return;
+        if(!tagCompound.getBoolean(showInfo)) return;
         HashMap<String, String> ligation = new HashMap();
         List<String> booleanValues = Arrays.asList(counterAttack, killAllEntities,
                 killFriendEntities, attackYourWolf, interactLiquid,
