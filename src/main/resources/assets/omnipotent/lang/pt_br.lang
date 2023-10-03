@@ -50,6 +50,7 @@ keykaia.backpack=Mochila da kaia
 keykaia.player=Menu de jogadores
 keykaia.spectate=Bloquear modo espectador
 keykaia.creative=Bloquear modo creativo
+keykaia.kaiashowinfo=Exibir/ocultar Info da Kaia
 #messages in chat
 kaia.message.void=PARADEIRO Y150
 kaia.message.returndropitems=item dropado na posição

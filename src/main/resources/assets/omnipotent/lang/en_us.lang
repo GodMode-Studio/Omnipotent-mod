@@ -50,6 +50,7 @@ keykaia.backpack=Kaia Backpack
 keykaia.player=Player menu
 keykaia.spectate=Block spectate mode
 keykaia.creative=Block creative mode
+keykaia.kaiashowinfo=Show/hide Kaia info
 #messages in chat
 kaia.message.void=WHEREABOUTS Y150
 kaia.message.returndropitems=Item dropped at position
