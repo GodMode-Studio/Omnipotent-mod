@@ -8,6 +8,7 @@ import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.NbtListUtil;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -144,6 +145,7 @@ public class KaiaGuiBlockPotion extends GuiScreen {
                 } else {
                     textField.setTextColor(Color.RED.getRGB());
                     NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.effectsBlockeds, hashGuiTextPotion.get(textField).getRegistryName().toString(), 0));
+                    UtilityHelper.sendMessageToPlayer("Effect blocked", player);
                 }
                 textField.setFocused(false);
             }
