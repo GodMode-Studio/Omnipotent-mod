@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class KaiaGuiBlockPotion extends GuiScreen {
     private final EntityPlayer player;
@@ -32,7 +33,7 @@ public class KaiaGuiBlockPotion extends GuiScreen {
     private int idButtom = -1;
     private List<GuiTextField> guiTextFieldList = new ArrayList<GuiTextField>();
     private HashMap<GuiTextField, Potion> hashGuiTextPotion = new HashMap<>();
-    private GuiButton guiButton;
+    private GuiTextField guiTextField;
     private Minecraft minecraft;
     private double maxScrollOffset = Integer.MAX_VALUE;
     private double targetScrollOffset = 1.0;
@@ -53,14 +54,15 @@ public class KaiaGuiBlockPotion extends GuiScreen {
         minecraft = Minecraft.getMinecraft();
         potionsAddedScroll();
         addButtonChangeMainPage();
+        guiTextField = new GuiTextField(54354, fontRenderer, (int) (xElementControllerButtons / 2.1), (int) (yElementControllerButtons / 18), xElementControllerButtons / 5, yElementControllerButtons / 25);
     }
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
         drawGradientRect(xElementControllerButtons / 415, yElementControllerButtons / 10, (int) (xElementControllerButtons / 0.8), (int) (yElementControllerButtons / 0.85), -1072689136, -804253680);
-//        guiButton.drawButton(minecraft, mouseX, mouseY, partialTicks);
         renderGuis();
+        guiTextField.drawTextBox();
         buttonList.forEach(item -> item.drawButton(minecraft, mouseX, mouseY, partialTicks));
     }
 
@@ -69,6 +71,25 @@ public class KaiaGuiBlockPotion extends GuiScreen {
         super.handleMouseInput();
         int scroll = Math.round(-Math.signum(Mouse.getEventDWheel()));
         updateScrollOffset(scroll);
+    }
+
+    @Override
+    protected void actionPerformed(GuiButton button) throws IOException {
+        super.actionPerformed(button);
+        ((GuiButtonMod) button).runnable.run();
+    }
+
+    @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        guisEffects(mouseX, mouseY, mouseButton);
+        guiTextField.mouseClicked(mouseX, mouseY, mouseButton);
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        guiTextField.textboxKeyTyped(typedChar, keyCode);
+        super.keyTyped(typedChar, keyCode);
     }
 
     private void addButtonChangeMainPage() {
@@ -95,8 +116,11 @@ public class KaiaGuiBlockPotion extends GuiScreen {
         int minY = yElementControllerButtons / 10;
         double yOffset = (yElementControllerButtons / 9) * (1 / currentScrollOffset);
         int count = 1;
+        Pattern pattern;
+        String text = guiTextField.getText();
+        pattern = !text.trim().isEmpty() ? Pattern.compile(text, Pattern.CASE_INSENSITIVE) : null;
         for (GuiTextField gui : guiTextFieldList) {
-            if (Math.round(v) != 1 && count < v) {
+            if ((Math.round(v) != 1 && count < v) || !(pattern == null || pattern.matcher(gui.getText()).find())) {
                 count++;
                 continue;
             }
@@ -108,18 +132,11 @@ public class KaiaGuiBlockPotion extends GuiScreen {
         }
     }
 
-    @Override
-    protected void actionPerformed(GuiButton button) throws IOException {
-        super.actionPerformed(button);
-        ((GuiButtonMod) button).runnable.run();
-    }
-
-    @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+    private void guisEffects(int mouseX, int mouseY, int mouseButton) {
         for (GuiTextField textField : guiTextFieldList) {
             textField.mouseClicked(mouseX, mouseY, mouseButton);
             if (textField.isFocused()) {
-                boolean effectBlocked = false;
+                boolean effectBlocked;
                 effectBlocked = ((IGuiTextFieldAcessor) textField).acessorEnabledColor() == Color.RED.getRGB();
                 if (effectBlocked) {
                     textField.setTextColor(14737632);
@@ -131,7 +148,6 @@ public class KaiaGuiBlockPotion extends GuiScreen {
                 textField.setFocused(false);
             }
         }
-        super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     private void potionsAddedScroll() {
