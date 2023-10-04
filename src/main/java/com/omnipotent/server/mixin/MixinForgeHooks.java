@@ -6,6 +6,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.DamageSource;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -38,5 +39,21 @@ public abstract class MixinForgeHooks {
             entity.deathTime = Integer.MAX_VALUE;
         }
         return !src.getDamageType().equals(new AbsoluteOfCreatorDamage(src.getTrueSource()).getDamageType()) && MinecraftForge.EVENT_BUS.post(new LivingDeathEvent(entity, src));
+    }
+//    se onLivingAttack retorna false attackentityFrom será cancelado
+
+    /**
+     * @author
+     * @reason
+     */
+    @Overwrite
+    @Final
+    public static boolean onLivingAttack(EntityLivingBase entity, DamageSource src, float amount) {
+        if (UtilityHelper.isPlayer(entity))
+            return true;
+        else if (src.getDamageType().equals(new AbsoluteOfCreatorDamage(src.getTrueSource()).getDamageType())) {
+            return true;
+        }
+        return !MinecraftForge.EVENT_BUS.post(new LivingAttackEvent(entity, src, amount));
     }
 }
