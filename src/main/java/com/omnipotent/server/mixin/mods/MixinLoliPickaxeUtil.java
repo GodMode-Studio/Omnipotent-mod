@@ -6,9 +6,6 @@ import com.anotherstar.network.LoliDeadPacket;
 import com.anotherstar.network.LoliKillEntityPacket;
 import com.anotherstar.network.NetworkHandler;
 import com.anotherstar.util.LoliPickaxeUtil;
-//import com.fantasticsource.fantasticlib.CmdGive;
-//import com.fantasticsource.fantasticlib.FantasticLib;
-//import com.fantasticsource.mctools.MCTools;
 import com.omnipotent.util.KaiaUtil;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
@@ -23,10 +20,14 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 
 import static com.anotherstar.util.LoliPickaxeUtil.getLoliPickaxe;
 import static com.anotherstar.util.LoliPickaxeUtil.invHaveLoliPickaxe;
+import static com.omnipotent.util.KaiaConstantsNbt.counterAttack;
+import static com.omnipotent.util.KaiaConstantsNbt.killAllEntities;
 
 @Optional.Interface(iface = "com.anotherstar.util.LoliPickaxeUtil", modid = "lolipickaxe")
 @Mixin(LoliPickaxeUtil.class)
@@ -36,9 +37,13 @@ public abstract class MixinLoliPickaxeUtil {
      * @author
      * @reason
      */
-    @Overwrite @Final
+    @Overwrite
+    @Final
     public static void killPlayer(EntityPlayer player, EntityLivingBase source) {
-        if(KaiaUtil.hasInInventoryKaia(player)){
+        if (KaiaUtil.hasInInventoryKaia(player)) {
+            ItemStack stack = KaiaUtil.getKaiaInMainHand(player) == null ? KaiaUtil.getKaiaInInventory(player) : KaiaUtil.getKaiaInMainHand(player);
+            if (stack.getTagCompound().getBoolean(counterAttack) && !player.world.isRemote)
+                KaiaUtil.killChoice(source, player, stack.getTagCompound().getBoolean(killAllEntities));
             return;
         }
         if (invHaveLoliPickaxe(player) || player.loliDead || player instanceof FakePlayer) {
@@ -78,11 +83,13 @@ public abstract class MixinLoliPickaxeUtil {
             }
         }
     }
+
     /**
      * @author
      * @reason
      */
-    @Overwrite @Final
+    @Overwrite
+    @Final
     private static void delayKill(EntityLivingBase entity) {
         int tick = 21;
         if (!(entity instanceof EntityPlayer)) {

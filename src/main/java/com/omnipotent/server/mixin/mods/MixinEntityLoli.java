@@ -44,4 +44,15 @@ public abstract class MixinEntityLoli extends EntityCreature implements IEntityL
         }
         super.onRemovedFromWorld();
     }
+
+    /**
+     * @author
+     * @reason
+     */
+    @Override
+    @Final
+    public void setDead() {
+        this.isDead = true;
+        onRemovedFromWorld();
+    }
 }
