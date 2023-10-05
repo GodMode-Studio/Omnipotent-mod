@@ -89,12 +89,12 @@ public class KaiaUtil {
         BlockPos position = playerSource.getPosition();
         boolean killAllEntities = tagCompoundOfKaia.getBoolean(KaiaConstantsNbt.killAllEntities);
         int rangeOfBlocks = tagCompoundOfKaia.getInteger(rangeAutoKill);
-        int xNegative = position.getX() - rangeOfBlocks / 2;
-        int xPositive = position.getX() + rangeOfBlocks / 2;
-        int yNegative = position.getY() - rangeOfBlocks / 2;
-        int yPositive = position.getY() + rangeOfBlocks / 2;
-        int zNegative = position.getZ() - rangeOfBlocks / 2;
-        int zPositive = position.getZ() + rangeOfBlocks / 2;
+        int xNegative = position.getX() - rangeOfBlocks;
+        int xPositive = position.getX() + rangeOfBlocks;
+        int yNegative = position.getY() - rangeOfBlocks;
+        int yPositive = position.getY() + rangeOfBlocks;
+        int zNegative = position.getZ() - rangeOfBlocks;
+        int zPositive = position.getZ() + rangeOfBlocks;
         AxisAlignedBB axisAlignedBB = new AxisAlignedBB(xNegative, yNegative, zNegative, xPositive, yPositive, zPositive);
         List<Entity> entities = world.getEntitiesWithinAABB(Entity.class, axisAlignedBB);
         filterEntities(entities, tagCompoundOfKaia);

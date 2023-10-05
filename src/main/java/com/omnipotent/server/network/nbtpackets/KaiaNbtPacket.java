@@ -234,7 +234,7 @@ public class KaiaNbtPacket implements IMessage {
             Potion potionFromResourceLocation = Potion.getPotionFromResourceLocation(message.text);
             if (message.intValue == 0) player.removePotionEffect(potionFromResourceLocation);
             else
-                player.addPotionEffect(new PotionEffect(potionFromResourceLocation, Integer.MAX_VALUE / 5, message.intValue, false, false));
+                player.addPotionEffect(new PotionEffect(potionFromResourceLocation, Integer.MAX_VALUE / 15, message.intValue, false, false));
         }
 
         private static void functionTeletransportDimension(KaiaNbtPacket message, EntityPlayer player) {
