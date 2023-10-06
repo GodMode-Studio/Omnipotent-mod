@@ -510,8 +510,10 @@ public class KaiaUtil {
     public static boolean effectIsBlockedByKaia(EntityPlayer player, Potion potion) {
         if (!hasInInventoryKaia(player))
             return false;
-        ItemStack kaia = getKaiaInMainHand(player) == null ? getKaiaInInventory(player) : getKaiaInMainHand(player);
-        NBTTagList tagList = kaia.getTagCompound().getTagList(effectsBlockeds, 8);
+        NBTTagCompound tagCompound = (getKaiaInMainHand(player) == null ? getKaiaInInventory(player) : getKaiaInMainHand(player)).getTagCompound();
+        if (tagCompound == null)
+            return false;
+        NBTTagList tagList = tagCompound.getTagList(effectsBlockeds, 8);
         return NbtListUtil.isElementAlreadyExists(tagList, potion.getRegistryName().toString());
     }
 }
