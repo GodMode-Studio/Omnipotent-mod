@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class KaiaGuiBlockPotion extends GuiScreen {
     private final EntityPlayer player;
@@ -32,14 +33,15 @@ public class KaiaGuiBlockPotion extends GuiScreen {
     private int yElementControllerButtons;
 
     private int idButtom = -1;
-    private List<GuiTextField> guiTextFieldList = new ArrayList<GuiTextField>();
+    private List<GuiTextField> guiTextFieldList = new ArrayList<>();
+    private List<GuiTextField> guiTextFieldsRendered = new ArrayList<>();
     private HashMap<GuiTextField, Potion> hashGuiTextPotion = new HashMap<>();
     private GuiTextField guiTextField;
     private Minecraft minecraft;
     private double maxScrollOffset = Integer.MAX_VALUE;
     private double targetScrollOffset = 1.0;
     private double currentScrollOffset = 1.0;
-
+    private String oldTextInSearchBox = "";
 
     public KaiaGuiBlockPotion(EntityPlayer player) {
         this.player = player;
@@ -110,7 +112,6 @@ public class KaiaGuiBlockPotion extends GuiScreen {
         targetScrollOffset = newScrollOffset;
     }
 
-
     private void renderGuis() {
         currentScrollOffset += (targetScrollOffset - currentScrollOffset) * 0.1;
         double v = currentScrollOffset / 1;
@@ -120,15 +121,21 @@ public class KaiaGuiBlockPotion extends GuiScreen {
         Pattern pattern;
         String text = guiTextField.getText();
         pattern = !text.trim().isEmpty() ? Pattern.compile(text, Pattern.CASE_INSENSITIVE) : null;
+        guiTextFieldsRendered.clear();
         for (GuiTextField gui : guiTextFieldList) {
             if ((Math.round(v) != 1 && count < v) || !(pattern == null || pattern.matcher(gui.getText()).find())) {
                 count++;
                 continue;
             }
+            if (!oldTextInSearchBox.equals(text)) {
+                oldTextInSearchBox = text;
+                targetScrollOffset = 1;
+            }
             if (yOffset >= minY) {
                 gui.y = (int) yOffset;
                 gui.drawTextBox();
             }
+            guiTextFieldsRendered.add(gui);
             yOffset += height / 21.25;
         }
     }
@@ -137,6 +144,10 @@ public class KaiaGuiBlockPotion extends GuiScreen {
         for (GuiTextField textField : guiTextFieldList) {
             textField.mouseClicked(mouseX, mouseY, mouseButton);
             if (textField.isFocused()) {
+                if (stopClickInGuisNoRended(textField)) {
+                    textField.setFocused(false);
+                    continue;
+                }
                 boolean effectBlocked;
                 effectBlocked = ((IGuiTextFieldAcessor) textField).acessorEnabledColor() == Color.RED.getRGB();
                 if (effectBlocked) {
@@ -150,6 +161,12 @@ public class KaiaGuiBlockPotion extends GuiScreen {
                 textField.setFocused(false);
             }
         }
+    }
+
+    private boolean stopClickInGuisNoRended(GuiTextField textField) {
+        String text = textField.getText();
+        List<String> collect = guiTextFieldsRendered.stream().map(GuiTextField::getText).collect(Collectors.toList());
+        return !collect.contains(text);
     }
 
     private void potionsAddedScroll() {
