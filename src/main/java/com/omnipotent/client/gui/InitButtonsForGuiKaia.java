@@ -68,10 +68,11 @@ public class InitButtonsForGuiKaia {
         namesOfButtons.add("autoBackPack");
         namesOfButtons.add("autoBackPackEntities");
         namesOfButtons.add("playerscantrespawn");
-        namesOfButtons.add("chargeitemsininventory");
+        namesOfButtons.add(chargeEnergyItemsInInventory);
         namesOfButtons.add("summonlightboltsinkill");
         namesOfButtons.add(banEntitiesAttacked);
         namesOfButtons.add(autoKill);
+        namesOfButtons.add(chargeManaItemsInInventory);
     }
 
     public void drawButtons(Minecraft instance, int mouseX, int mouseY, int partialTicks) {
@@ -95,10 +96,11 @@ public class InitButtonsForGuiKaia {
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPack)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn)));
-        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(chargeItemsInInventory)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(chargeEnergyItemsInInventory)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(summonLightBoltsInKill)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(banEntitiesAttacked)));
         textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoKill)));
+        textButtonList.add(String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(chargeManaItemsInInventory)));
     }
 
     private void setButtonList(EntityPlayer player) {
@@ -114,10 +116,11 @@ public class InitButtonsForGuiKaia {
         buttonsList.add(new GuiButton(++buttonID, (int) (width / 4.3), (int) (height / 1.42), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoBackPackEntities))));
         buttonsList.add(new GuiButton(++buttonID, (int) (width / 3.8), (int) (height / 1.21), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(playersCantRespawn))));
 
-        buttonsList.add(new GuiButton(++buttonID, (int) (width / 7.5), (int) (height / 1.15), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(chargeItemsInInventory))));
+        buttonsList.add(new GuiButton(++buttonID, (width / 6), (int) (height / 1.13), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(chargeEnergyItemsInInventory))));
         buttonsList.add(new GuiButton(++buttonID, (int) (width / 4.9), (int) (height / 1.08), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(summonLightBoltsInKill))));
         buttonsList.add(new GuiButton(++buttonID, (width / 2), (height / 9), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(banEntitiesAttacked))));
         buttonsList.add(new GuiButton(++buttonID, (width / 2), (height / (9 - 3)), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(autoKill))));
+        buttonsList.add(new GuiButton(++buttonID, (int) (width / 2.35), (int) (height / 2.2), (int) (width / 21.3333333333), 15, String.valueOf(getKaiaInMainHand(player).getTagCompound().getBoolean(chargeManaItemsInInventory))));
     }
 
     private void setGuiButtonList() {
@@ -153,12 +156,16 @@ public class InitButtonsForGuiKaia {
         fontRenderer.drawString(I18n.format("guikaia.config.maxslotcount"), width / 119, (int) (height / (yFirst - 7.7)), white);
 
         fontRenderer.drawString(I18n.format("guikaia.config.playerscantrespawn"), width / 119, (int) (height / (yFirst - 7.8)), white);
-        fontRenderer.drawString(I18n.format("guikaia.config.chargeitemsininventory"), width / 119, (int) (height / (yFirst - 7.87)), white);
+        fontRenderer.drawString(I18n.format("guikaia.config." + chargeEnergyItemsInInventory), width / 119, (int) (height / (yFirst - 7.87)), white);
         fontRenderer.drawString(I18n.format("guikaia.config.summonlightbolstinkill"), width / 119, (int) (height / (yFirst - 7.93)), white);
 
         fontRenderer.drawString(I18n.format("guikaia.config.banEntitiesAttacked"), (int) (width / 3.1), (height / 9), white);
         fontRenderer.drawString(I18n.format("guikaia.config.autoKill"), (int) (width / 3.1), (height / (yFirst - 3)), white);
         fontRenderer.drawString(I18n.format("guikaia.config.rangeautokill"), (int) (width / 3.1), (int) (height / (yFirst - 4.5)), white);
+
+        fontRenderer.drawString(I18n.format("guikaia.config." + chargeManaItemsInInventory), (int) (width / 5), (int) (height / 2.2), white);
+        fontRenderer.drawString(I18n.format("guikaia.config." + chargeEnergyInBlocksAround), (width / 5), (int) (height / 2.5), white);
+        fontRenderer.drawString(I18n.format("guikaia.config." + chargeManaInBlocksAround), (int) (width / 3.5), (int) (height / 1.7), white);
     }
 
     private void setNamesOfGuiTextList() {
@@ -167,6 +174,8 @@ public class InitButtonsForGuiKaia {
         namesOfGuiTextList.add("blockreachdistance");
         namesOfGuiTextList.add("maxCountSlot");
         namesOfGuiTextList.add(rangeAutoKill);
+        namesOfGuiTextList.add(chargeEnergyInBlocksAround);
+        namesOfGuiTextList.add(chargeManaInBlocksAround);
     }
 
     private void setGuiTextFieldList(EntityPlayer player) {
@@ -202,6 +211,18 @@ public class InitButtonsForGuiKaia {
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setMaxStringLength(100);
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setFocused(false);
         guiTextFieldList.get(namesOfGuiTextList.get(id)).setText(String.valueOf(getKaiaInMainHand(player).getTagCompound().getInteger(rangeAutoKill)));
+
+        guiTextFieldList.put(namesOfGuiTextList.get(++id), new GuiTextField(TEXFIELD_ID++, KaiaGui.fontRenderer, (int) (width / 2.2), (int) (height / 2.5), (int) (width / 4.57142857143), 10));
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).height = height / 39;
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).setMaxStringLength(100);
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).setFocused(false);
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).setText(String.valueOf(getKaiaInMainHand(player).getTagCompound().getInteger(chargeEnergyInBlocksAround)));
+
+        guiTextFieldList.put(namesOfGuiTextList.get(++id), new GuiTextField(TEXFIELD_ID++, KaiaGui.fontRenderer, (int) (width / 2), (int) (height / 1.7), (int) (width / 4.57142857143), 10));
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).height = height / 39;
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).setMaxStringLength(100);
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).setFocused(false);
+        guiTextFieldList.get(namesOfGuiTextList.get(id)).setText(String.valueOf(getKaiaInMainHand(player).getTagCompound().getInteger(chargeManaInBlocksAround)));
     }
 
     private void setFunctionsForButtonsList(EntityPlayer player) {
@@ -243,8 +264,8 @@ public class InitButtonsForGuiKaia {
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playersCantRespawn, !value));
         });
         functionsForButtonsList.put(buttonsList.get(++id), () -> {
-            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(chargeItemsInInventory);
-            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(chargeItemsInInventory, !value));
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(chargeEnergyItemsInInventory);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(chargeEnergyItemsInInventory, !value));
         });
         functionsForButtonsList.put(buttonsList.get(++id), () -> {
             boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(summonLightBoltsInKill);
@@ -257,6 +278,10 @@ public class InitButtonsForGuiKaia {
         functionsForButtonsList.put(buttonsList.get(++id), () -> {
             boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(autoKill);
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(autoKill, !value));
+        });
+        functionsForButtonsList.put(buttonsList.get(++id), () -> {
+            boolean value = getKaiaInMainHand(player).getTagCompound().getBoolean(chargeManaItemsInInventory);
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(chargeManaItemsInInventory, !value));
         });
     }
 }

@@ -130,6 +130,34 @@ public class KaiaGui extends GuiScreen {
             }
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.rangeAutoKill, autoKillRange));
         }
+        if (UtilityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
+            int chargeEnergy;
+            try {
+                chargeEnergy = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
+                if (chargeEnergy > 500 || chargeEnergy < 0) {
+                    sendMessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + chargeEnergy, player);
+                    chargeEnergy = 0;
+                }
+            } catch (NumberFormatException e) {
+                chargeEnergy = 0;
+                sendMessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + chargeEnergy, player);
+            }
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.chargeEnergyInBlocksAround, chargeEnergy));
+        }
+        if (UtilityHelper.isJustNumber(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++id)).getText())) {
+            int chargeMana;
+            try {
+                chargeMana = Integer.valueOf(initButtonsForGuiKaia.guiTextFieldList.get(initButtonsForGuiKaia.namesOfGuiTextList.get(++idComplement)).getText());
+                if (chargeMana > 500 || chargeMana < 0) {
+                    sendMessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + chargeMana, player);
+                    chargeMana = 0;
+                }
+            } catch (NumberFormatException e) {
+                chargeMana = 0;
+                sendMessageToPlayer(I18n.format("message.client.error.limitnumber") + " " + chargeMana, player);
+            }
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.chargeManaInBlocksAround, chargeMana));
+        }
         super.onGuiClosed();
     }
 
