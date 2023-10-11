@@ -11,12 +11,13 @@
     "MixinForgeHooks",
     "MixinGuiIngameForge",
     "MixinGuiTextField",
+    "MixinGuiUtils",
     "MixinIEntityLightningBolt",
     "MixinInventoryPlayer",
     "MixinKillCommand",
     "MixinMinecraft",
     "mods.MixinEntityLoli",
-    "mods.MixinLoliPickaxeUtil", "MixinGuiUtils"
+    "mods.MixinLoliPickaxeUtil"
   ],
   "client": [
   ],

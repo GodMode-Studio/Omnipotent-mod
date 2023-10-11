@@ -57,11 +57,11 @@ public abstract class MixinGuiIngameForge extends GuiIngame {
         if (kaiaInMainHand == null) return;
         NBTTagCompound tagCompound = kaiaInMainHand.getTagCompound();
         if (tagCompound == null) return;
-        if(!tagCompound.getBoolean(showInfo)) return;
+        if (!tagCompound.getBoolean(showInfo)) return;
         HashMap<String, String> ligation = new HashMap();
         List<String> booleanValues = Arrays.asList(counterAttack, killAllEntities,
                 killFriendEntities, attackYourWolf, interactLiquid,
-                noBreakTileEntity, autoBackPackEntities, chargeItemsInInventory,
+                noBreakTileEntity, autoBackPackEntities, chargeEnergyItemsInInventory,
                 summonLightBoltsInKill, autoBackPack, playersCantRespawn, banEntitiesAttacked, autoKill);
         ligation.put(counterAttack, I18n.format("guikaia.config.counterattack"));
         ligation.put(killAllEntities, I18n.format("guikaia.config.attackallentities"));
@@ -70,7 +70,7 @@ public abstract class MixinGuiIngameForge extends GuiIngame {
         ligation.put(interactLiquid, I18n.format("guikaia.config.interactwithliquidblocks"));
         ligation.put(noBreakTileEntity, I18n.format("guikaia.config.donotbreaktileentityblocks"));
         ligation.put(autoBackPackEntities, I18n.format("guikaia.config.autobackpackentities"));
-        ligation.put(chargeItemsInInventory, I18n.format("guikaia.config.chargeitemsininventory"));
+        ligation.put(chargeEnergyItemsInInventory, I18n.format("guikaia.config." + chargeEnergyItemsInInventory));
         ligation.put(summonLightBoltsInKill, I18n.format("guikaia.config.summonlightbolstinkill"));
         ligation.put(autoBackPack, I18n.format("guikaia.config.autobackpack"));
         ligation.put(playersCantRespawn, I18n.format("guikaia.config.playerscantrespawn"));
