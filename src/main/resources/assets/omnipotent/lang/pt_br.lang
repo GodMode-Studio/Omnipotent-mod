@@ -34,11 +34,14 @@ guikaia.config.maxslotcount=Tamanho maximo de pilha na mochila
 guikaia.config.autobackpack=Mochila automatica
 guikaia.config.autobackpackentities=Mochila automatica entidades
 guikaia.config.playerscantrespawn=Jogadores não podem renascer
-guikaia.config.chargeitemsininventory=Energizar itens
+guikaia.config.chargeEnergyItemsInInventory=Energizar itens no inventario
 guikaia.config.summonlightbolstinkill=Invocar raios no ataque
 guikaia.config.banEntitiesAttacked=Banir Entidades
 guikaia.config.autoKill=Auto kill entidades circundantes
 guikaia.config.rangeautokill=Alcance Auto Kill
+guikaia.config.chargeManaItemsInInventory=Carregar mana nos itens do inventario
+guikaia.config.chargeEnergyInBlocksAround=Carregar energia em blocos proximos
+guikaia.config.chargeManaInBlocksAround=Carregar energia em blocos proximos
 #keys
 keykaia.category=Botões Kaia
 keykaia.config=Configurações
