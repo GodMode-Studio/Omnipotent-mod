@@ -14,7 +14,6 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextComponentString;
@@ -70,16 +69,6 @@ public class EntityEvent {
             entitiesWithKaia.remove(keyUID);
             handleKaiaStateChange(player, false);
         }
-        if (!player.world.isRemote && !player.getActivePotionEffects().isEmpty()) {
-            Iterator<Potion> iterator = Potion.REGISTRY.iterator();
-            while (iterator.hasNext()) {
-                Potion potion = iterator.next();
-                if (effectIsBlockedByKaia(player, potion))
-                    player.removePotionEffect(potion);
-            }
-        }
-        if (!player.world.isRemote && hasInInventoryKaia(player))
-            KaiaUtil.killInAreaConstantly(player);
     }
 
 

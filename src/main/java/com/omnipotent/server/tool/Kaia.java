@@ -17,8 +17,11 @@ import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.potion.Potion;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.EnumHelper;
@@ -28,10 +31,13 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import vazkii.botania.api.mana.IManaItem;
+import vazkii.botania.api.mana.IManaReceiver;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,7 +49,11 @@ import static com.omnipotent.util.KaiaUtil.*;
 import static com.omnipotent.util.UtilityHelper.isPlayer;
 
 @Optional.Interface(modid = RedstoneFluxProps.MOD_ID, iface = "cofh.redstoneflux.api.IEnergyContainerItem", striprefs = true)
+@Optional.Interface(modid = "botania", iface = "vazkii.botania.api.mana.IManaReceiver", striprefs = true)
 public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerItem {
+
+    private final String botaniaModid = "botania";
+
     public Kaia() {
         super(EnumHelper.addToolMaterial("kaia", Integer.MAX_VALUE, Integer.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE, Integer.MAX_VALUE));
         setUnlocalizedName("kaia");
@@ -73,27 +83,60 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
             return;
         EntityPlayer player = (EntityPlayer) entityIn;
         nbtManager(stack, entityIn);
-        if (stack.getTagCompound().getBoolean(chargeItemsInInventory)) {
-            chargeEnergyItems(player);
-            if (Loader.isModLoaded(RedstoneFluxProps.MOD_ID))
-                chargeRf(player);
-        }
         if (!isOwnerOfKaia(stack, player)) {
             player.world.spawnEntity(new EntityItem(worldIn, player.posX, player.posY, player.posZ + 5, stack));
             player.inventory.deleteStack(stack);
         }
+        if (stack.getTagCompound().getBoolean(chargeEnergyItemsInInventory)) {
+            chargeEnergyItems(player);
+            if (Loader.isModLoaded(RedstoneFluxProps.MOD_ID))
+                chargeRfEnergyInInventory(player);
+        }
+        if (stack.getTagCompound().getBoolean(chargeEnergyInBlocksAround)) {
+            chargeEnergyInBlocksAround(player, stack.getTagCompound().getInteger(chargeEnergyInBlocksAround));
+//            if (Loader.isModLoaded(RedstoneFluxProps.MOD_ID))
+//                chargeRfEnergyInBlocksAround(player, stack.getTagCompound().getInteger(chargeEnergyInBlocksAround));
+        }
+        if (stack.getTagCompound().getBoolean(chargeManaItemsInInventory)) {
+            if (Loader.isModLoaded(botaniaModid))
+                chargeManaInInventory(player);
+        }
+        if (stack.getTagCompound().getBoolean(chargeManaInBlocksAround)) {
+            if (Loader.isModLoaded(botaniaModid))
+                chargeManaInAroundBlocks(player, stack.getTagCompound().getInteger(chargeManaInBlocksAround));
+        }
+
+        if (!player.getActivePotionEffects().isEmpty()) {
+            Iterator<Potion> iterator = Potion.REGISTRY.iterator();
+            while (iterator.hasNext()) {
+                Potion potion = iterator.next();
+                if (effectIsBlockedByKaia(player, potion))
+                    player.removePotionEffect(potion);
+            }
+        }
+        KaiaUtil.killInAreaConstantly(player);
     }
 
-    @Optional.Method(modid = RedstoneFluxProps.MOD_ID)
-    public void chargeRf(EntityPlayer player) {
-        List<ItemStack> itemsReceiverEnergy = player.inventory.mainInventory.stream().filter(item -> item.getItem() instanceof
-                IEnergyContainerItem).collect(Collectors.toList());
-        for (ItemStack item : itemsReceiverEnergy) {
-            IEnergyContainerItem itemToReceiverEnergy = (IEnergyContainerItem) item.getItem();
-            int energySended = itemToReceiverEnergy.receiveEnergy(item, itemToReceiverEnergy.getMaxEnergyStored(item)
-                    - itemToReceiverEnergy.getEnergyStored(item), false);
-            if (energySended < 0)
-                itemToReceiverEnergy.receiveEnergy(item, itemToReceiverEnergy.getMaxEnergyStored(item), false);
+    private void chargeEnergyInBlocksAround(EntityPlayer player, int range) {
+        BlockPos position = player.getPosition();
+        World world = player.world;
+        int xNegative = position.getX() - range;
+        int xPositive = position.getX() + range;
+        int yNegative = position.getY() - range;
+        int yPositive = position.getY() + range;
+        int zNegative = position.getZ() - range;
+        int zPositive = position.getZ() + range;
+        List<BlockPos> list = new ArrayList<>();
+        BlockPos.getAllInBox(xNegative, yNegative, zNegative, xPositive, yPositive, zPositive).forEach(i -> list.add(i));
+        for (BlockPos block : list) {
+            TileEntity tileEntity = world.getTileEntity(block);
+            if (tileEntity != null) {
+                if (tileEntity.hasCapability(CapabilityEnergy.ENERGY, null)) {
+                    IEnergyStorage capability = tileEntity.getCapability(CapabilityEnergy.ENERGY, null);
+                    if (capability.getEnergyStored() < capability.getMaxEnergyStored())
+                        capability.receiveEnergy(capability.getMaxEnergyStored() - capability.getEnergyStored(), false);
+                }
+            }
         }
     }
 
@@ -107,12 +150,80 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         }
     }
 
+    @Optional.Method(modid = RedstoneFluxProps.MOD_ID)
+    public void chargeRfEnergyInInventory(EntityPlayer player) {
+        List<ItemStack> itemsReceiverEnergy = player.inventory.mainInventory.stream().filter(item -> item.getItem() instanceof
+                IEnergyContainerItem).collect(Collectors.toList());
+        for (ItemStack item : itemsReceiverEnergy) {
+            IEnergyContainerItem itemEnergy = (IEnergyContainerItem) item.getItem();
+            int energySended = itemEnergy.receiveEnergy(item, itemEnergy.getMaxEnergyStored(item)
+                    - itemEnergy.getEnergyStored(item), false);
+            if (energySended <= 0)
+                itemEnergy.receiveEnergy(item, itemEnergy.getMaxEnergyStored(item), false);
+        }
+    }
+
+//    @Optional.Method(modid = RedstoneFluxProps.MOD_ID)
+//    private void chargeRfEnergyInBlocksAround(EntityPlayer player, int range) {
+//        BlockPos position = player.getPosition();
+//        World world = player.world;
+//        int xNegative = position.getX() - range;
+//        int xPositive = position.getX() + range;
+//        int yNegative = position.getY() - range;
+//        int yPositive = position.getY() + range;
+//        int zNegative = position.getZ() - range;
+//        int zPositive = position.getZ() + range;
+//        List<BlockPos> list = new ArrayList<>();
+//        BlockPos.getAllInBox(xNegative, yNegative, zNegative, xPositive, yPositive, zPositive).forEach(i -> list.add(i));
+//        for (BlockPos block : list) {
+//            TileEntity tileEntity = world.getTileEntity(block);
+//            if (tileEntity != null) {
+//                if (tileEntity instanceof cofh.redstoneflux.api.IEnergyStorage) {
+//                    cofh.redstoneflux.api.IEnergyStorage tileRf = (cofh.redstoneflux.api.IEnergyStorage) tileEntity;
+//                    if (tileRf.getEnergyStored() < tileRf.getMaxEnergyStored())
+//                        tileRf.receiveEnergy(tileRf.getMaxEnergyStored() - tileRf.getEnergyStored(), false);
+//                }
+//            }
+//        }
+//    }
+
+    @Optional.Method(modid = botaniaModid)
+    private void chargeManaInInventory(EntityPlayer player) {
+        List<ItemStack> itemsReceiverMana = player.inventory.mainInventory.stream().filter(item -> item.getItem() instanceof IManaItem).collect(Collectors.toList());
+        for (ItemStack item : itemsReceiverMana) {
+            IManaItem itemReceiverMana = (IManaItem) item.getItem();
+            itemReceiverMana.addMana(item, itemReceiverMana.getMaxMana(item) - itemReceiverMana.getMana(item));
+        }
+    }
+
+    @Optional.Method(modid = botaniaModid)
+    private void chargeManaInAroundBlocks(EntityPlayer player, int range) {
+        BlockPos position = player.getPosition();
+        World world = player.world;
+        int xNegative = position.getX() - range;
+        int xPositive = position.getX() + range;
+        int yNegative = position.getY() - range;
+        int yPositive = position.getY() + range;
+        int zNegative = position.getZ() - range;
+        int zPositive = position.getZ() + range;
+        List<BlockPos> list = new ArrayList<>();
+        BlockPos.getAllInBox(xNegative, yNegative, zNegative, xPositive, yPositive, zPositive).forEach(i -> list.add(i));
+        for (BlockPos block : list) {
+            TileEntity tileEntity = world.getTileEntity(block);
+            if (tileEntity != null && tileEntity instanceof IManaReceiver) {
+                IManaReceiver manaReceiver = (IManaReceiver) tileEntity;
+                if (!manaReceiver.isFull())
+                    manaReceiver.recieveMana(Integer.MAX_VALUE);
+            }
+        }
+    }
+
     private static void nbtManager(ItemStack stack, Entity entityIn) {
         KaiaUtil.createTagCompoundStatusIfNecessary(stack);
         KaiaUtil.createOwnerIfNecessary(stack, entityIn);
         NBTTagCompound tagCompoundOfKaia = stack.getTagCompound();
         ArrayList<String> nbtBoolean = new ArrayList<>();
-        nbtBoolean.addAll(Arrays.asList(noBreakTileEntity, interactLiquid, attackYourWolf, counterAttack, killAllEntities, killFriendEntities, autoBackPack, autoBackPackEntities, playersCantRespawn, playersWhoShouldNotKilledInCounterAttack, playerDontKillInDirectAttack, chargeItemsInInventory, summonLightBoltsInKill, banEntitiesAttacked, autoKill, showInfo));
+        nbtBoolean.addAll(Arrays.asList(noBreakTileEntity, interactLiquid, attackYourWolf, counterAttack, killAllEntities, killFriendEntities, autoBackPack, autoBackPackEntities, playersCantRespawn, playersWhoShouldNotKilledInCounterAttack, playerDontKillInDirectAttack, chargeEnergyItemsInInventory, summonLightBoltsInKill, banEntitiesAttacked, autoKill, showInfo, chargeManaItemsInInventory));
         NBTTagCompound status = tagCompoundOfKaia;
         for (String nbtName : nbtBoolean) {
             if (!tagCompoundOfKaia.hasKey(nbtName)) {
@@ -126,6 +237,8 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAttack, 1);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, playerDontKillInDirectAttack, 0);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAutoKill, 10);
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeManaInBlocksAround, 0);
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeEnergyInBlocksAround, 0);
         if (!tagCompoundOfKaia.hasKey(maxCountSlot) || tagCompoundOfKaia.getInteger(maxCountSlot) < 1)
             status.setInteger(maxCountSlot, 200_000_000);
         if (!tagCompoundOfKaia.hasKey(playersDontKill))
