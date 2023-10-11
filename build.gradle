@@ -51,6 +51,7 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     compileOnly files('libs/LoliPickaxe-1.2.16f_V3_traducao_versao_santificada_brasileira_que_nao_veio_da-deepweb_chinesa.jar')
     implementation files('libs/RedstoneFlux-1.12-2.1.1.1-universal.jar')
+    compileOnly files('libs/Botania+r1.10-364.4.jar')
     embed('org.spongepowered:mixin:0.8.3-SNAPSHOT') {
         exclude module: 'guava'
         exclude module: 'commons-io'
