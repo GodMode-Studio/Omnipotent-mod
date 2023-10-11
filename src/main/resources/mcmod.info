@@ -12,6 +12,6 @@
   "logoFile": "",
   "screenshots": [],
   "useDependencyInformation": "true",
-  "dependencies": ["redstoneflux"]
+  "dependencies": ["redstoneflux", "botania"]
 }
 ]
