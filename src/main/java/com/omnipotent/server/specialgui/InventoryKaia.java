@@ -13,7 +13,7 @@ import net.minecraft.util.text.TextComponentTranslation;
 
 import java.util.List;
 
-import static com.omnipotent.util.KaiaConstantsNbt.maxCountSlot;
+import static com.omnipotent.constant.NbtNumberValues.maxCountSlot;
 
 public class InventoryKaia implements IInventory {
 
@@ -237,7 +237,7 @@ public class InventoryKaia implements IInventory {
 
     @Override
     public int getInventoryStackLimit() {
-        return stack.getTagCompound().getInteger(maxCountSlot);
+        return stack.getTagCompound().getInteger(maxCountSlot.getValue());
     }
 
     public int getMaxPage() {
