@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.omnipotent.constant.NbtBooleanValues.playerDontKillInDirectAttack;
+import static com.omnipotent.constant.NbtBooleanValues.playersWhoShouldNotKilledInCounterAttack;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.UtilityHelper.getEquivalentValueOfscreenHeight;
 import static com.omnipotent.util.UtilityHelper.getEquivalentValueOfscreenWidth;
@@ -53,11 +55,11 @@ public class KaiaPlayerGui extends GuiScreen {
         button.height = 12;
         button.width = button.displayString.length() * 7;
         buttonList.add(button);
-        GuiButton playerDontKillCounterButton = new GuiButton(++idButtons, getEquivalentValueOfscreenWidth(335, width), getEquivalentValueOfscreenHeight(233, height), String.valueOf(kaiaInMainHand.getTagCompound().getBoolean(playersWhoShouldNotKilledInCounterAttack)));
+        GuiButton playerDontKillCounterButton = new GuiButton(++idButtons, getEquivalentValueOfscreenWidth(335, width), getEquivalentValueOfscreenHeight(233, height), String.valueOf(kaiaInMainHand.getTagCompound().getBoolean(playersWhoShouldNotKilledInCounterAttack.getValue())));
         playerDontKillCounterButton.height = 12;
         playerDontKillCounterButton.width = playerDontKillCounterButton.displayString.length() * 7;
         buttonList.add(playerDontKillCounterButton);
-        GuiButton dontKillPlayersInDirectAttack = new GuiButton(++idButtons, getEquivalentValueOfscreenWidth(373, width), getEquivalentValueOfscreenHeight(233, height), String.valueOf(kaiaInMainHand.getTagCompound().getBoolean(playerDontKillInDirectAttack)));
+        GuiButton dontKillPlayersInDirectAttack = new GuiButton(++idButtons, getEquivalentValueOfscreenWidth(373, width), getEquivalentValueOfscreenHeight(233, height), String.valueOf(kaiaInMainHand.getTagCompound().getBoolean(playerDontKillInDirectAttack.getValue())));
         dontKillPlayersInDirectAttack.height = 12;
         dontKillPlayersInDirectAttack.width = dontKillPlayersInDirectAttack.displayString.length() * 7;
         buttonList.add(dontKillPlayersInDirectAttack);
@@ -71,9 +73,9 @@ public class KaiaPlayerGui extends GuiScreen {
         NBTTagCompound tagCompound = KaiaUtil.getKaiaInMainHand(player).getTagCompound();
         for (GuiButton button : buttonList) {
             if (button.id == 3)
-                button.displayString = String.valueOf(tagCompound.getBoolean(playersWhoShouldNotKilledInCounterAttack));
+                button.displayString = String.valueOf(tagCompound.getBoolean(playersWhoShouldNotKilledInCounterAttack.getValue()));
             else if (button.id == 4)
-                button.displayString = String.valueOf(tagCompound.getBoolean(playerDontKillInDirectAttack));
+                button.displayString = String.valueOf(tagCompound.getBoolean(playerDontKillInDirectAttack.getValue()));
             button.drawButton(Minecraft.getMinecraft(), mouseX, mouseY, partialTicks);
         }
         drawString(fontRenderer, I18n.format("guikaia.playermanager"), 220, 5, Color.WHITE.getRGB());
@@ -83,7 +85,7 @@ public class KaiaPlayerGui extends GuiScreen {
             playerAdded();
             oldValueOfPage = page;
         }
-        guiTextFieldList.forEach(gui -> gui.drawTextBox());
+        guiTextFieldList.forEach(GuiTextField::drawTextBox);
         for (GuiButton button : buttonList) {
             if (button.isMouseOver() && button.id == 3)
                 drawHoveringText(I18n.format("guikaia.playermanager.dontcounterattack"), mouseX, mouseY);
@@ -204,10 +206,10 @@ public class KaiaPlayerGui extends GuiScreen {
                     NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playersDontKill, namePlayer, 0));
                 break;
             case 3:
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playersWhoShouldNotKilledInCounterAttack, !tagCompound.getBoolean(playersWhoShouldNotKilledInCounterAttack)));
+                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playersWhoShouldNotKilledInCounterAttack.getValue(), !tagCompound.getBoolean(playersWhoShouldNotKilledInCounterAttack.getValue())));
                 break;
             case 4:
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playerDontKillInDirectAttack, !tagCompound.getBoolean(playerDontKillInDirectAttack)));
+                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playerDontKillInDirectAttack.getValue(), !tagCompound.getBoolean(playerDontKillInDirectAttack.getValue())));
                 break;
         }
         super.actionPerformed(button);
