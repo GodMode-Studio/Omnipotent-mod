@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.omnipotent.util.KaiaConstantsNbt.showInfo;
+import static com.omnipotent.constant.NbtBooleanValues.showInfo;
 import static net.minecraftforge.client.settings.KeyConflictContext.IN_GAME;
 
 public class KeyInit {
@@ -135,7 +135,7 @@ public class KeyInit {
     private static final KeyBinding kaiaShowOrHideInfo = new KeyMod(I18n.format("keykaia.kaiashowinfo"), Keyboard.KEY_MULTIPLY, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         EntityPlayer player = (EntityPlayer) object;
         if (KeyInit.kaiaShowOrHideInfo.isPressed() && hasKaia) {
-            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(showInfo, !KaiaUtil.getKaiaInMainHand(player).getTagCompound().getBoolean(showInfo)));
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(showInfo.getValue(), !KaiaUtil.getKaiaInMainHand(player).getTagCompound().getBoolean(showInfo.getValue())));
             return true;
         }
         return false;
