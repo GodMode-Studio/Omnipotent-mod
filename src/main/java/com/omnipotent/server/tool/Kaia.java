@@ -2,6 +2,7 @@ package com.omnipotent.server.tool;
 
 import cofh.redstoneflux.RedstoneFluxProps;
 import cofh.redstoneflux.api.IEnergyContainerItem;
+import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.server.entity.KaiaEntity;
 import com.omnipotent.server.specialgui.IContainer;
 import com.omnipotent.server.specialgui.InventoryKaia;
@@ -36,13 +37,14 @@ import vazkii.botania.api.mana.IManaReceiver;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.omnipotent.Omnipotent.omnipotentTab;
 import static com.omnipotent.client.render.RenderTextures.texturesItemsInit;
+import static com.omnipotent.constant.NbtBooleanValues.*;
+import static com.omnipotent.constant.NbtNumberValues.*;
 import static com.omnipotent.server.event.EventInitItems.itemsInit;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.KaiaUtil.*;
@@ -78,7 +80,6 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
 
     @Override
     public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
-        super.onUpdate(stack, worldIn, entityIn, itemSlot, isSelected);
         if (!isPlayer(entityIn) || worldIn.isRemote)
             return;
         EntityPlayer player = (EntityPlayer) entityIn;
@@ -87,23 +88,27 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
             player.world.spawnEntity(new EntityItem(worldIn, player.posX, player.posY, player.posZ + 5, stack));
             player.inventory.deleteStack(stack);
         }
-        if (stack.getTagCompound().getBoolean(chargeEnergyItemsInInventory)) {
+        if (stack.getTagCompound().getBoolean(NbtBooleanValues.chargeEnergyItemsInInventory.getValue())) {
             chargeEnergyItems(player);
             if (Loader.isModLoaded(RedstoneFluxProps.MOD_ID))
                 chargeRfEnergyInInventory(player);
         }
-        if (stack.getTagCompound().getBoolean(chargeEnergyInBlocksAround)) {
-            chargeEnergyInBlocksAround(player, stack.getTagCompound().getInteger(chargeEnergyInBlocksAround));
+        if (stack.getTagCompound().getBoolean(chargeEnergyInBlocksAround.getValue())) {
+            int integer = stack.getTagCompound().getInteger(chargeEnergyInBlocksAround.getValue());
+            if (integer > 1)
+                chargeEnergyInBlocksAround(player, integer);
 //            if (Loader.isModLoaded(RedstoneFluxProps.MOD_ID))
 //                chargeRfEnergyInBlocksAround(player, stack.getTagCompound().getInteger(chargeEnergyInBlocksAround));
         }
-        if (stack.getTagCompound().getBoolean(chargeManaItemsInInventory)) {
+        if (stack.getTagCompound().getBoolean(chargeManaItemsInInventory.getValue())) {
             if (Loader.isModLoaded(botaniaModid))
                 chargeManaInInventory(player);
         }
-        if (stack.getTagCompound().getBoolean(chargeManaInBlocksAround)) {
-            if (Loader.isModLoaded(botaniaModid))
-                chargeManaInAroundBlocks(player, stack.getTagCompound().getInteger(chargeManaInBlocksAround));
+        if (stack.getTagCompound().getBoolean(chargeManaInBlocksAround.getValue())) {
+            int integer = stack.getTagCompound().getInteger(chargeManaInBlocksAround.getValue());
+            if (integer > 1)
+                if (Loader.isModLoaded(botaniaModid))
+                    chargeManaInAroundBlocks(player, integer);
         }
 
         if (!player.getActivePotionEffects().isEmpty()) {
@@ -222,25 +227,23 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         KaiaUtil.createTagCompoundStatusIfNecessary(stack);
         KaiaUtil.createOwnerIfNecessary(stack, entityIn);
         NBTTagCompound tagCompoundOfKaia = stack.getTagCompound();
-        ArrayList<String> nbtBoolean = new ArrayList<>();
-        nbtBoolean.addAll(Arrays.asList(noBreakTileEntity, interactLiquid, attackYourWolf, counterAttack, killAllEntities, killFriendEntities, autoBackPack, autoBackPackEntities, playersCantRespawn, playersWhoShouldNotKilledInCounterAttack, playerDontKillInDirectAttack, chargeEnergyItemsInInventory, summonLightBoltsInKill, banEntitiesAttacked, autoKill, showInfo, chargeManaItemsInInventory));
         NBTTagCompound status = tagCompoundOfKaia;
-        for (String nbtName : nbtBoolean) {
+        for (String nbtName : NbtBooleanValues.valuesNbt) {
             if (!tagCompoundOfKaia.hasKey(nbtName)) {
-                if (!nbtName.equals(killFriendEntities))
+                if (!nbtName.equals(killFriendEntities.getValue()))
                     status.setBoolean(nbtName, false);
                 else
                     status.setBoolean(nbtName, true);
             }
         }
-        checkAndSetIntegerNbtTag(tagCompoundOfKaia, blockBreakArea, 1);
-        checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAttack, 1);
-        checkAndSetIntegerNbtTag(tagCompoundOfKaia, playerDontKillInDirectAttack, 0);
-        checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAutoKill, 10);
-        checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeManaInBlocksAround, 0);
-        checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeEnergyInBlocksAround, 0);
-        if (!tagCompoundOfKaia.hasKey(maxCountSlot) || tagCompoundOfKaia.getInteger(maxCountSlot) < 1)
-            status.setInteger(maxCountSlot, 200_000_000);
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, blockBreakArea.getValue(), 1);
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAttack.getValue(), 1);
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, playerDontKillInDirectAttack.getValue(), 0);
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAutoKill.getValue(), 10);
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeManaInBlocksAround.getValue(), 0);
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeEnergyInBlocksAround.getValue(), 0);
+        if (!tagCompoundOfKaia.hasKey(maxCountSlot.getValue()) || tagCompoundOfKaia.getInteger(maxCountSlot.getValue()) < 1)
+            status.setInteger(maxCountSlot.getValue(), 200_000_000);
         if (!tagCompoundOfKaia.hasKey(playersDontKill))
             status.setTag(playersDontKill, new NBTTagList());
         if (!tagCompoundOfKaia.hasKey(entitiesCantKill))
@@ -274,7 +277,7 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         if (cancelAttack)
             return cancelAttack;
         if (!player.world.isRemote)
-            killChoice(entityAttacked, player, getKaiaInMainHand(player).getTagCompound().getBoolean(killAllEntities));
+            killChoice(entityAttacked, player, getKaiaInMainHand(player).getTagCompound().getBoolean(killAllEntities.getValue()));
         return cancelAttack;
     }
 

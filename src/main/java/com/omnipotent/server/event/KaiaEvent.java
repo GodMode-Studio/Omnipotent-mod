@@ -18,7 +18,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.omnipotent.util.KaiaConstantsNbt.rangeAttack;
+import static com.omnipotent.constant.NbtNumberValues.rangeAttack;
 import static com.omnipotent.util.KaiaUtil.*;
 
 public class KaiaEvent {
@@ -27,7 +27,7 @@ public class KaiaEvent {
         EntityPlayer player = event.getEntityPlayer();
         ItemStack kaia = getKaiaInMainHand(player);
         if (kaia != null)
-            if (kaia.getTagCompound().getInteger(rangeAttack) > 5)
+            if (kaia.getTagCompound().getInteger(rangeAttack.getValue()) > 5)
                 NetworkRegister.ACESS.sendToServer(new KillPacket());
     }
 
