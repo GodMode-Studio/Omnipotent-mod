@@ -31,7 +31,6 @@ public class KaiaGuiBlockPotion extends GuiScreen {
     private final EntityPlayer player;
     private int xElementControllerButtons;
     private int yElementControllerButtons;
-
     private int idButtom = -1;
     private List<GuiTextField> guiTextFieldList = new ArrayList<>();
     private List<GuiTextField> guiTextFieldsRendered = new ArrayList<>();
@@ -53,7 +52,6 @@ public class KaiaGuiBlockPotion extends GuiScreen {
         xElementControllerButtons = (int) (width / 1.17);
         yElementControllerButtons = (int) (height / 1.17);
         idButtom = -1;
-//        guiButton = new GuiButton(++idButtom, (int) (xElementControllerButtons / 0.88), yElementControllerButtons / 5, xElementControllerButtons / 25, yElementControllerButtons / 15, "");
         minecraft = Minecraft.getMinecraft();
         potionsAddedScroll();
         addButtonChangeMainPage();
@@ -106,7 +104,7 @@ public class KaiaGuiBlockPotion extends GuiScreen {
     private void updateScrollOffset(int scroll) {
         if (scroll == 0)
             return;
-        double scrollFactor = 1.1; // Ajuste este valor conforme necessário
+        double scrollFactor = 1.1;
         double newScrollOffset = currentScrollOffset + scroll * scrollFactor;
         newScrollOffset = Math.max(1.0, Math.min(maxScrollOffset, newScrollOffset));
         targetScrollOffset = newScrollOffset;
@@ -123,13 +121,18 @@ public class KaiaGuiBlockPotion extends GuiScreen {
         pattern = !text.trim().isEmpty() ? Pattern.compile(text, Pattern.CASE_INSENSITIVE) : null;
         guiTextFieldsRendered.clear();
         for (GuiTextField gui : guiTextFieldList) {
-            if ((Math.round(v) != 1 && count < v) || !(pattern == null || pattern.matcher(gui.getText()).find())) {
-                count++;
-                continue;
-            }
             if (!oldTextInSearchBox.equals(text)) {
                 oldTextInSearchBox = text;
                 targetScrollOffset = 1;
+            }
+            if (pattern == null) {
+                if ((Math.round(v) != 1 && count < v)) {
+                    count++;
+                    continue;
+                }
+            } else if (!pattern.matcher(gui.getText()).find()) {
+                count++;
+                continue;
             }
             if (yOffset >= minY) {
                 gui.y = (int) yOffset;
