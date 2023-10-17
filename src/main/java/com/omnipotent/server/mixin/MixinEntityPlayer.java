@@ -28,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import javax.annotation.Nullable;
 import java.util.Iterator;
 
+import static com.omnipotent.constant.NbtBooleanValues.*;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.KaiaUtil.*;
 
@@ -123,7 +124,7 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
             Entity enemie;
             if (source != null && source.getTrueSource() != null) {
                 enemie = source.getTrueSource();
-                if (UtilityHelper.isPlayer(enemie) && kaia.getTagCompound().getBoolean(playersWhoShouldNotKilledInCounterAttack)) {
+                if (UtilityHelper.isPlayer(enemie) && kaia.getTagCompound().getBoolean(playersWhoShouldNotKilledInCounterAttack.getValue())) {
                     Iterator<NBTBase> iterator = kaia.getTagCompound().getTagList(playersDontKill, 8).iterator();
                     while (iterator.hasNext()) {
                         String string = iterator.next().toString();
@@ -143,16 +144,16 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
 //                            return;
 //                        }
 //                    }
-                if (kaia.getTagCompound().getBoolean(counterAttack)) {
+                if (kaia.getTagCompound().getBoolean(counterAttack.getValue())) {
                     if (entityIsFriendEntity(source.getTrueSource())) {
                         if (entityFriendCanKilledByKaia(kaia.getTagCompound(), source.getTrueSource()))
-                            KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities));
+                            KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities.getValue()));
                     } else if (entityNoIsNormalAndCanKilledByKaia(kaia.getTagCompound(), source.getTrueSource()))
-                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities));
+                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities.getValue()));
                     else if (entityIsPlayerAndKaiaCanKillPlayer(kaia.getTagCompound(), false, source.getTrueSource()))
-                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities));
+                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities.getValue()));
                     else
-                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities));
+                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities.getValue()));
                 }
             }
             cir.cancel();

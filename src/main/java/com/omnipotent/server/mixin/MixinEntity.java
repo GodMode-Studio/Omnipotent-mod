@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import javax.annotation.Nullable;
 
-import static com.omnipotent.util.KaiaConstantsNbt.interactLiquid;
+import static com.omnipotent.constant.NbtBooleanValues.interactLiquid;
 
 @Mixin(Entity.class)
 public abstract class MixinEntity implements ICommandSender, net.minecraftforge.common.capabilities.ICapabilitySerializable<NBTTagCompound> {
@@ -55,7 +55,7 @@ public abstract class MixinEntity implements ICommandSender, net.minecraftforge.
                 EntityPlayer player = (EntityPlayer) (Object) this;
                 if (player != null && KaiaUtil.withKaiaMainHand(player)) {
                     if (KaiaUtil.getKaiaInMainHand(player).getTagCompound() != null) {
-                        stopOnLiquid = KaiaUtil.getKaiaInMainHand(player).getTagCompound().getBoolean(interactLiquid);
+                        stopOnLiquid = KaiaUtil.getKaiaInMainHand(player).getTagCompound().getBoolean(interactLiquid.getValue());
                     }
                 }
             }

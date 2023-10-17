@@ -26,8 +26,8 @@ import org.spongepowered.asm.mixin.Overwrite;
 
 import static com.anotherstar.util.LoliPickaxeUtil.getLoliPickaxe;
 import static com.anotherstar.util.LoliPickaxeUtil.invHaveLoliPickaxe;
-import static com.omnipotent.util.KaiaConstantsNbt.counterAttack;
-import static com.omnipotent.util.KaiaConstantsNbt.killAllEntities;
+import static com.omnipotent.constant.NbtBooleanValues.counterAttack;
+import static com.omnipotent.constant.NbtBooleanValues.killAllEntities;
 
 @Optional.Interface(iface = "com.anotherstar.util.LoliPickaxeUtil", modid = "lolipickaxe")
 @Mixin(LoliPickaxeUtil.class)
@@ -42,8 +42,8 @@ public abstract class MixinLoliPickaxeUtil {
     public static void killPlayer(EntityPlayer player, EntityLivingBase source) {
         if (KaiaUtil.hasInInventoryKaia(player)) {
             ItemStack stack = KaiaUtil.getKaiaInMainHand(player) == null ? KaiaUtil.getKaiaInInventory(player) : KaiaUtil.getKaiaInMainHand(player);
-            if (stack.getTagCompound().getBoolean(counterAttack) && !player.world.isRemote)
-                KaiaUtil.killChoice(source, player, stack.getTagCompound().getBoolean(killAllEntities));
+            if (stack.getTagCompound().getBoolean(counterAttack.getValue()) && !player.world.isRemote)
+                KaiaUtil.killChoice(source, player, stack.getTagCompound().getBoolean(killAllEntities.getValue()));
             return;
         }
         if (invHaveLoliPickaxe(player) || player.loliDead || player instanceof FakePlayer) {
