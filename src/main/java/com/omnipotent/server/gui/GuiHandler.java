@@ -24,7 +24,7 @@ public class GuiHandler implements IGuiHandler {
     public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
         switch (ID) {
             case 0:
-                return new KaiaGui(player.inventory, player.getHeldItemMainhand());
+                return new KaiaGui(player);
             case 3:
                 return new ContainerKaia(player, player.getHeldItem(y == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND), x);
         }
@@ -37,7 +37,7 @@ public class GuiHandler implements IGuiHandler {
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
         switch (ID) {
             case 0:
-                return new KaiaGui(player.inventory, player.getHeldItemMainhand());
+                return new KaiaGui(player);
             case 1:
                 return new KaiaGuiEnchantment(player);
             case 3:
