@@ -1,5 +1,6 @@
 package com.omnipotent.server.mixin;
 
+import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.util.KaiaUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -16,16 +17,15 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.GuiIngameForge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
-import static com.omnipotent.util.KaiaConstantsNbt.*;
+import static com.omnipotent.constant.NbtBooleanValues.*;
 
 @Mixin(GuiIngameForge.class)
 public abstract class MixinGuiIngameForge extends GuiIngame {
@@ -49,6 +49,7 @@ public abstract class MixinGuiIngameForge extends GuiIngame {
         renderKaiaInfo();
     }
 
+    @Unique
     private void renderKaiaInfo() {
         EntityPlayerSP player = mc.player;
         GuiScreen currentScreen = mc.currentScreen;
@@ -57,28 +58,11 @@ public abstract class MixinGuiIngameForge extends GuiIngame {
         if (kaiaInMainHand == null) return;
         NBTTagCompound tagCompound = kaiaInMainHand.getTagCompound();
         if (tagCompound == null) return;
-        if (!tagCompound.getBoolean(showInfo)) return;
-        HashMap<String, String> ligation = new HashMap();
-        List<String> booleanValues = Arrays.asList(counterAttack, killAllEntities,
-                killFriendEntities, attackYourWolf, interactLiquid,
-                noBreakTileEntity, autoBackPackEntities, chargeEnergyItemsInInventory,
-                summonLightBoltsInKill, autoBackPack, playersCantRespawn, banEntitiesAttacked, autoKill);
-        ligation.put(counterAttack, I18n.format("guikaia.config.counterattack"));
-        ligation.put(killAllEntities, I18n.format("guikaia.config.attackallentities"));
-        ligation.put(killFriendEntities, I18n.format("guikaia.config.attackfriendentities"));
-        ligation.put(attackYourWolf, I18n.format("guikaia.config.attackyourwolf"));
-        ligation.put(interactLiquid, I18n.format("guikaia.config.interactwithliquidblocks"));
-        ligation.put(noBreakTileEntity, I18n.format("guikaia.config.donotbreaktileentityblocks"));
-        ligation.put(autoBackPackEntities, I18n.format("guikaia.config.autobackpackentities"));
-        ligation.put(chargeEnergyItemsInInventory, I18n.format("guikaia.config." + chargeEnergyItemsInInventory));
-        ligation.put(summonLightBoltsInKill, I18n.format("guikaia.config.summonlightbolstinkill"));
-        ligation.put(autoBackPack, I18n.format("guikaia.config.autobackpack"));
-        ligation.put(playersCantRespawn, I18n.format("guikaia.config.playerscantrespawn"));
-        ligation.put(banEntitiesAttacked, I18n.format("guikaia.config.banEntitiesAttacked"));
-        ligation.put(autoKill, I18n.format("guikaia.config.autoKill"));
+        if (!tagCompound.getBoolean(showInfo.getValue())) return;
         List<String> values = new ArrayList<>();
-        for (String key : booleanValues) {
-            values.add(TextFormatting.GOLD + ligation.get(key) + ": " + TextFormatting.BLUE + tagCompound.getBoolean(key));
+        for (NbtBooleanValues key : NbtBooleanValues.values()) {
+            if (!(key.getValue().equals(showInfo.getValue()) || key.getValue().equals(playersWhoShouldNotKilledInCounterAttack.getValue()) || key.getValue().equals(playerDontKillInDirectAttack.getValue())))
+                values.add(TextFormatting.GOLD + I18n.format("guikaia.config." + key.getValue()) + ": " + TextFormatting.BLUE + tagCompound.getBoolean(key.getValue()));
         }
         drawHoveringText(values, widthUsed, heigthUsed);
     }
