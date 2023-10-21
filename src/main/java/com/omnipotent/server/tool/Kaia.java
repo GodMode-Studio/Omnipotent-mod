@@ -2,6 +2,8 @@ package com.omnipotent.server.tool;
 
 import cofh.redstoneflux.RedstoneFluxProps;
 import cofh.redstoneflux.api.IEnergyContainerItem;
+import com.brandon3055.draconicevolution.DraconicEvolution;
+import com.brandon3055.draconicevolution.api.IReaperItem;
 import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.server.entity.KaiaEntity;
 import com.omnipotent.server.specialgui.IContainer;
@@ -35,6 +37,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import vazkii.botania.api.mana.IManaItem;
 import vazkii.botania.api.mana.IManaReceiver;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -52,7 +55,8 @@ import static com.omnipotent.util.UtilityHelper.isPlayer;
 
 @Optional.Interface(modid = RedstoneFluxProps.MOD_ID, iface = "cofh.redstoneflux.api.IEnergyContainerItem", striprefs = true)
 @Optional.Interface(modid = "botania", iface = "vazkii.botania.api.mana.IManaReceiver", striprefs = true)
-public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerItem {
+@Optional.Interface(modid = "draconicevolution", iface = "com.brandon3055.draconicevolution.api.IReaperItem", striprefs = true)
+public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerItem, IReaperItem {
 
     private final String botaniaModid = "botania";
 
@@ -282,21 +286,27 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
-        if (!playerIn.world.isRemote) {
-            playerIn.world.spawnEntity(new EntityXPOrb(playerIn.world, playerIn.posX, playerIn.posY, playerIn.posZ, Integer.MAX_VALUE / 10000));
+    public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer player, EnumHand handIn) {
+        if (!player.world.isRemote) {
+            if (player.isSneaking()) {
+                List<Entity> entitiesInArea = getEntitiesInArea(worldIn, player.getPosition(), 100);
+                for (Entity entity : entitiesInArea) {
+                    KaiaUtil.killChoice(entity, player, player.getHeldItem(handIn).getTagCompound().getBoolean(killAllEntities.getValue()));
+                }
+            } else
+                player.world.spawnEntity(new EntityXPOrb(player.world, player.posX, player.posY, player.posZ, Integer.MAX_VALUE / 10000));
         }
-        return super.onItemRightClick(worldIn, playerIn, handIn);
+        return super.onItemRightClick(worldIn, player, handIn);
     }
 
     @Override
-    public boolean hasCustomEntity(ItemStack stack) {
+    public boolean hasCustomEntity(@Nonnull ItemStack stack) {
         return true;
     }
 
     @Nullable
     @Override
-    public Entity createEntity(World world, Entity location, ItemStack itemstack) {
+    public Entity createEntity(@Nonnull World world, Entity location, @Nonnull ItemStack itemstack) {
         return new KaiaEntity(world, location.posX, location.posY, location.posZ, itemstack);
     }
 
@@ -332,5 +342,11 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
     @Optional.Method(modid = RedstoneFluxProps.MOD_ID)
     public int getMaxEnergyStored(ItemStack itemStack) {
         return Integer.MAX_VALUE;
+    }
+
+    @Override
+    @Optional.Method(modid = DraconicEvolution.MODID)
+    public int getReaperLevel(ItemStack itemStack) {
+        return 5;
     }
 }
