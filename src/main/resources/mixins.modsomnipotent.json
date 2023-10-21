@@ -1,0 +1,11 @@
+{
+  "compatibilityLevel": "JAVA_8",
+  "package": "com.omnipotent.server.mixin.mods",
+  "refmap": "refmap.omnipotent.json",
+  "mixins": [
+    "IMixinDEEventHandler"
+  ],
+  "client": [
+  ],
+  "server": []
+}
