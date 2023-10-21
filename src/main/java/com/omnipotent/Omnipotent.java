@@ -27,6 +27,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
+import org.spongepowered.asm.mixin.Mixins;
 
 @Mod(modid = Omnipotent.MODID, name = Omnipotent.NAME, version = Omnipotent.VERSION, useMetadata = true)
 @Mod.EventBusSubscriber
@@ -50,6 +51,7 @@ public class Omnipotent {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        Mixins.addConfiguration("mixins.omnipotent.json");
         MinecraftForge.EVENT_BUS.register(instance);
         CapabilityManager.INSTANCE.register(IKaiaBrand.class, new KaiaStorage(), KaiaBrandItems.class);
         CapabilityManager.INSTANCE.register(IBlockMode.class, new BlockModeStorage(), BlockModePlayer.class);
