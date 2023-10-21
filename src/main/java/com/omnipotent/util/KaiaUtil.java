@@ -1,5 +1,10 @@
 package com.omnipotent.util;
 
+import com.brandon3055.draconicevolution.DEConfig;
+import com.brandon3055.draconicevolution.DEFeatures;
+import com.brandon3055.draconicevolution.DraconicEvolution;
+import com.brandon3055.draconicevolution.achievements.Achievements;
+import com.brandon3055.draconicevolution.handlers.DEEventHandler;
 import com.google.common.collect.Lists;
 import com.omnipotent.Config;
 import com.omnipotent.acessor.IEntityLivingBaseAcessor;
@@ -10,6 +15,7 @@ import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.capability.UnbanEntitiesProvider;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.server.entity.CustomLightningBolt;
+import com.omnipotent.server.mixin.mods.IMixinDEEventHandler;
 import com.omnipotent.server.specialgui.IContainer;
 import com.omnipotent.server.specialgui.InventoryKaia;
 import com.omnipotent.server.tool.Kaia;
@@ -23,6 +29,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.monster.EntityGolem;
+import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.passive.EntityBat;
 import net.minecraft.entity.passive.EntitySquid;
 import net.minecraft.entity.passive.EntityWolf;
@@ -47,6 +54,8 @@ import net.minecraft.world.DimensionType;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Optional;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -93,6 +102,14 @@ public class KaiaUtil {
         BlockPos position = playerSource.getPosition();
         boolean killAllEntities = tagCompoundOfKaia.getBoolean(NbtBooleanValues.killAllEntities.getValue());
         int rangeOfBlocks = tagCompoundOfKaia.getInteger(rangeAutoKill.getValue());
+        List<Entity> entities = getEntitiesInArea(world, position, rangeOfBlocks);
+        filterEntities(entities, tagCompoundOfKaia);
+        for (Entity entity : entities) {
+            killChoice(entity, playerSource, killAllEntities);
+        }
+    }
+
+    public static List<Entity> getEntitiesInArea(World world, BlockPos position, int rangeOfBlocks) {
         int xNegative = position.getX() - rangeOfBlocks;
         int xPositive = position.getX() + rangeOfBlocks;
         int yNegative = position.getY() - rangeOfBlocks;
@@ -100,11 +117,7 @@ public class KaiaUtil {
         int zNegative = position.getZ() - rangeOfBlocks;
         int zPositive = position.getZ() + rangeOfBlocks;
         AxisAlignedBB axisAlignedBB = new AxisAlignedBB(xNegative, yNegative, zNegative, xPositive, yPositive, zPositive);
-        List<Entity> entities = world.getEntitiesWithinAABB(Entity.class, axisAlignedBB);
-        filterEntities(entities, tagCompoundOfKaia);
-        for (Entity entity : entities) {
-            killChoice(entity, playerSource, killAllEntities);
-        }
+        return world.getEntitiesWithinAABB(Entity.class, axisAlignedBB);
     }
 
     public static void killArea(EntityPlayer playerSource) {
@@ -279,20 +292,46 @@ public class KaiaUtil {
     private static void verifyAndManagerAutoBackEntitiesAndApplyDamage(EntityLivingBase entityCreature, DamageSource ds, EntityPlayer playerSource, ItemStack kaia) {
         NBTTagCompound tagCompound = kaia.getTagCompound();
         boolean autoBackpackEntities = tagCompound.getBoolean(autoBackPackEntities.getValue());
+        ItemStack soulReaper = null;
         if (autoBackpackEntities) {
             entityCreature.captureDrops = false;
             entityCreature.captureDropsAbsolute = true;
+            if (Loader.isModLoaded(DraconicEvolution.MODID))
+                soulReaper = setReaperEnchant(kaia, playerSource, entityCreature);
             entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
             entityCreature.onDeath(ds);
             ArrayList<EntityItem> capturedDrops = entityCreature.capturedDrops;
             NonNullList<ItemStack> drops = NonNullList.create();
             capturedDrops.forEach(entityItem -> drops.add(entityItem.getItem()));
+            if (soulReaper != null) drops.add(soulReaper);
             UtilityHelper.compactListItemStacks(drops);
             addedItemsStacksInKaiaInventory(playerSource, drops, kaia);
         } else {
+            if (Loader.isModLoaded(DraconicEvolution.MODID)) {
+                World world = playerSource.world;
+                ItemStack stack = setReaperEnchant(kaia, playerSource, entityCreature);
+                if (stack != null)
+                    world.spawnEntity(new EntityItem(world, entityCreature.posX, entityCreature.posY, entityCreature.posZ, stack));
+            }
             entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
             entityCreature.onDeath(ds);
         }
+    }
+
+    @Optional.Method(modid = DraconicEvolution.MODID)
+    private static ItemStack setReaperEnchant(ItemStack kaia, EntityPlayer playerSource, EntityLivingBase entityCreature) {
+        ItemStack soul = null;
+        DEEventHandler deEventHandler = new DEEventHandler();
+        int dropChanceOfReaperEnchantment = ((IMixinDEEventHandler) deEventHandler).callGetDropChanceFromItem(kaia);
+        Random random = new Random();
+        int rand = random.nextInt(Math.max(DEConfig.soulDropChance / dropChanceOfReaperEnchantment, 1));
+        int rand2 = random.nextInt(Math.max(DEConfig.passiveSoulDropChance / dropChanceOfReaperEnchantment, 1));
+        boolean isAnimal = entityCreature instanceof EntityAnimal;
+        if ((rand == 0 && !isAnimal) || (rand2 == 0 && isAnimal)) {
+            soul = DEFeatures.mobSoul.getSoulFromEntity(entityCreature, false);
+            Achievements.triggerAchievement(playerSource, "draconicevolution.soul");
+        }
+        return soul;
     }
 
     private static void dennyEntitySpawnInWorld(World world, Entity entity) {
