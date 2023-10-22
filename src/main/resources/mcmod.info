@@ -16,9 +16,8 @@
     "logoFile": "",
     "screenshots": [],
     "useDependencyInformation": "true",
-    "requiredMods": "mixinbooter",
+    "requiredMods": ["mixinbooter@[8.6,)"],
     "dependencies": [
-      "mixinbooter",
       "redstoneflux",
       "botania",
       "draconicevolution"
