@@ -2,8 +2,6 @@ package com.omnipotent.server.tool;
 
 import cofh.redstoneflux.RedstoneFluxProps;
 import cofh.redstoneflux.api.IEnergyContainerItem;
-import com.brandon3055.draconicevolution.DraconicEvolution;
-import com.brandon3055.draconicevolution.api.IReaperItem;
 import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.server.entity.KaiaEntity;
 import com.omnipotent.server.specialgui.IContainer;
@@ -53,10 +51,9 @@ import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.KaiaUtil.*;
 import static com.omnipotent.util.UtilityHelper.isPlayer;
 
-@Optional.Interface(modid = RedstoneFluxProps.MOD_ID, iface = "cofh.redstoneflux.api.IEnergyContainerItem", striprefs = true)
-@Optional.Interface(modid = "botania", iface = "vazkii.botania.api.mana.IManaReceiver", striprefs = true)
-@Optional.Interface(modid = "draconicevolution", iface = "com.brandon3055.draconicevolution.api.IReaperItem", striprefs = true)
-public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerItem, IReaperItem {
+
+@Optional.InterfaceList({@Optional.Interface(modid = RedstoneFluxProps.MOD_ID, iface = "cofh.redstoneflux.api.IEnergyContainerItem", striprefs = true), @Optional.Interface(modid = "botania", iface = "vazkii.botania.api.mana.IManaReceiver", striprefs = true)})
+public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerItem {
 
     private final String botaniaModid = "botania";
 
@@ -290,9 +287,12 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         if (!player.world.isRemote) {
             if (player.isSneaking()) {
                 List<Entity> entitiesInArea = getEntitiesInArea(worldIn, player.getPosition(), 100);
+                int entitiesKilled = 0;
                 for (Entity entity : entitiesInArea) {
-                    KaiaUtil.killChoice(entity, player, player.getHeldItem(handIn).getTagCompound().getBoolean(killAllEntities.getValue()));
+                    boolean mobKilled = killChoice(entity, player, player.getHeldItem(handIn).getTagCompound().getBoolean(killAllEntities.getValue()));
+                    if (mobKilled) entitiesKilled++;
                 }
+                UtilityHelper.sendMessageToPlayer(TextFormatting.DARK_RED + "" + entitiesKilled + " Entities Killed", player);
             } else
                 player.world.spawnEntity(new EntityXPOrb(player.world, player.posX, player.posY, player.posZ, Integer.MAX_VALUE / 10000));
         }
@@ -342,11 +342,5 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
     @Optional.Method(modid = RedstoneFluxProps.MOD_ID)
     public int getMaxEnergyStored(ItemStack itemStack) {
         return Integer.MAX_VALUE;
-    }
-
-    @Override
-    @Optional.Method(modid = DraconicEvolution.MODID)
-    public int getReaperLevel(ItemStack itemStack) {
-        return 5;
     }
 }
