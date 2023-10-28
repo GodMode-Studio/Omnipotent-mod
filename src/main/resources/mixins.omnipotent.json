@@ -3,6 +3,8 @@
   "package": "com.omnipotent.server.mixin",
   "refmap": "refmap.omnipotent.json",
   "mixins": [
+    "MixinCommandBanIp",
+    "MixinCommandBanPlayer",
     "MixinCommandBase",
     "MixinEntity",
     "MixinEntityLivingBase",
