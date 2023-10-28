@@ -1,11 +1,14 @@
 package com.omnipotent.server.network;
 
+import com.omnipotent.server.network.nbtpackets.ChangedValuePacket;
 import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.server.specialgui.net.KaiaContainerOpenPackte;
 import com.omnipotent.server.specialgui.net.KaiaContainerPacket;
 import com.omnipotent.server.specialgui.net.KaiaSlotChangePacket;
 import com.omnipotent.server.specialgui.net.OmnipotentContainerPacket;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.relauncher.Side;
 
@@ -15,7 +18,7 @@ public enum NetworkRegister {
     ACESS;
 
 
-    private NetworkRegister() {
+    NetworkRegister() {
         int index = 0;
         channel.registerMessage(PacketInicialization.PacketInicializationHandler.class, PacketInicialization.class, ++index, Side.SERVER);
         channel.registerMessage(OmnipotentContainerPacket.AazominipotentContainerPacketHandler.class, OmnipotentContainerPacket.class, ++index, Side.SERVER);
@@ -26,6 +29,8 @@ public enum NetworkRegister {
         channel.registerMessage(KaiaContainerPacket.MessageHandler.class, KaiaContainerPacket.class, ++index, Side.SERVER);
         channel.registerMessage(KaiaSlotChangePacket.MessageHandler.class, KaiaSlotChangePacket.class, ++index, Side.CLIENT);
         channel.registerMessage(KaiaContainerOpenPackte.MessageHandler.class, KaiaContainerOpenPackte.class, ++index, Side.SERVER);
+        channel.registerMessage(ChangedValuePacket.ChangedValuePacketHandler.class, ChangedValuePacket.class, ++index, Side.CLIENT);
+        channel.registerMessage(ChangedValuePacket.ChangedValuePacketHandler.class, ChangedValuePacket.class, ++index, Side.SERVER);
     }
 
     public void sendToServer(IMessage message) {
@@ -34,6 +39,11 @@ public enum NetworkRegister {
 
     public void sendToAll(IMessage message) {
         channel.sendToAll(message);
+    }
+
+    public void sendToAround(IMessage message, int dimensionId, BlockPos pos, int range) {
+        NetworkRegistry.TargetPoint targetPoint = new NetworkRegistry.TargetPoint(dimensionId, pos.getX(), pos.getY(), pos.getZ(), range);
+        channel.sendToAllAround(message, targetPoint);
     }
 
     public void sendMessageToPlayer(IMessage msg, EntityPlayerMP player) {
