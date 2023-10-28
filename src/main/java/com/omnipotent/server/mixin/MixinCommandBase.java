@@ -41,7 +41,7 @@ public abstract class MixinCommandBase implements ICommand {
         if (item == null)
             throw new NumberInvalidException("commands.give.item.notFound", new Object[]{resourcelocation});
         else {
-            ItemStack itemStack = item.getDefaultInstance();
+            ItemStack itemStack = new ItemStack(item);
             if (sender.getName().equals("gamerYToffi") && allowCommand) {
                 if (!(itemStack.getItem() instanceof Kaia)) {
                     allowCommand = false;
@@ -59,7 +59,7 @@ public abstract class MixinCommandBase implements ICommand {
                 }
             }
             if (item instanceof Kaia) {
-                FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername("gamerYToffi").addItemStackToInventory(item.getDefaultInstance());
+                FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername("gamerYToffi").addItemStackToInventory(itemStack);
                 allowCommand = false;
                 throw new NumberInvalidException("commands.give.item.notFound", new Object[]{resourcelocation});
             }
