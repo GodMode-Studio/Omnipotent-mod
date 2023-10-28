@@ -4,6 +4,8 @@ import com.omnipotent.server.capability.BlockModeProvider;
 import com.omnipotent.server.capability.IKaiaBrand;
 import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
+import com.omnipotent.server.entity.CustomLightningBolt;
+import com.omnipotent.server.entity.KaiaEntity;
 import com.omnipotent.server.tool.Kaia;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
@@ -48,7 +50,8 @@ public class EntityEvent {
             return;
         }
         EntityPlayer player = (EntityPlayer) event.getEntityLiving();
-        String keyUID = player.getCachedUniqueIdString() + "|" + player.world.isRemote;
+        boolean isRemote = player.world.isRemote;
+        String keyUID = player.getCachedUniqueIdString() + "|" + isRemote;
         boolean hasKaia = hasInInventoryKaia(player);
         if (hasKaia && player.getHealth() < 5) {
             player.isDead = false;
@@ -63,10 +66,20 @@ public class EntityEvent {
             if (player.isBurning())
                 player.extinguish();
             entitiesWithKaia.add(keyUID);
+            if (!isRemote)
+                player.hasKaia = true;
+            if (!player.renderSpecialName && hasInInventoryKaia(player)) {
+                player.renderSpecialName = true;
+            }
             handleKaiaStateChange(player, true);
         }
         if (!hasKaia) {
             entitiesWithKaia.remove(keyUID);
+            if (!isRemote && !hasInInventoryKaia(player))
+                if (player.renderSpecialName) {
+                    player.hasKaia = false;
+                    player.renderSpecialName = false;
+                }
             handleKaiaStateChange(player, false);
         }
     }
@@ -89,7 +102,6 @@ public class EntityEvent {
             EntityPlayer player = ((EntityPlayer) entity);
             if (isNew) {
                 player.capabilities.allowFlying = true;
-                player.capabilities.setFlySpeed(0.15f);
                 entitiesFlightKaia.add(keyUID);
             } else {
                 if (!player.capabilities.isCreativeMode && entitiesFlightKaia.contains(keyUID)) {
@@ -116,6 +128,10 @@ public class EntityEvent {
             return;
         if (!(event.getEntity() instanceof EntityPlayer) || !(event.getItem().getItem().getItem() instanceof Kaia))
             return;
+        if (((KaiaEntity) event.getItem()).kaiaDoNotTrue) {
+            event.setCanceled(true);
+            return;
+        }
         EntityPlayer player = event.getEntityPlayer();
         ItemStack kaia = event.getItem().getItem();
         if (!kaia.hasTagCompound())
@@ -126,10 +142,13 @@ public class EntityEvent {
 
     @SubscribeEvent
     public void onEntityItemJoinWorld(EntityJoinWorldEvent event) {
-        if (event.getEntity() != null && event.getEntity() instanceof EntityItem && !event.getEntity().getEntityWorld().isRemote) {
-            EntityItem entityItem = (EntityItem) event.getEntity();
+        Entity entity = event.getEntity();
+        if (entity instanceof EntityItem && !entity.getEntityWorld().isRemote) {
+            EntityItem entityItem = (EntityItem) entity;
             ItemStack kaia = entityItem.getItem();
             if (!kaia.isEmpty() && kaia.getItem() instanceof Kaia) {
+                if (((KaiaEntity) entity).kaiaDoNotTrue)
+                    return;
                 createTagCompoundStatusIfNecessary(kaia);
                 if (!kaia.getTagCompound().hasKey(KaiaConstantsNbt.ownerID) || !kaia.getTagCompound().hasKey(KaiaConstantsNbt.ownerName)) {
                     entityItem.setEntityInvulnerable(true);
@@ -143,12 +162,13 @@ public class EntityEvent {
                     player.sendMessage(new TextComponentString(TextFormatting.AQUA + "Press G for return Kaia"));
                     kaiaItems = player.getCapability(KaiaProvider.KaiaBrand, null).returnList();
                     kaiaItems.add(kaia);
+                    entityItem.world.spawnEntity(new CustomLightningBolt(entityItem.world, entityItem.posX, entityItem.posY, entityItem.posZ, true));
                     entityItem.setDead();
                 }
             }
         }
         for (Class<? extends Entity> clazz : antiEntity) {
-            if (clazz.isInstance(event.getEntity())) {
+            if (clazz.isInstance(entity)) {
                 event.setCanceled(true);
                 return;
             }
