@@ -1,8 +1,10 @@
 package com.omnipotent.server.network.nbtpackets;
 
 import com.omnipotent.constant.NbtBooleanValues;
+import com.omnipotent.constant.NbtStringValues;
 import com.omnipotent.server.capability.BlockModeProvider;
 import com.omnipotent.server.capability.IBlockMode;
+import com.omnipotent.server.tool.Kaia;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.NbtListUtil;
 import com.omnipotent.util.Teleporte;
@@ -13,22 +15,23 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
+import net.minecraft.nbt.*;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.storage.ISaveHandler;
+import net.minecraft.world.storage.SaveHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.omnipotent.constant.NbtNumberValues.*;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
@@ -135,9 +138,67 @@ public class KaiaNbtPacket implements IMessage {
                     case effectsBlockeds:
                         functionManageEffectsBlocked(player, message);
                         break;
-                    default:
-                        functionManageBooleansAndIntegersNbt(player, message);
+                    case "getKaiaBetweenSaves":
+                        functionManageKaiaBetweenSaves(player, message);
                         break;
+                    default:
+                        functionManageBooleansIntegersAndStringNbt(player, message);
+                        break;
+                }
+            }
+            return null;
+        }
+
+        private void functionManageKaiaBetweenSaves(EntityPlayer player, KaiaNbtPacket message) {
+            if (!KaiaUtil.hasInInventoryKaia(player)) {
+                String path = System.getProperty("user.dir").concat("\\saves");
+                HashMap<Long, ItemStack> kaias = new HashMap<>();
+                iteratorInSaves(player, path, kaias);
+                addLastKaiaOfDataInInventory(player, kaias);
+            }
+        }
+
+        private void iteratorInSaves(EntityPlayer player, String path, HashMap<Long, ItemStack> kaias) {
+            File file = new File(path);
+            List<File> files = Arrays.asList(file.listFiles());
+            files.forEach(file2 -> verifyAndAcessSaves(player, file2.getAbsolutePath(), kaias));
+        }
+
+        private void verifyAndAcessSaves(EntityPlayer player, String absolutePath, HashMap<Long, ItemStack> kaias) {
+            File file = new File(absolutePath.concat("\\playerdata"));
+            List<File> files = Arrays.asList(file.listFiles()).stream().filter(file2 -> file2.getName().endsWith(".dat") && file2.getName().split(".dat")[0].equals(player.getUniqueID().toString())).collect(Collectors.toList());
+            for (File file2 : files) {
+                try {
+                    NBTTagCompound nbtTagCompound = CompressedStreamTools.readCompressed(new FileInputStream(file2));
+                    if (nbtTagCompound != null) {
+                        ISaveHandler saveHandler = player.world.getSaveHandler();
+                        if (saveHandler instanceof SaveHandler) {
+                            ItemStack kaiaOfNbtCompound = getKaiaOfNbtCompound(nbtTagCompound);
+                            if (kaiaOfNbtCompound != null)
+                                kaias.put(file2.lastModified(), kaiaOfNbtCompound);
+                        }
+                    }
+                } catch (IOException e) {
+                }
+            }
+        }
+
+        private void addLastKaiaOfDataInInventory(EntityPlayer player, HashMap<Long, ItemStack> kaias) {
+            if (kaias.isEmpty()) return;
+            ItemStack kaia = kaias.get(Collections.max(kaias.keySet()));
+            player.inventory.addItemStackToInventory(kaia);
+        }
+
+        private ItemStack getKaiaOfNbtCompound(NBTTagCompound nbtTagCompound) {
+            NBTTagList inventory = nbtTagCompound.getTagList("Inventory", 10);
+            Iterator<NBTBase> iterator = inventory.iterator();
+            while (iterator.hasNext()) {
+                NBTBase next = iterator.next();
+                if (next instanceof NBTTagCompound) {
+                    ItemStack itemStack = new ItemStack((NBTTagCompound) next);
+                    if (itemStack.getItem() instanceof Kaia) {
+                        return itemStack;
+                    }
                 }
             }
             return null;
@@ -154,19 +215,32 @@ public class KaiaNbtPacket implements IMessage {
             }
         }
 
-        private static void functionManageBooleansAndIntegersNbt(EntityPlayer player, KaiaNbtPacket message) {
+        private static void functionManageBooleansIntegersAndStringNbt(EntityPlayer player, KaiaNbtPacket message) {
+            NBTTagCompound tagCompound = KaiaUtil.getKaiaInMainHand(player).getTagCompound();
             for (String nbt : NbtBooleanValues.valuesNbt) {
                 if (message.type.equals(nbt)) {
-                    KaiaUtil.getKaiaInMainHand(player).getTagCompound().setBoolean(nbt, message.booleanValue);
+                    tagCompound.setBoolean(nbt, message.booleanValue);
                     return;
                 }
             }
             ArrayList<String> listNBTInt = new ArrayList<>();
-            listNBTInt.addAll(Arrays.asList(blockBreakArea.getValue(), rangeAttack.getValue(), maxCountSlot.getValue(), rangeAutoKill.getValue(), chargeManaInBlocksAround.getValue(), chargeEnergyInBlocksAround.getValue()));
+            listNBTInt.addAll(Arrays.asList(blockBreakArea.getValue(), rangeAttack.getValue(), maxCountSlot.getValue(), rangeAutoKill.getValue(), chargeManaInBlocksAround.getValue(), chargeEnergyInBlocksAround.getValue(), optionOfColor.getValue()));
             for (String nbt : listNBTInt) {
                 if (message.type.equals(nbt)) {
-                    KaiaUtil.getKaiaInMainHand(player).getTagCompound().setInteger(nbt, message.intValue);
+                    if (message.type.equals(optionOfColor.getValue())) {
+                        if (message.intValue >= 0 && message.intValue <= 3)
+                            tagCompound.setInteger(nbt, message.intValue);
+                        else
+                            tagCompound.setInteger(nbt, 0);
+                    } else
+                        tagCompound.setInteger(nbt, message.intValue);
                     return;
+                }
+            }
+
+            for (NbtStringValues nbt : NbtStringValues.values()) {
+                if (message.type.equals(nbt.getValue())) {
+                    tagCompound.setString(nbt.getValue(), message.text);
                 }
             }
         }
