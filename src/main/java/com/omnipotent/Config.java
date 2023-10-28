@@ -46,12 +46,12 @@ public class Config {
 
     public static void reloadConfigs() {
         config.load();
-        Property property = config.get(Configuration.CATEGORY_GENERAL, "playerscantrespawn", new String[0], I18n.format("config.playerscantrespawn"));
+        Property property = config.get(Configuration.CATEGORY_GENERAL, "playerscantrespawn", new String[0], "players that can't respawn");
         ArrayList stringList = new ArrayList(Arrays.asList(property.getStringList()));
         playerscantrespawn = stringList;
     }
     public static void reloadConfigsOfFile() {
-        Property property = config.get(Configuration.CATEGORY_GENERAL, "playerscantrespawn", new String[0], I18n.format("config.playerscantrespawn"));
+        Property property = config.get(Configuration.CATEGORY_GENERAL, "playerscantrespawn", new String[0], "players that can't respawn");
         property.setValues(playerscantrespawn.toArray(new String[0]));
         config.save();
     }
