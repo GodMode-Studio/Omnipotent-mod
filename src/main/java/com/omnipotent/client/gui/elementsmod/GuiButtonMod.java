@@ -6,7 +6,7 @@ import net.minecraft.client.gui.GuiButton;
 
 public class GuiButtonMod extends GuiButton {
     public Runnable runnable;
-    private NbtBooleanValues valueNbt;
+    private NbtBooleanValues valueNbtBoolean;
 
     public NbtNumberValues getValueNbtNumber() {
         return valueNbtNumber;
@@ -19,12 +19,12 @@ public class GuiButtonMod extends GuiButton {
     private NbtNumberValues valueNbtNumber;
 
 
-    public NbtBooleanValues getValueNbt() {
-        return valueNbt;
+    public NbtBooleanValues getValueNbtBoolean() {
+        return valueNbtBoolean;
     }
 
-    public void setValueNbt(NbtBooleanValues valueNbt) {
-        this.valueNbt = valueNbt;
+    public void setValueNbtBoolean(NbtBooleanValues valueNbtBoolean) {
+        this.valueNbtBoolean = valueNbtBoolean;
     }
 
     public GuiButtonMod(int buttonId, int x, int y, String buttonText) {

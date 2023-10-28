@@ -2,6 +2,7 @@ package com.omnipotent.client.gui.elementsmod;
 
 import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.constant.NbtNumberValues;
+import com.omnipotent.constant.NbtStringValues;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiTextField;
 
@@ -10,16 +11,24 @@ public class GuiTextFieldMod extends GuiTextField {
     private boolean isSelected = false;
     private NbtBooleanValues value;
     private NbtNumberValues nbtNumberValue;
+    private NbtStringValues nbtStringValue;
 
 
     public NbtNumberValues getNbtNumberValue() {
         return nbtNumberValue;
     }
 
+    public NbtStringValues getNbtStringValue() {
+        return nbtStringValue;
+    }
+
     public void setNbtNumberValue(NbtNumberValues nbtNumberValue) {
         this.nbtNumberValue = nbtNumberValue;
     }
 
+    public void setNbtStringValue(NbtStringValues nbtStringValue) {
+        this.nbtStringValue = nbtStringValue;
+    }
 
     public NbtBooleanValues getValue() {
         return value;
