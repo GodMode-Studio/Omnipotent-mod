@@ -8,7 +8,7 @@ import java.util.List;
 public class ImplementMixinsOfMods implements ILateMixinLoader {
     @Override
     public List<String> getMixinConfigs() {
-        return Arrays.asList("mixins.modsomnipotent.json");
+        return Arrays.asList("mixins.modsomnipotent.json", "mixin.abyssalcraft.json");
     }
 
     @Override
