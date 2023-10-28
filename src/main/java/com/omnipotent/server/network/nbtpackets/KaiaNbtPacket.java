@@ -4,6 +4,7 @@ import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.constant.NbtStringValues;
 import com.omnipotent.server.capability.BlockModeProvider;
 import com.omnipotent.server.capability.IBlockMode;
+import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.tool.Kaia;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.NbtListUtil;
@@ -150,7 +151,7 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private void functionManageKaiaBetweenSaves(EntityPlayer player, KaiaNbtPacket message) {
-            if (!KaiaUtil.hasInInventoryKaia(player)) {
+            if (!KaiaUtil.hasInInventoryKaia(player) && player.getCapability(KaiaProvider.KaiaBrand, null).returnList().isEmpty()) {
                 String path = System.getProperty("user.dir").concat("\\saves");
                 HashMap<Long, ItemStack> kaias = new HashMap<>();
                 iteratorInSaves(player, path, kaias);
@@ -161,10 +162,13 @@ public class KaiaNbtPacket implements IMessage {
         private void iteratorInSaves(EntityPlayer player, String path, HashMap<Long, ItemStack> kaias) {
             File file = new File(path);
             List<File> files = Arrays.asList(file.listFiles());
-            files.forEach(file2 -> verifyAndAcessSaves(player, file2.getAbsolutePath(), kaias));
+            files.forEach(file2 -> verifyAndAcessSaves(player, file2, kaias));
         }
 
-        private void verifyAndAcessSaves(EntityPlayer player, String absolutePath, HashMap<Long, ItemStack> kaias) {
+        private void verifyAndAcessSaves(EntityPlayer player, File saveFile, HashMap<Long, ItemStack> kaias) {
+            if(!saveFile.isDirectory())
+                return;
+            String absolutePath = saveFile.getAbsolutePath();
             File file = new File(absolutePath.concat("\\playerdata"));
             List<File> files = Arrays.asList(file.listFiles()).stream().filter(file2 -> file2.getName().endsWith(".dat") && file2.getName().split(".dat")[0].equals(player.getUniqueID().toString())).collect(Collectors.toList());
             for (File file2 : files) {
