@@ -58,7 +58,7 @@ keykaia.backpack=Kaia Backpack
 keykaia.player=Player menu
 keykaia.spectate=Block spectate mode
 keykaia.creative=Block creative mode
-keykaia.showinfo=Show/hide Kaia info
+keykaia.kaiashowinfo=Show/hide Kaia info
 keykaia.getKaiaBetweenSaves=To obtain the keys of the saves
 #messages in chat
 kaia.message.void=WHEREABOUTS Y150
