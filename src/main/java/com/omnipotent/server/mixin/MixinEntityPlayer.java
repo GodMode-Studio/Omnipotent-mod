@@ -12,10 +12,14 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.FoodStats;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,7 +33,7 @@ import javax.annotation.Nullable;
 import java.util.Iterator;
 
 import static com.omnipotent.constant.NbtBooleanValues.*;
-import static com.omnipotent.util.KaiaConstantsNbt.*;
+import static com.omnipotent.util.KaiaConstantsNbt.playersDontKill;
 import static com.omnipotent.util.KaiaUtil.*;
 
 @Mixin(EntityPlayer.class)
@@ -66,6 +70,39 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
 
     @Shadow
     protected abstract void playShoulderEntityAmbientSound(@Nullable NBTTagCompound p_192028_1_);
+
+    public boolean renderSpecialName = false;
+    public boolean hasKaia = false;
+
+    /**
+     * @author
+     * @reason
+     */
+    @Overwrite
+    public ITextComponent getDisplayName() {
+        ITextComponent itextcomponent = new TextComponentString("");
+        if (!prefixes.isEmpty()) for (ITextComponent prefix : prefixes) itextcomponent.appendSibling(prefix);
+        itextcomponent.appendSibling(new TextComponentString(ScorePlayerTeam.formatPlayerName(this.getTeam(), this.getDisplayNameString())));
+        if (!suffixes.isEmpty()) for (ITextComponent suffix : suffixes) itextcomponent.appendSibling(suffix);
+        itextcomponent.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/msg " + this.getName() + " "));
+        itextcomponent.getStyle().setHoverEvent(this.getHoverEvent());
+        itextcomponent.getStyle().setInsertion(this.getName());
+        if (renderSpecialName) {
+            displayname = null;
+        }
+        return itextcomponent;
+    }
+
+    @Shadow
+    public abstract String getDisplayNameString();
+
+    @Shadow
+    private final java.util.Collection<ITextComponent> prefixes = new java.util.LinkedList<ITextComponent>();
+    @Shadow
+    private final java.util.Collection<ITextComponent> suffixes = new java.util.LinkedList<ITextComponent>();
+
+    @Shadow
+    private String displayname;
 
     /**
      * @author
