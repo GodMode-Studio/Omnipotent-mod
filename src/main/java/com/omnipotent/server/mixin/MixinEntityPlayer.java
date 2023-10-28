@@ -183,7 +183,7 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
 //                    }
                 if (kaia.getTagCompound().getBoolean(counterAttack.getValue())) {
                     if (entityIsFriendEntity(source.getTrueSource())) {
-                        if (entityFriendCanKilledByKaia(kaia.getTagCompound(), source.getTrueSource()))
+                        if (entityFriendCanKilledByKaia(kaia.getTagCompound(), source.getTrueSource(), false))
                             KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities.getValue()));
                     } else if (entityNoIsNormalAndCanKilledByKaia(kaia.getTagCompound(), source.getTrueSource()))
                         KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities.getValue()));

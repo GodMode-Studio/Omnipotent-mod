@@ -304,8 +304,10 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
             if (player.isSneaking()) {
                 List<Entity> entitiesInArea = getEntitiesInArea(worldIn, player.getPosition(), 100);
                 int entitiesKilled = 0;
+                NBTTagCompound tagCompound = player.getHeldItem(handIn).getTagCompound();
+                filterEntities(entitiesInArea, tagCompound);
                 for (Entity entity : entitiesInArea) {
-                    boolean mobKilled = killChoice(entity, player, player.getHeldItem(handIn).getTagCompound().getBoolean(killAllEntities.getValue()));
+                    boolean mobKilled = killChoice(entity, player, tagCompound.getBoolean(killAllEntities.getValue()));
                     if (mobKilled) entitiesKilled++;
                 }
                 UtilityHelper.sendMessageToPlayer(TextFormatting.DARK_RED + "" + entitiesKilled + " Entities Killed", player);

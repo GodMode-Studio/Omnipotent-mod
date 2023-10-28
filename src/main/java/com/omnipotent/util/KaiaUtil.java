@@ -162,10 +162,10 @@ public class KaiaUtil {
         }
     }
 
-    private static void filterEntities(List<Entity> entities, NBTTagCompound tagCompoundOfKaia) {
+    public static void filterEntities(List<Entity> entities, NBTTagCompound tagCompoundOfKaia) {
         entities.removeIf(entity -> UtilityHelper.isPlayer(entity) && hasInInventoryKaia(entity));
         entities.removeIf(entity -> UtilityHelper.isPlayer(entity) && !entityIsPlayerAndKaiaCanKillPlayer(tagCompoundOfKaia, false, entity));
-        entities.removeIf(entity -> entityIsFriendEntity(entity) && !entityFriendCanKilledByKaia(tagCompoundOfKaia, entity));
+        entities.removeIf(entity -> entityIsFriendEntity(entity) && !entityFriendCanKilledByKaia(tagCompoundOfKaia, entity, false));
     }
 
     public static boolean killChoice(Entity entity, EntityPlayer playerSource, boolean killAllEntities) {
@@ -204,7 +204,7 @@ public class KaiaUtil {
         if (!EntityIsWolfAndKaiaCanKillPlayerOwnedWolf(tagCompound, entityTarget, playerSource))
             return false;
         if (entityIsFriendEntity(entityTarget)) {
-            if (entityFriendCanKilledByKaia(tagCompound, entityTarget))
+            if (entityFriendCanKilledByKaia(tagCompound, entityTarget, directAttack))
                 return true;
             else
                 return false;
@@ -220,8 +220,12 @@ public class KaiaUtil {
             return true;
     }
 
-    public static boolean entityFriendCanKilledByKaia(NBTTagCompound tagCompound, Entity entityTarget) {
-        return tagCompound.getBoolean(killFriendEntities.getValue()) ? true : false;
+    public static boolean entityFriendCanKilledByKaia(NBTTagCompound tagCompound, Entity entityTarget, boolean directAttack) {
+        boolean killFriendEntity = tagCompound.getBoolean(killFriendEntities.getValue());
+        if (!killFriendEntity) {
+            return directAttack;
+        } else
+            return true;
     }
 
     public static boolean entityIsFriendEntity(Entity entityTarget) {
