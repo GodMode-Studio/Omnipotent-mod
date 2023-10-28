@@ -1,11 +1,15 @@
 package com.omnipotent.server.mixin;
 
+import com.omnipotent.constant.NbtNumberValues;
+import com.omnipotent.server.tool.Kaia;
 import com.omnipotent.util.KaiaUtil;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.config.GuiUtils;
@@ -24,6 +28,9 @@ public abstract class MixinGuiUtils {
     @Shadow
     public static void drawGradientRect(int zLevel, int left, int top, int right, int bottom, int startColor, int endColor) {
     }
+
+    private static int[] colors = {Color.YELLOW.getRGB(), Color.YELLOW.getRGB(), Color.YELLOW.getRGB(), Color.YELLOW.getRGB(), Color.YELLOW.getRGB(), Color.YELLOW.getRGB(), Color.YELLOW.getRGB(), Color.cyan.getRGB(), Color.cyan.getRGB(), Color.cyan.getRGB(), Color.cyan.getRGB(), Color.cyan.getRGB(), Color.cyan.getRGB(), Color.cyan.getRGB(), Color.blue.getRGB(), Color.blue.getRGB(), Color.blue.getRGB(), Color.blue.getRGB(), Color.blue.getRGB(), Color.blue.getRGB(), Color.blue.getRGB(), Color.RED.getRGB(), Color.RED.getRGB(), Color.RED.getRGB(), Color.RED.getRGB(), Color.RED.getRGB(), Color.RED.getRGB(), Color.RED.getRGB(), Color.GREEN.getRGB(), Color.GREEN.getRGB(), Color.GREEN.getRGB(), Color.GREEN.getRGB(), Color.GREEN.getRGB(), Color.GREEN.getRGB(), Color.GREEN.getRGB(), Color.MAGENTA.getRGB(), Color.MAGENTA.getRGB(), Color.MAGENTA.getRGB(), Color.MAGENTA.getRGB(), Color.MAGENTA.getRGB(), Color.MAGENTA.getRGB(), Color.MAGENTA.getRGB()};
+    private static int curColorIndex = 0;
 
     /**
      * @author
@@ -128,50 +135,128 @@ public abstract class MixinGuiUtils {
             int borderColorEnd;
 
             final int zLevel = 300;
-            if (KaiaUtil.getKaiaInMainHand(Minecraft.getMinecraft().player) != null && Minecraft.getMinecraft().currentScreen == null) {
-                backgroundColor = 0x200020FF;
-                borderColorStart = Color.GRAY.getRGB();
-                borderColorEnd = Color.magenta.getRGB();//(borderColorStart & 0xFEFEFE) >> 1 | borderColorStart & 0xFF000000;
-            } else {
-                backgroundColor = 0xF0100010;
-                borderColorStart = 0x505000FF;
-                borderColorEnd = (borderColorStart & 0xFEFEFE) >> 1 | borderColorStart & 0xFF000000;
-            }
-            RenderTooltipEvent.Color colorEvent = new RenderTooltipEvent.Color(stack, textLines, tooltipX, tooltipY, font, backgroundColor, borderColorStart, borderColorEnd);
-            MinecraftForge.EVENT_BUS.post(colorEvent);
-            backgroundColor = colorEvent.getBackground();
-            borderColorStart = colorEvent.getBorderStart();
-            borderColorEnd = colorEvent.getBorderEnd();
-            drawGradientRect(zLevel, tooltipX - 3, tooltipY - 4, tooltipX + tooltipTextWidth + 3, tooltipY - 3, backgroundColor, backgroundColor);
-            drawGradientRect(zLevel, tooltipX - 3, tooltipY + tooltipHeight + 3, tooltipX + tooltipTextWidth + 3, tooltipY + tooltipHeight + 4, backgroundColor, backgroundColor);
-            drawGradientRect(zLevel, tooltipX - 3, tooltipY - 3, tooltipX + tooltipTextWidth + 3, tooltipY + tooltipHeight + 3, backgroundColor, backgroundColor);
-            drawGradientRect(zLevel, tooltipX - 4, tooltipY - 3, tooltipX - 3, tooltipY + tooltipHeight + 3, backgroundColor, backgroundColor);
-            drawGradientRect(zLevel, tooltipX + tooltipTextWidth + 3, tooltipY - 3, tooltipX + tooltipTextWidth + 4, tooltipY + tooltipHeight + 3, backgroundColor, backgroundColor);
-            drawGradientRect(zLevel, tooltipX - 3, tooltipY - 3 + 1, tooltipX - 3 + 1, tooltipY + tooltipHeight + 3 - 1, borderColorStart, borderColorEnd);
-            drawGradientRect(zLevel, tooltipX + tooltipTextWidth + 2, tooltipY - 3 + 1, tooltipX + tooltipTextWidth + 3, tooltipY + tooltipHeight + 3 - 1, borderColorStart, borderColorEnd);
-            drawGradientRect(zLevel, tooltipX - 3, tooltipY - 3, tooltipX + tooltipTextWidth + 3, tooltipY - 3 + 1, borderColorStart, borderColorStart);
-            drawGradientRect(zLevel, tooltipX - 3, tooltipY + tooltipHeight + 2, tooltipX + tooltipTextWidth + 3, tooltipY + tooltipHeight + 3, borderColorEnd, borderColorEnd);
-
-            MinecraftForge.EVENT_BUS.post(new RenderTooltipEvent.PostBackground(stack, textLines, tooltipX, tooltipY, font, tooltipTextWidth, tooltipHeight));
-            int tooltipTop = tooltipY;
-
-            for (int lineNumber = 0; lineNumber < textLines.size(); ++lineNumber) {
-                String line = textLines.get(lineNumber);
-                font.drawStringWithShadow(line, (float) tooltipX, (float) tooltipY, -1);
-
-                if (lineNumber + 1 == titleLinesCount) {
-                    tooltipY += 2;
+            if (stack.getItem() instanceof Kaia) {
+                EntityPlayerSP player = Minecraft.getMinecraft().player;
+                int option = 0;
+                NBTTagCompound tagCompound = stack.getTagCompound();
+                if (tagCompound != null)
+                    option = tagCompound.getInteger(NbtNumberValues.optionOfColor.getValue());
+                int curColor = colors[curColorIndex];
+                switch (option) {
+                    case 1:
+                        backgroundColor = (curColor & 0xFFFFFF) | 0x20000000;
+                        borderColorStart = curColor;
+                        borderColorEnd = colors[(curColorIndex + 1) % colors.length];
+                        curColorIndex = (curColorIndex + 1) % colors.length;
+                        specialMethod(borderColorStart, borderColorEnd, backgroundColor, stack, textLines, font, tooltipX, tooltipY, zLevel, tooltipTextWidth, tooltipHeight, titleLinesCount);
+                        return;
+                    case 2:
+                        backgroundColor = 0xF0100010;
+                        borderColorStart = curColor;
+                        borderColorEnd = colors[(curColorIndex + 1) % colors.length];
+                        curColorIndex = (curColorIndex + 1) % colors.length;
+                        specialMethod(borderColorStart, borderColorEnd, backgroundColor, stack, textLines, font, tooltipX, tooltipY, zLevel, tooltipTextWidth, tooltipHeight, titleLinesCount);
+                        return;
+                    case 3:
+                        backgroundColor = colors[(curColorIndex + 1) % colors.length];
+                        borderColorStart = curColor;
+                        borderColorEnd = colors[(curColorIndex + 1) % colors.length];
+                        curColorIndex = (curColorIndex + 1) % colors.length;
+                        specialMethod(borderColorStart, borderColorEnd, backgroundColor, stack, textLines, font, tooltipX, tooltipY, zLevel, tooltipTextWidth, tooltipHeight, titleLinesCount);
+                        return;
                 }
+            }
+            defaultMethod(stack, textLines, font, tooltipX, tooltipY, zLevel, tooltipTextWidth, tooltipHeight, titleLinesCount);
+        }
+    }
 
-                tooltipY += 10;
+    private static void specialMethod(int borderColorStart, int borderColorEnd, int backgroundColor, ItemStack stack, List<String> textLines, FontRenderer font, int tooltipX, int tooltipY, int zLevel, int tooltipTextWidth, int tooltipHeight, int titleLinesCount) {
+        RenderTooltipEvent.Color colorEvent = new RenderTooltipEvent.Color(stack, textLines, tooltipX, tooltipY, font, backgroundColor, borderColorStart, borderColorEnd);
+        MinecraftForge.EVENT_BUS.post(colorEvent);
+        backgroundColor = colorEvent.getBackground();
+        borderColorStart = colorEvent.getBorderStart();
+        borderColorEnd = colorEvent.getBorderEnd();
+        drawGradientRect(zLevel, tooltipX - 3, tooltipY - 4, tooltipX + tooltipTextWidth + 3, tooltipY - 3, backgroundColor, backgroundColor);
+        drawGradientRect(zLevel, tooltipX - 3, tooltipY + tooltipHeight + 3, tooltipX + tooltipTextWidth + 3, tooltipY + tooltipHeight + 4, backgroundColor, backgroundColor);
+        drawGradientRect(zLevel, tooltipX - 3, tooltipY - 3, tooltipX + tooltipTextWidth + 3, tooltipY + tooltipHeight + 3, backgroundColor, backgroundColor);
+        drawGradientRect(zLevel, tooltipX - 4, tooltipY - 3, tooltipX - 3, tooltipY + tooltipHeight + 3, backgroundColor, backgroundColor);
+        drawGradientRect(zLevel, tooltipX + tooltipTextWidth + 3, tooltipY - 3, tooltipX + tooltipTextWidth + 4, tooltipY + tooltipHeight + 3, backgroundColor, backgroundColor);
+        drawGradientRect(zLevel, tooltipX - 3, tooltipY - 3 + 1, tooltipX - 3 + 1, tooltipY + tooltipHeight + 3 - 1, borderColorStart, borderColorEnd);
+        drawGradientRect(zLevel, tooltipX + tooltipTextWidth + 2, tooltipY - 3 + 1, tooltipX + tooltipTextWidth + 3, tooltipY + tooltipHeight + 3 - 1, borderColorStart, borderColorEnd);
+        drawGradientRect(zLevel, tooltipX - 3, tooltipY - 3, tooltipX + tooltipTextWidth + 3, tooltipY - 3 + 1, borderColorStart, borderColorStart);
+        drawGradientRect(zLevel, tooltipX - 3, tooltipY + tooltipHeight + 2, tooltipX + tooltipTextWidth + 3, tooltipY + tooltipHeight + 3, borderColorEnd, borderColorEnd);
+
+        MinecraftForge.EVENT_BUS.post(new RenderTooltipEvent.PostBackground(stack, textLines, tooltipX, tooltipY, font, tooltipTextWidth, tooltipHeight));
+        int tooltipTop = tooltipY;
+
+        for (int lineNumber = 0; lineNumber < textLines.size(); ++lineNumber) {
+            String line = textLines.get(lineNumber);
+            font.drawStringWithShadow(line, (float) tooltipX, (float) tooltipY, -1);
+
+            if (lineNumber + 1 == titleLinesCount) {
+                tooltipY += 2;
             }
 
-            MinecraftForge.EVENT_BUS.post(new RenderTooltipEvent.PostText(stack, textLines, tooltipX, tooltipTop, font, tooltipTextWidth, tooltipHeight));
-
-            GlStateManager.enableLighting();
-            GlStateManager.enableDepth();
-            RenderHelper.enableStandardItemLighting();
-            GlStateManager.enableRescaleNormal();
+            tooltipY += 10;
         }
+
+        MinecraftForge.EVENT_BUS.post(new RenderTooltipEvent.PostText(stack, textLines, tooltipX, tooltipTop, font, tooltipTextWidth, tooltipHeight));
+
+        GlStateManager.enableLighting();
+        GlStateManager.enableDepth();
+        RenderHelper.enableStandardItemLighting();
+        GlStateManager.enableRescaleNormal();
+    }
+
+    private static void defaultMethod(ItemStack stack, List<String> textLines, FontRenderer font, int tooltipX, int tooltipY, int zLevel, int tooltipTextWidth, int tooltipHeight, int titleLinesCount) {
+
+        int borderColorEnd;
+        int backgroundColor;
+        int borderColorStart;
+        Minecraft mc = Minecraft.getMinecraft();
+        if (KaiaUtil.withKaiaMainHand(mc.player) && mc.currentScreen == null) {
+            backgroundColor = 0x200020FF;
+            borderColorStart = Color.GRAY.getRGB();
+            borderColorEnd = Color.magenta.getRGB();
+        } else {
+            backgroundColor = 0xF0100010;
+            borderColorStart = 0x505000FF;
+            borderColorEnd = (borderColorStart & 0xFEFEFE) >> 1 | borderColorStart & 0xFF000000;
+        }
+        RenderTooltipEvent.Color colorEvent = new RenderTooltipEvent.Color(stack, textLines, tooltipX, tooltipY, font, backgroundColor, borderColorStart, borderColorEnd);
+        MinecraftForge.EVENT_BUS.post(colorEvent);
+        backgroundColor = colorEvent.getBackground();
+        borderColorStart = colorEvent.getBorderStart();
+        borderColorEnd = colorEvent.getBorderEnd();
+        drawGradientRect(zLevel, tooltipX - 3, tooltipY - 4, tooltipX + tooltipTextWidth + 3, tooltipY - 3, backgroundColor, backgroundColor);
+        drawGradientRect(zLevel, tooltipX - 3, tooltipY + tooltipHeight + 3, tooltipX + tooltipTextWidth + 3, tooltipY + tooltipHeight + 4, backgroundColor, backgroundColor);
+        drawGradientRect(zLevel, tooltipX - 3, tooltipY - 3, tooltipX + tooltipTextWidth + 3, tooltipY + tooltipHeight + 3, backgroundColor, backgroundColor);
+        drawGradientRect(zLevel, tooltipX - 4, tooltipY - 3, tooltipX - 3, tooltipY + tooltipHeight + 3, backgroundColor, backgroundColor);
+        drawGradientRect(zLevel, tooltipX + tooltipTextWidth + 3, tooltipY - 3, tooltipX + tooltipTextWidth + 4, tooltipY + tooltipHeight + 3, backgroundColor, backgroundColor);
+        drawGradientRect(zLevel, tooltipX - 3, tooltipY - 3 + 1, tooltipX - 3 + 1, tooltipY + tooltipHeight + 3 - 1, borderColorStart, borderColorEnd);
+        drawGradientRect(zLevel, tooltipX + tooltipTextWidth + 2, tooltipY - 3 + 1, tooltipX + tooltipTextWidth + 3, tooltipY + tooltipHeight + 3 - 1, borderColorStart, borderColorEnd);
+        drawGradientRect(zLevel, tooltipX - 3, tooltipY - 3, tooltipX + tooltipTextWidth + 3, tooltipY - 3 + 1, borderColorStart, borderColorStart);
+        drawGradientRect(zLevel, tooltipX - 3, tooltipY + tooltipHeight + 2, tooltipX + tooltipTextWidth + 3, tooltipY + tooltipHeight + 3, borderColorEnd, borderColorEnd);
+
+        MinecraftForge.EVENT_BUS.post(new RenderTooltipEvent.PostBackground(stack, textLines, tooltipX, tooltipY, font, tooltipTextWidth, tooltipHeight));
+        int tooltipTop = tooltipY;
+
+        for (int lineNumber = 0; lineNumber < textLines.size(); ++lineNumber) {
+            String line = textLines.get(lineNumber);
+            font.drawStringWithShadow(line, (float) tooltipX, (float) tooltipY, -1);
+
+            if (lineNumber + 1 == titleLinesCount) {
+                tooltipY += 2;
+            }
+
+            tooltipY += 10;
+        }
+
+        MinecraftForge.EVENT_BUS.post(new RenderTooltipEvent.PostText(stack, textLines, tooltipX, tooltipTop, font, tooltipTextWidth, tooltipHeight));
+
+        GlStateManager.enableLighting();
+        GlStateManager.enableDepth();
+        RenderHelper.enableStandardItemLighting();
+        GlStateManager.enableRescaleNormal();
     }
 }
