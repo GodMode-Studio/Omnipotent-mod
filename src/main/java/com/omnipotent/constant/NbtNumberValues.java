@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public enum NbtNumberValues {
-    blockBreakArea("areaBloco", "function.description.areaBloco"), rangeAttack("rangeAttack", "function.description.rangeAttack"), maxCountSlot("maxcountslot", "function.description.maxcountslot"), blockReachDistance("blockReachDistance", "function.description.blockReachDistance"), rangeAutoKill("rangeautokill"), chargeEnergyInBlocksAround("chargeEnergyInBlocksAround", "function.description.chargeEnergyInBlocksAround"), chargeManaInBlocksAround("chargeManaInBlocksAround", "function.description.chargeManaInBlocksAround");
+    blockBreakArea("areaBloco", "function.description.areaBloco"), rangeAttack("rangeAttack", "function.description.rangeAttack"), maxCountSlot("maxcountslot", "function.description.maxcountslot"), blockReachDistance("blockReachDistance", "function.description.blockReachDistance"), rangeAutoKill("rangeautokill"), chargeEnergyInBlocksAround("chargeEnergyInBlocksAround", "function.description.chargeEnergyInBlocksAround"), chargeManaInBlocksAround("chargeManaInBlocksAround", "function.description.chargeManaInBlocksAround"), optionOfColor("optionOfColor", "function.description.optionOfColor");
     private String value;
     private String description;
 
