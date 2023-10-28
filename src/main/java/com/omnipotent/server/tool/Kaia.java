@@ -18,6 +18,7 @@ import net.minecraft.item.ItemPickaxe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.potion.Potion;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResult;
@@ -46,6 +47,7 @@ import static com.omnipotent.Omnipotent.omnipotentTab;
 import static com.omnipotent.client.render.RenderTextures.texturesItemsInit;
 import static com.omnipotent.constant.NbtBooleanValues.*;
 import static com.omnipotent.constant.NbtNumberValues.*;
+import static com.omnipotent.constant.NbtStringValues.customPlayerName;
 import static com.omnipotent.server.event.EventInitItems.itemsInit;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.KaiaUtil.*;
@@ -89,24 +91,25 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
             player.world.spawnEntity(new EntityItem(worldIn, player.posX, player.posY, player.posZ + 5, stack));
             player.inventory.deleteStack(stack);
         }
-        if (stack.getTagCompound().getBoolean(NbtBooleanValues.chargeEnergyItemsInInventory.getValue())) {
+        NBTTagCompound tagCompound = stack.getTagCompound();
+        if (tagCompound.getBoolean(NbtBooleanValues.chargeEnergyItemsInInventory.getValue())) {
             chargeEnergyItems(player);
             if (Loader.isModLoaded(RedstoneFluxProps.MOD_ID))
                 chargeRfEnergyInInventory(player);
         }
-        if (stack.getTagCompound().getBoolean(chargeEnergyInBlocksAround.getValue())) {
-            int integer = stack.getTagCompound().getInteger(chargeEnergyInBlocksAround.getValue());
+        if (tagCompound.getBoolean(chargeEnergyInBlocksAround.getValue())) {
+            int integer = tagCompound.getInteger(chargeEnergyInBlocksAround.getValue());
             if (integer > 1)
                 chargeEnergyInBlocksAround(player, integer);
 //            if (Loader.isModLoaded(RedstoneFluxProps.MOD_ID))
 //                chargeRfEnergyInBlocksAround(player, stack.getTagCompound().getInteger(chargeEnergyInBlocksAround));
         }
-        if (stack.getTagCompound().getBoolean(chargeManaItemsInInventory.getValue())) {
+        if (tagCompound.getBoolean(chargeManaItemsInInventory.getValue())) {
             if (Loader.isModLoaded(botaniaModid))
                 chargeManaInInventory(player);
         }
-        if (stack.getTagCompound().getBoolean(chargeManaInBlocksAround.getValue())) {
-            int integer = stack.getTagCompound().getInteger(chargeManaInBlocksAround.getValue());
+        if (tagCompound.getBoolean(chargeManaInBlocksAround.getValue())) {
+            int integer = tagCompound.getInteger(chargeManaInBlocksAround.getValue());
             if (integer > 1)
                 if (Loader.isModLoaded(botaniaModid))
                     chargeManaInAroundBlocks(player, integer);
@@ -120,6 +123,13 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
                     player.removePotionEffect(potion);
             }
         }
+        if (tagCompound.getBoolean(activeCustomPlayerName.getValue())) {
+            String value = customPlayerName.getValue();
+            if (!player.getCustomNameTag().equals(value))
+                player.setCustomNameTag(tagCompound.getString(value));
+            player.setAlwaysRenderNameTag(true);
+        } else
+            player.setCustomNameTag("");
         KaiaUtil.killInAreaConstantly(player);
     }
 
@@ -240,7 +250,7 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, blockBreakArea.getValue(), 1);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAttack.getValue(), 1);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, playerDontKillInDirectAttack.getValue(), 0);
-        checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAutoKill.getValue(), 10);
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAutoKill.getValue(), 0);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeManaInBlocksAround.getValue(), 0);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeEnergyInBlocksAround.getValue(), 0);
         if (!tagCompoundOfKaia.hasKey(maxCountSlot.getValue()) || tagCompoundOfKaia.getInteger(maxCountSlot.getValue()) < 1)
@@ -251,6 +261,12 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
             status.setTag(entitiesCantKill, new NBTTagList());
         if (!tagCompoundOfKaia.hasKey(effectsBlockeds))
             status.setTag(effectsBlockeds, new NBTTagList());
+        String valueCustomPlayerName = customPlayerName.getValue();
+        if (!tagCompoundOfKaia.hasKey(valueCustomPlayerName))
+            status.setTag(valueCustomPlayerName, new NBTTagString());
+        int integer = tagCompoundOfKaia.getInteger(optionOfColor.getValue());
+        if (!tagCompoundOfKaia.hasKey(optionOfColor.getValue()) || (integer < 0 || integer > 3))
+            status.setInteger(optionOfColor.getValue(), 0);
     }
 
     private static void checkAndSetIntegerNbtTag(NBTTagCompound tagCompoundOfKaia, String nbtTag, int nbtCount) {
