@@ -74,6 +74,8 @@ import static com.omnipotent.util.NbtListUtil.getUUIDOfNbtList;
 public class KaiaUtil {
     public static List<Class> antiEntity = new ArrayList<>();
 
+
+    //invoke apenas do lado do servidor ou no proprio cliente em si
     public static boolean hasInInventoryKaia(Entity entity) {
         if (!UtilityHelper.isPlayer(entity))
             return false;
@@ -166,21 +168,28 @@ public class KaiaUtil {
         entities.removeIf(entity -> entityIsFriendEntity(entity) && !entityFriendCanKilledByKaia(tagCompoundOfKaia, entity));
     }
 
-    public static void killChoice(Entity entity, EntityPlayer playerSource, boolean killAllEntities) {
+    public static boolean killChoice(Entity entity, EntityPlayer playerSource, boolean killAllEntities) {
+        boolean mobKilled = false;
         ItemStack kaia = getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource);
         NBTTagCompound tagCompound = kaia.getTagCompound();
         if (!tagCompound.getBoolean(NbtBooleanValues.attackYourWolf.getValue()))
             if (entity instanceof EntityWolf && ((EntityWolf) entity).isOwner(playerSource))
-                return;
-        if (UtilityHelper.isPlayer(entity) && !hasInInventoryKaia(entity)) {
-            killPlayer((EntityPlayer) entity, playerSource, tagCompound);
+                return mobKilled;
+        if (UtilityHelper.isPlayer(entity)) {
+            if (!hasInInventoryKaia(entity)) {
+                mobKilled = true;
+                killPlayer((EntityPlayer) entity, playerSource, tagCompound);
+            }
         } else if (entity instanceof EntityLivingBase && !(entity.world.isRemote || entity.isDead || ((EntityLivingBase) entity).getHealth() == 0.0F)) {
+            mobKilled = true;
             killMobs((EntityLivingBase) entity, playerSource, kaia);
         } else if (killAllEntities) {
+            mobKilled = true;
             entity.setDead();
             if (tagCompound.getBoolean(banEntitiesAttacked.getValue()))
                 dennyEntitySpawnInWorld(playerSource.world, entity);
         }
+        return mobKilled;
     }
 
     public static boolean checkIfKaiaCanKill(Entity entityTarget, EntityPlayer playerSource, boolean directAttack, boolean isCounterAttack) {
@@ -322,7 +331,7 @@ public class KaiaUtil {
     private static ItemStack setReaperEnchant(ItemStack kaia, EntityPlayer playerSource, EntityLivingBase entityCreature) {
         ItemStack soul = null;
         DEEventHandler deEventHandler = new DEEventHandler();
-        int dropChanceOfReaperEnchantment = ((IMixinDEEventHandler) deEventHandler).callGetDropChanceFromItem(kaia);
+        int dropChanceOfReaperEnchantment = ((IMixinDEEventHandler) deEventHandler).callGetDropChanceFromItem(kaia) + 5;
         Random random = new Random();
         int rand = random.nextInt(Math.max(DEConfig.soulDropChance / dropChanceOfReaperEnchantment, 1));
         int rand2 = random.nextInt(Math.max(DEConfig.passiveSoulDropChance / dropChanceOfReaperEnchantment, 1));
@@ -350,9 +359,7 @@ public class KaiaUtil {
         DoubleSupplier posZLight = () -> playerSource.posZ + lookPlayer.z * rand.nextInt(100) - 20;
         NBTTagCompound nbttagcompound = new NBTTagCompound();
         nbttagcompound.setString("id", "omnipotent:customligth");
-        Consumer<Boolean> spawnLight = (value) -> {
-            playerSource.world.spawnEntity(new CustomLightningBolt(playerSource.world, posXLight.getAsDouble(), posYLight.getAsDouble(), posZLight.getAsDouble(), true));
-        };
+        Consumer<Boolean> spawnLight = (value) -> playerSource.world.spawnEntity(new CustomLightningBolt(playerSource.world, posXLight.getAsDouble(), posYLight.getAsDouble(), posZLight.getAsDouble(), true));
         BiConsumer<Integer, Object> loop = (quantityOfLoop, object) -> {
             for (int c = 0; c < quantityOfLoop; c++) {
                 if (c % 4 == 0)
@@ -428,7 +435,7 @@ public class KaiaUtil {
         block.getDrops(drops, player.world, pos, state, enchLevelFortune);
         drops.removeIf(item -> item.getItem() instanceof ItemAir);
         if (drops.isEmpty()) {
-            drops.add(block.getPickBlock(state, player.rayTrace(0.0f, 0.0f), player.world, pos, player));
+            drops.add(new ItemStack(block));
         }
         UtilityHelper.compactListItemStacks(drops);
         if (kaiaInMainHand.getTagCompound().getBoolean(autoBackPack.getValue())) {
