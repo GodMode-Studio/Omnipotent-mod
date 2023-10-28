@@ -78,6 +78,13 @@ public class KeyInit {
         return false;
     });
 
+    private static final KeyBinding getKaiaBetweenSaves = new KeyMod("keykaia.getKaiaBetweenSaves", IN_GAME, Keyboard.KEY_NUMPAD2, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
+        if (KeyInit.getKaiaBetweenSaves.isPressed()) {
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket("getKaiaBetweenSaves"));
+        }
+        return false;
+    });
+
     private static final KeyBinding kaiaGuiEnchantment = new KeyMod(I18n.format("keykaia.enchantmentkaia"), IN_GAME, Keyboard.KEY_L, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         EntityPlayer player = (EntityPlayer) object;
         if (KeyInit.kaiaGuiEnchantment.isPressed() && hasKaia) {
