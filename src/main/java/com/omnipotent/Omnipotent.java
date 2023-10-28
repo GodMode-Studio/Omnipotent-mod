@@ -28,7 +28,7 @@ import org.spongepowered.asm.mixin.Mixins;
 public class Omnipotent {
     public static final String MODID = "omnipotent";
     public static final String NAME = "Omnipotent Mod";
-    public static final String VERSION = "alpha 9";
+    public static final String VERSION = "alpha 9.1";
     public static final OmnipotentTab omnipotentTab = new OmnipotentTab("Omnipotent mod");
     public static final SimpleNetworkWrapper channel = NetworkRegistry.INSTANCE.newSimpleChannel(Omnipotent.MODID);
     public static final ResourceLocation KAIACAP = new ResourceLocation(MODID, "kaiabrand");
