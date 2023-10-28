@@ -45,6 +45,8 @@ guikaia.config.chargeManaItemsInInventory=Carregar mana nos itens do inventario
 guikaia.config.chargeEnergyInBlocksAround=Carregar energia em blocos proximos
 guikaia.config.chargeManaInBlocksAround=Carregar energia em blocos proximos
 guikaia.config.ignoreKeepInventory=Ignorar keepInventory
+guikaia.config.optionOfColor=Cor do item
+guikaia.config.activeCustomPlayerName=Nome personlizado do player
 #keys
 keykaia.category=Botões Kaia
 keykaia.config=Configurações
@@ -57,6 +59,7 @@ keykaia.player=Menu de jogadores
 keykaia.spectate=Bloquear modo espectador
 keykaia.creative=Bloquear modo creativo
 keykaia.showinfo=Exibir/ocultar Info da Kaia
+keykaia.getKaiaBetweenSaves=Obter kaia dos saves
 #messages in chat
 kaia.message.void=PARADEIRO Y150
 kaia.message.returndropitems=item dropado na posição
@@ -93,3 +96,5 @@ function.description.blockReachDistance=O valor dessa opção define o alcance d
 function.description.chargeEnergyInBlocksAround=Carrega totalmente a energia de blocos em uma certa distancia, com o valor 0 é desativado.
 function.description.chargeManaInBlocksAround=Carrega totalmente a mana de blocos em uma certa distancia, com o valor 0 é desativado.
 function.description.ignoreKeepInventory=Com essa função ativada todos os players mortos pela kaia terão o keepinventory ignorado assim dropando os itens.
+function.description.optionOfColor=Os valores dessa opção definem a cor que será exibida do item no inventario, as opções são 1,2,3 e 4.
+function.description.customPlayerName=Essa opção caso ativada irá exibir como nome do player o nome que estiver nela usando efeitos especias de cor, outros players verão isso.
