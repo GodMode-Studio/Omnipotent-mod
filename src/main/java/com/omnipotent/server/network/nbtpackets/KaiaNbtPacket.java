@@ -166,7 +166,7 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private void verifyAndAcessSaves(EntityPlayer player, File saveFile, HashMap<Long, ItemStack> kaias) {
-            if(!saveFile.isDirectory())
+            if (!saveFile.isDirectory())
                 return;
             String absolutePath = saveFile.getAbsolutePath();
             File file = new File(absolutePath.concat("\\playerdata"));
@@ -236,7 +236,9 @@ public class KaiaNbtPacket implements IMessage {
                             tagCompound.setInteger(nbt, message.intValue);
                         else
                             tagCompound.setInteger(nbt, 0);
-                    } else
+                    } else if (message.type.equals(blockBreakArea.getValue()) && message.intValue % 2 == 0)
+                        tagCompound.setInteger(nbt, message.intValue - 1);
+                    else
                         tagCompound.setInteger(nbt, message.intValue);
                     return;
                 }
