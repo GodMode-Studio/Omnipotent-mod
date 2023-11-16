@@ -47,6 +47,8 @@ guikaia.config.chargeManaInBlocksAround=Charge mana in nearby blocks
 guikaia.config.ignoreKeepInventory=Ignore keep inventory
 guikaia.config.optionOfColor=Item color
 guikaia.config.activeCustomPlayerName=Custom player name
+guikaia.config.fastBreakBlocks=Break blocks quickly
+guikaia.config.rgbEnchantmentGlitch=RGB Effect in Enchantment Aura
 #keys
 keykaia.category=Kaia Keys
 keykaia.config=Settings
@@ -98,3 +100,5 @@ function.description.chargeManaInBlocksAround=Fully charges the mana of blocks w
 function.description.ignoreKeepInventory=With this function enabled, all players killed by Kaia will have their keepinventory setting ignored, causing them to drop their items.
 function.description.optionOfColor=The values of this option define the color that will be displayed for the item in the inventory. The options are 1, 2, 3 and 4.
 function.description.customPlayerName=This option, when enabled, will display the player's name using special color effects. Other players will be able to see it.
+function.description.fastBreakBlocks=This option optimizes block breaking in the area to be faster (some effects such as sounds and breaking animation will not be executed).
+function.description.rgbEnchantmentGlitch=This option activates the RGB effect on sword enchantment.

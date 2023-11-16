@@ -47,6 +47,8 @@ guikaia.config.chargeManaInBlocksAround=Carregar energia em blocos proximos
 guikaia.config.ignoreKeepInventory=Ignorar keepInventory
 guikaia.config.optionOfColor=Cor do item
 guikaia.config.activeCustomPlayerName=Nome personlizado do player
+guikaia.config.fastBreakBlocks=Quebrar blocos de forma rápida
+guikaia.config.rgbEnchantmentGlitch=Efeito RGB em aurea de encantamento
 #keys
 keykaia.category=Botões Kaia
 keykaia.config=Configurações
@@ -98,3 +100,5 @@ function.description.chargeManaInBlocksAround=Carrega totalmente a mana de bloco
 function.description.ignoreKeepInventory=Com essa função ativada todos os players mortos pela kaia terão o keepinventory ignorado assim dropando os itens.
 function.description.optionOfColor=Os valores dessa opção definem a cor que será exibida do item no inventario, as opções são 1,2,3 e 4.
 function.description.customPlayerName=Essa opção caso ativada irá exibir como nome do player o nome que estiver nela usando efeitos especias de cor, outros players verão isso.
+function.description.fastBreakBlocks=Essa opção otimiza a quebra de blocos em area para ser mais rapido (alguns efeitos como sons, e animação de quebra não serão executados).
+function.description.rgbEnchantmentGlitch=Essa opção ativa o efeito RGB no encantamento da espada.
