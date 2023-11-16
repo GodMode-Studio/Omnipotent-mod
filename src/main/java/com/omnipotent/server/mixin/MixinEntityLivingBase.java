@@ -1,6 +1,5 @@
 package com.omnipotent.server.mixin;
 
-import com.google.common.collect.Maps;
 import com.omnipotent.Config;
 import com.omnipotent.acessor.IEntityLivingBaseAcessor;
 import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
@@ -10,25 +9,19 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.Map;
 
 import static com.omnipotent.util.KaiaUtil.effectIsBlockedByKaia;
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
@@ -36,12 +29,6 @@ import static com.omnipotent.util.UtilityHelper.isPlayer;
 
 @Mixin(EntityLivingBase.class)
 public abstract class MixinEntityLivingBase extends Entity implements IEntityLivingBaseAcessor {
-
-
-    @Override
-    public int getRecentlyHit() {
-        return recentlyHit;
-    }
 
     @Override
     public void setRecentlyHit(int recentlyHit) {
@@ -51,9 +38,15 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
     @Shadow
     protected boolean dead;
 
-    public MixinEntityLivingBase(World worldIn) {
-        super(worldIn);
-    }
+    @Shadow
+    protected abstract void applyEntityAttributes();
+
+    @Shadow
+    public float randomUnused1;
+    @Shadow
+    public float randomUnused2;
+    @Shadow
+    public float rotationYawHead;
 
     @Shadow
     public abstract EntityLivingBase getAttackingEntity();
@@ -66,90 +59,26 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
     @Shadow
     protected abstract boolean canDropLoot();
 
-    @Shadow
-    private int jumpTicks;
+    @Accessor("HEALTH")
+    public abstract DataParameter<Float> getHEALTH();
 
     @Shadow
     protected abstract void dropLoot(boolean wasRecentlyHit, int lootingModifier, DamageSource source);
 
-    @Shadow
-    protected int newPosRotationIncrements;
-    @Shadow
-    protected double interpTargetX;
-
-    @Shadow
-    protected double interpTargetY;
-    @Shadow
-    protected double interpTargetZ;
-    @Shadow
-    protected double interpTargetYaw;
-
-    @Shadow
-    public abstract boolean isServerWorld();
-
-    @Shadow
-    protected double interpTargetPitch;
-    @Shadow
-    public float randomYawVelocity;
-
-    @Shadow
-    public float moveVertical;
-
-    @Shadow
-    public float moveStrafing;
-
-    @Shadow
-    public abstract void travel(float strafe, float vertical, float forward);
-
-    @Shadow
-    public abstract void updateElytra();
-
-    @Shadow
-    public float moveForward;
-
-    @Shadow
-    protected abstract void collideWithNearbyEntities();
-
-    @Shadow
-    protected abstract boolean isMovementBlocked();
-
-    @Shadow
-    protected abstract void handleJumpWater();
-
-    @Shadow
-    protected boolean isJumping;
-
-    @Shadow
-    protected abstract void handleJumpLava();
-
-    @Shadow
-    protected abstract void jump();
-
-    @Shadow
-    protected abstract void updateEntityActionState();
-
-    @Shadow
-    protected abstract void updateActiveHand();
-
     public boolean captureDropsAbsolute;
-    @Shadow
-    public int arrowHitTimer;
-    @Shadow
-    private final NonNullList<ItemStack> handInventory = NonNullList.<ItemStack>withSize(2, ItemStack.EMPTY);
-    @Shadow
-    private final NonNullList<ItemStack> armorArray = NonNullList.<ItemStack>withSize(4, ItemStack.EMPTY);
-    @Shadow
-    protected float prevOnGroundSpeedFactor;
-    @Shadow
-    protected float movedDistance;
-    @Shadow
-    protected int ticksElytraFlying;
 
-    @Shadow
-    protected abstract float updateDistance(float p_110146_1_, float p_110146_2_);
-
-    @Shadow
-    protected float onGroundSpeedFactor;
+    public MixinEntityLivingBase(World worldIn) {
+        super(worldIn);
+        this.applyEntityAttributes();
+        this.setHealth(this.getMaxHealth());
+        this.preventEntitySpawning = true;
+        this.randomUnused1 = (float) ((Math.random() + 1.0D) * 0.009999999776482582D);
+        this.setPosition(this.posX, this.posY, this.posZ);
+        this.randomUnused2 = (float) Math.random() * 12398.0F;
+        this.rotationYaw = (float) (Math.random() * (Math.PI * 2D));
+        this.rotationYawHead = this.rotationYaw;
+        this.stepHeight = 0.6F;
+    }
 
     /**
      * @author
@@ -202,9 +131,6 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
         }
     }
 
-    @Shadow
-    private static final DataParameter<Float> HEALTH = EntityDataManager.<Float>createKey(EntityLivingBase.class, DataSerializers.FLOAT);
-
     /**
      * @author
      * @reason
@@ -214,7 +140,7 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
     public final float getHealth() {
         EntityLivingBase entity = (EntityLivingBase) (Object) this;
         Entity source;
-        float standardValue = ((Float) this.dataManager.get(HEALTH)).floatValue();
+        float standardValue = ((Float) this.dataManager.get(this.getHEALTH())).floatValue();
         if (isPlayer(entity) && hasInInventoryKaia(entity))
             return 20;
         else if (Config.getListPlayersCantRespawn().contains(entity.getUniqueID().toString()) && !hasInInventoryKaia(entity)) {
@@ -264,28 +190,16 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
         EntityLivingBase entity = (EntityLivingBase) (Object) this;
         DamageSource lastDamage = entity.getLastDamageSource();
         if (UtilityHelper.isPlayer(entity) && hasInInventoryKaia(entity))
-            this.dataManager.set(HEALTH, Float.valueOf(MathHelper.clamp(Integer.MAX_VALUE, 0.0F, entity.getMaxHealth())));
+            this.dataManager.set(this.getHEALTH(), Float.valueOf(MathHelper.clamp(Integer.MAX_VALUE, 0.0F, entity.getMaxHealth())));
         else if (lastDamage != null && lastDamage.getTrueSource() != null) {
             Entity sourceOfDamage = lastDamage.getTrueSource();
             if (lastDamage.damageType.equals(new AbsoluteOfCreatorDamage(sourceOfDamage).damageType))
-                this.dataManager.set(HEALTH, Float.valueOf(MathHelper.clamp(0, 0.0F, entity.getMaxHealth())));
+                this.dataManager.set(this.getHEALTH(), Float.valueOf(MathHelper.clamp(0, 0.0F, entity.getMaxHealth())));
             else
-                this.dataManager.set(HEALTH, Float.valueOf(MathHelper.clamp(health, 0.0F, entity.getMaxHealth())));
+                this.dataManager.set(this.getHEALTH(), Float.valueOf(MathHelper.clamp(health, 0.0F, entity.getMaxHealth())));
         } else
-            this.dataManager.set(HEALTH, Float.valueOf(MathHelper.clamp(health, 0.0F, entity.getMaxHealth())));
+            this.dataManager.set(this.getHEALTH(), Float.valueOf(MathHelper.clamp(health, 0.0F, entity.getMaxHealth())));
     }
-
-    @Shadow
-    public abstract boolean isPotionApplicable(PotionEffect potioneffectIn);
-
-    @Shadow
-    private final Map<Potion, PotionEffect> activePotionsMap = Maps.<Potion, PotionEffect>newHashMap();
-
-    @Shadow
-    protected abstract void onNewPotionEffect(PotionEffect id);
-
-    @Shadow
-    protected abstract void onChangedPotionEffect(PotionEffect id, boolean p_70695_2_);
 
     @Inject(method = "addPotionEffect", at = @At(value = "HEAD"), cancellable = true)
     public void addPotionEffect(PotionEffect potioneffectIn, CallbackInfo ci) {
