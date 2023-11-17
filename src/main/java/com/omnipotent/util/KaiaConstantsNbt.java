@@ -11,6 +11,8 @@ public class KaiaConstantsNbt {
     public static final String playersDontKill = "playersdontkill";
     public static final String entitiesCantKill = "entitiescantkill";
     public static final String effectsBlockeds = "effectsBlocked";
+    //NBTTagIntArray
+    public static final String listOfCoordenatesKaia = "listOfCoordenatesKaia";
 
     //other values
     public static final String kaiaEnchant = "enchantKaia";
