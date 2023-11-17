@@ -253,6 +253,8 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAutoKill.getValue(), 0);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeManaInBlocksAround.getValue(), 0);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeEnergyInBlocksAround.getValue(), 0);
+        if (!tagCompoundOfKaia.hasKey(listOfCoordenatesKaia))
+            status.setIntArray(listOfCoordenatesKaia, new int[]{0, 300, 0});
         if (!tagCompoundOfKaia.hasKey(maxCountSlot.getValue()) || tagCompoundOfKaia.getInteger(maxCountSlot.getValue()) < 1)
             status.setInteger(maxCountSlot.getValue(), 200_000_000);
         if (!tagCompoundOfKaia.hasKey(playersDontKill))
@@ -290,12 +292,15 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
 
     @Override
     public boolean onLeftClickEntity(ItemStack stack, EntityPlayer player, Entity entityAttacked) {
-        boolean cancelAttack = !checkIfKaiaCanKill(entityAttacked, player, true, false);
-        if (cancelAttack)
+        if (!player.world.isRemote) {
+            boolean cancelAttack = !checkIfKaiaCanKill(entityAttacked, player, true, false);
+            if (cancelAttack)
+                return cancelAttack;
+            if (!player.world.isRemote)
+                killChoice(entityAttacked, player, getKaiaInMainHand(player).getTagCompound().getBoolean(killAllEntities.getValue()));
             return cancelAttack;
-        if (!player.world.isRemote)
-            killChoice(entityAttacked, player, getKaiaInMainHand(player).getTagCompound().getBoolean(killAllEntities.getValue()));
-        return cancelAttack;
+        }
+        return false;
     }
 
     @Override
