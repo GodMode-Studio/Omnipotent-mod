@@ -25,6 +25,7 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -71,6 +72,18 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
     @Shadow
     protected abstract void playShoulderEntityAmbientSound(@Nullable NBTTagCompound p_192028_1_);
 
+    @Shadow
+    public abstract String getDisplayNameString();
+
+    @Accessor("prefixes")
+    abstract java.util.Collection<ITextComponent> getprefixes();
+
+    @Accessor("suffixes")
+    abstract java.util.Collection<ITextComponent> getsuffixes();
+
+    @Shadow
+    private String displayname;
+
     public boolean renderSpecialName = false;
     public boolean hasKaia = false;
 
@@ -81,9 +94,9 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
     @Overwrite
     public ITextComponent getDisplayName() {
         ITextComponent itextcomponent = new TextComponentString("");
-        if (!prefixes.isEmpty()) for (ITextComponent prefix : prefixes) itextcomponent.appendSibling(prefix);
+        if (!getprefixes().isEmpty()) for (ITextComponent prefix : getprefixes()) itextcomponent.appendSibling(prefix);
         itextcomponent.appendSibling(new TextComponentString(ScorePlayerTeam.formatPlayerName(this.getTeam(), this.getDisplayNameString())));
-        if (!suffixes.isEmpty()) for (ITextComponent suffix : suffixes) itextcomponent.appendSibling(suffix);
+        if (!getsuffixes().isEmpty()) for (ITextComponent suffix : getsuffixes()) itextcomponent.appendSibling(suffix);
         itextcomponent.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/msg " + this.getName() + " "));
         itextcomponent.getStyle().setHoverEvent(this.getHoverEvent());
         itextcomponent.getStyle().setInsertion(this.getName());
@@ -92,17 +105,6 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
         }
         return itextcomponent;
     }
-
-    @Shadow
-    public abstract String getDisplayNameString();
-
-    @Shadow
-    private final java.util.Collection<ITextComponent> prefixes = new java.util.LinkedList<ITextComponent>();
-    @Shadow
-    private final java.util.Collection<ITextComponent> suffixes = new java.util.LinkedList<ITextComponent>();
-
-    @Shadow
-    private String displayname;
 
     /**
      * @author
