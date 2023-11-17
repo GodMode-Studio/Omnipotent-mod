@@ -18,6 +18,8 @@
     "MixinInventoryPlayer",
     "MixinKillCommand",
     "MixinMinecraft",
+    "MixinRenderItem",
+    "MixinWorld",
     "mods.MixinEntityLoli",
     "mods.MixinLoliPickaxeUtil"
   ],
