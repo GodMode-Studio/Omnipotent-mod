@@ -31,6 +31,9 @@ public enum NetworkRegister {
         channel.registerMessage(KaiaContainerOpenPackte.MessageHandler.class, KaiaContainerOpenPackte.class, ++index, Side.SERVER);
         channel.registerMessage(ChangedValuePacket.ChangedValuePacketHandler.class, ChangedValuePacket.class, ++index, Side.CLIENT);
         channel.registerMessage(ChangedValuePacket.ChangedValuePacketHandler.class, ChangedValuePacket.class, ++index, Side.SERVER);
+
+        channel.registerMessage(NBTCompoundInfoKaia.NBTCompoundInfoKaiaHandler.class, NBTCompoundInfoKaia.class, ++index, Side.SERVER);
+        channel.registerMessage(NBTCompoundInfoKaia.NBTCompoundInfoKaiaHandler.class, NBTCompoundInfoKaia.class, ++index, Side.CLIENT);
     }
 
     public void sendToServer(IMessage message) {
