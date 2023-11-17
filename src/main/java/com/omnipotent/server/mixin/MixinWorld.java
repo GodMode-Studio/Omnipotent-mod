@@ -1,7 +1,6 @@
 package com.omnipotent.server.mixin;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
 import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.entity.CustomLightningBolt;
 import com.omnipotent.server.tool.Kaia;
@@ -34,6 +33,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -52,12 +52,15 @@ import static com.omnipotent.util.KaiaConstantsNbt.ownerID;
 public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.common.capabilities.ICapabilityProvider {
     @Shadow
     private boolean processingLoadedTiles;
-    @Shadow
-    private final List<TileEntity> addedTileEntityList = Lists.<TileEntity>newArrayList();
-    @Shadow
-    public final List<TileEntity> loadedTileEntityList = Lists.<TileEntity>newArrayList();
-    @Shadow
-    public final List<TileEntity> tickableTileEntities = Lists.<TileEntity>newArrayList();
+
+    @Accessor("addedTileEntityList")
+    abstract List<TileEntity> getaddedTileEntityList();
+
+    @Accessor("loadedTileEntityList")
+    abstract List<TileEntity> getloadedTileEntityList();
+
+    @Accessor("tickableTileEntities")
+    abstract List<TileEntity> gettickableTileEntities();
 
     @Shadow
     public abstract boolean spawnEntity(Entity entityIn);
@@ -196,14 +199,14 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
 
         if (tileentity2 != null && this.processingLoadedTiles) {
             tileentity2.invalidate();
-            this.addedTileEntityList.remove(tileentity2);
+            this.getaddedTileEntityList().remove(tileentity2);
             if (!(tileentity2 instanceof ITickable)) //Forge: If they are not tickable they wont be removed in the update loop.
-                this.loadedTileEntityList.remove(tileentity2);
+                this.getloadedTileEntityList().remove(tileentity2);
         } else {
             if (tileentity2 != null) {
-                this.addedTileEntityList.remove(tileentity2);
-                this.loadedTileEntityList.remove(tileentity2);
-                this.tickableTileEntities.remove(tileentity2);
+                this.getaddedTileEntityList().remove(tileentity2);
+                this.getloadedTileEntityList().remove(tileentity2);
+                this.gettickableTileEntities().remove(tileentity2);
             }
 
             this.getChunkFromBlockCoords(pos).removeTileEntity(pos);
