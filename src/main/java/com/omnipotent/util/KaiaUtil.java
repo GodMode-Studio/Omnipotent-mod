@@ -379,16 +379,69 @@ public class KaiaUtil {
     }
 
     public static void decideBreakBlock(EntityPlayerMP player, BlockPos pos) {
-        if (getKaiaInMainHand(player).getTagCompound().getInteger(blockBreakArea.getValue()) > 1) {
-            int areaBlock = getKaiaInMainHand(player).getTagCompound().getInteger(blockBreakArea.getValue());
+        NBTTagCompound tagCompound = getKaiaInMainHand(player).getTagCompound();
+        if (tagCompound.getInteger(blockBreakArea.getValue()) > 1) {
+            int areaBlock = tagCompound.getInteger(blockBreakArea.getValue());
             if (!player.world.isRemote && !player.capabilities.isCreativeMode && withKaiaMainHand(player)) {
                 if (areaBlock % 2 != 0) {
-                    breakBlocksInArea(areaBlock, player, pos);
+                    if (tagCompound.getBoolean(fastBreakBlocks.getValue()))
+                        fastBreakBlocksInArea(areaBlock, player, pos, tagCompound);
+                    else
+                        breakBlocksInArea(areaBlock, player, pos);
                 }
             }
-        } else {
+        } else
             player.world.spawnEntity(new EntityXPOrb(player.world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, (int) breakBlockIfDropsIsEmpty(player, pos)));
+    }
+
+    public static void fastBreakBlocksInArea(int areaBlock, EntityPlayer player, BlockPos centerPos, NBTTagCompound tagCompound) {
+        World world = player.world;
+        int startX = centerPos.getX() - areaBlock / 2;
+        int endX = centerPos.getX() + areaBlock / 2;
+        int startZ = centerPos.getZ() - areaBlock / 2;
+        int endZ = centerPos.getZ() + areaBlock / 2;
+        int startY = centerPos.getY() - areaBlock / 2;
+        int endY = centerPos.getY() + areaBlock / 2;
+        float xp = 0f;
+        xp += fastBreakBlock((EntityPlayerMP) player, centerPos, tagCompound);
+        if (tagCompound.getBoolean(noBreakTileEntity.getValue())) {
+            if (checkTheAreaForTileEntityBlock(startX, startY, startZ, endX, endY, endZ, player.world)) {
+                world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
+                return;
+            }
         }
+        for (int x = startX; x <= endX; x++) {
+            for (int z = startZ; z <= endZ; z++) {
+                for (int y = startY; y <= endY; y++) {
+                    BlockPos blockPos = new BlockPos(x, y, z);
+                    if (!world.isAirBlock(blockPos)) {
+                        xp += fastBreakBlock((EntityPlayerMP) player, blockPos, tagCompound);
+                    }
+                }
+            }
+        }
+        world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
+    }
+
+    public static float fastBreakBlock(EntityPlayerMP player, BlockPos pos, NBTTagCompound tagCompound) {
+        IBlockState state = player.world.getBlockState(pos);
+        Block block = state.getBlock();
+        NonNullList<ItemStack> drops = NonNullList.create();
+        ItemStack kaiaInMainHand = getKaiaInMainHand(player);
+        int enchLevelFortune = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, kaiaInMainHand);
+        Float xp = 0f;
+        block.getDrops(drops, player.world, pos, state, enchLevelFortune);
+        drops.removeIf(item -> item.getItem() instanceof ItemAir);
+        if (drops.isEmpty())
+            drops.add(new ItemStack(block));
+        UtilityHelper.compactListItemStacks(drops);
+        if (tagCompound.getBoolean(autoBackPack.getValue()))
+            addedItemsStacksInKaiaInventory(player, drops, kaiaInMainHand);
+        else
+            drops.forEach(dropStack -> player.world.spawnEntity(new EntityItem(player.world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, dropStack)));
+        xp += block.getExpDrop(state, player.world, pos, enchLevelFortune);
+        player.world.setBlockToAir(pos);
+        return xp;
     }
 
     public static void breakBlocksInArea(int areaBlock, EntityPlayer player, BlockPos centerPos) {
