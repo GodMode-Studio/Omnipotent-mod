@@ -14,21 +14,22 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.omnipotent.constant.NbtNumberValues.rangeAttack;
 import static com.omnipotent.util.KaiaUtil.*;
 
 public class KaiaEvent {
     @SubscribeEvent
+    @SideOnly(Side.CLIENT)
     public void playerAttack(PlayerInteractEvent.LeftClickEmpty event) {
         EntityPlayer player = event.getEntityPlayer();
         ItemStack kaia = getKaiaInMainHand(player);
         if (kaia != null)
-            if (kaia.getTagCompound().getInteger(rangeAttack.getValue()) > 5)
-                NetworkRegister.ACESS.sendToServer(new KillPacket());
+            NetworkRegister.ACESS.sendToServer(new KillPacket());
     }
 
     @SubscribeEvent(receiveCanceled = true, priority = EventPriority.LOWEST)
