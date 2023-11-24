@@ -19,7 +19,6 @@ import com.omnipotent.server.mixin.mods.IMixinDEEventHandler;
 import com.omnipotent.server.specialgui.IContainer;
 import com.omnipotent.server.specialgui.InventoryKaia;
 import com.omnipotent.server.tool.Kaia;
-import com.sun.istack.internal.NotNull;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.resources.I18n;
@@ -58,6 +57,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -604,7 +604,7 @@ public class KaiaUtil {
         throw new RuntimeException("without Kaia in Inventory");
     }
 
-    public static boolean isOwnerOfKaia(ItemStack kaiaStack, @NotNull EntityPlayer player) {
+    public static boolean isOwnerOfKaia(ItemStack kaiaStack, @Nonnull EntityPlayer player) {
         return kaiaStack.getTagCompound().getString(ownerName).equals(player.getName()) && kaiaStack.getTagCompound().getString(ownerID).equals(player.getUniqueID().toString());
     }
 
