@@ -1,7 +1,6 @@
 package com.omnipotent.util;
 
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -10,9 +9,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
+import javax.annotation.Nonnull;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 public class UtilityHelper {
 
@@ -161,8 +163,19 @@ public class UtilityHelper {
      *
      * @Author gamerYToffi
      */
-
     public static void modifyBlockReachDistance(EntityPlayerMP player, int distance) {
         player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).setBaseValue(distance);
+    }
+
+    /**
+     * Este método retorna o Arquivo PlayerData Do player do mundo atual, deve ser invocado apenas do lado do servidor lógico.
+     *
+     * @Author gamerYToffi
+     */
+    public static File getPlayerDataFileOfPlayer(@Nonnull UUID uuid) {
+        MinecraftServer minecraftServer = FMLCommonHandler.instance().getMinecraftServerInstance();
+        String worldName = minecraftServer.getFolderName();
+        File playerData = new File(System.getProperty("user.dir").concat("\\saves").concat("\\" + worldName).concat("\\playerdata").concat("\\" + uuid.toString() + ".dat"));
+        return playerData;
     }
 }
