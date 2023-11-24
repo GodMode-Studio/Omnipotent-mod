@@ -508,7 +508,7 @@ public class KaiaUtil {
         return xp;
     }
 
-    private static void addedItemsStacksInKaiaInventory(EntityPlayer playerOwnerOfKaia, NonNullList<ItemStack> drops, ItemStack kaiaItemStack) {
+    public static void addedItemsStacksInKaiaInventory(EntityPlayer playerOwnerOfKaia, NonNullList<ItemStack> drops, ItemStack kaiaItemStack) {
         InventoryKaia inventory = ((IContainer) kaiaItemStack.getItem()).getInventory(kaiaItemStack);
         for (ItemStack dropStack : drops) {
             boolean breakMainLoop = false;

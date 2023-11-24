@@ -1,6 +1,7 @@
 package com.omnipotent.server.mixin;
 
 import com.google.common.base.Predicate;
+import com.omnipotent.server.capability.IKaiaBrand;
 import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.entity.CustomLightningBolt;
 import com.omnipotent.server.tool.Kaia;
@@ -21,6 +22,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
@@ -39,13 +41,11 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import static com.omnipotent.util.KaiaConstantsNbt.ownerID;
+import static com.omnipotent.util.KaiaUtil.addedItemsStacksInKaiaInventory;
 
 @Mixin(World.class)
 public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.common.capabilities.ICapabilityProvider {
@@ -130,8 +130,8 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
                 if (playerByUUID != null) {
                     if (KaiaUtil.isOwnerOfKaia(item, playerByUUID)) {
                         playerByUUID.sendMessage(new TextComponentString(TextFormatting.AQUA + "Press G for return Kaia"));
-                        List<ItemStack> kaiaItems = playerByUUID.getCapability(KaiaProvider.KaiaBrand, null).returnList();
-                        kaiaItems.add(item);
+                        IKaiaBrand capability = playerByUUID.getCapability(KaiaProvider.KaiaBrand, null);
+                        capability.habilityBrand(Collections.singletonList(item));
                         spawnEntity(new CustomLightningBolt((World) (Object) this, pos.getX(), pos.getY(), pos.getZ(), true));
                         kaiaEntity.setDead();
                     }
@@ -195,8 +195,6 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
                                 stackInSlot.writeToNBT(nbt);
                                 nbt.setByte("Slot", (byte) -106);
                                 inventory.appendTag(nbt);
-//                                                    playerNbt.getCompoundTag("Inventory").setTag("-106", stackInSlot.writeToNBT(new NBTTagCompound()));
-//                                                    inventory.set(106, stackInSlot.writeToNBT(new NBTTagCompound()));
                             } else {
                                 for (byte i = 0; i <= 35; i++) {
                                     if (!slots.contains(i)) {
@@ -298,8 +296,6 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
                     kaia.writeToNBT(nbt);
                     nbt.setByte("Slot", (byte) -106);
                     inventory.appendTag(nbt);
-//                                                    playerNbt.getCompoundTag("Inventory").setTag("-106", stackInSlot.writeToNBT(new NBTTagCompound()));
-//                                                    inventory.set(106, stackInSlot.writeToNBT(new NBTTagCompound()));
                 } else {
                     for (byte i = 0; i <= 35; i++) {
                         if (!slots.contains(i)) {
@@ -311,7 +307,26 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
                     }
                 }
             } else {
-
+                try {
+                    for (byte i : slots) {
+                        NBTTagCompound nbtTag = (NBTTagCompound) inventory.get(i);
+                        if (!nbtTag.getString("id").equals("omnipotent:kaia")) {
+                            NBTTagCompound kaiaNbt = new NBTTagCompound();
+                            kaia.writeToNBT(kaiaNbt);
+                            kaiaNbt.setByte("Slot", i);
+                            NBTTagCompound nbtBase = (NBTTagCompound) inventory.get(i);
+                            ItemStack itemStack = new ItemStack(nbtBase);
+                            EntityPlayerMP entityPlayerMP = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayers().get(0);
+                            NonNullList<ItemStack> items = NonNullList.create();
+                            items.add(itemStack);
+                            addedItemsStacksInKaiaInventory(entityPlayerMP, items, kaia);
+                            inventory.set(i, kaiaNbt);
+                            break;
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             FileOutputStream fileOutputStream = new FileOutputStream(absolutePathOfPlayerDataFile);
             CompressedStreamTools.writeCompressed(playerNbt, fileOutputStream);
