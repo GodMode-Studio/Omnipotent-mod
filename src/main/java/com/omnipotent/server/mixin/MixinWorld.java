@@ -1,28 +1,25 @@
 package com.omnipotent.server.mixin;
 
 import com.google.common.base.Predicate;
-import com.omnipotent.server.capability.IKaiaBrand;
 import com.omnipotent.server.capability.KaiaProvider;
 import com.omnipotent.server.entity.CustomLightningBolt;
 import com.omnipotent.server.tool.Kaia;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
@@ -38,14 +35,18 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.omnipotent.util.KaiaConstantsNbt.ownerID;
-import static com.omnipotent.util.KaiaUtil.addedItemsStacksInKaiaInventory;
 
 @Mixin(World.class)
 public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.common.capabilities.ICapabilityProvider {
@@ -98,7 +99,6 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
             for (int index = 0; index < container.getSizeInventory(); index++) {
                 checkInventoryAndKaiaAndManager(pos, container, index, tileentity2);
             }
-            checkAroundEntitiesAndKaiaManager(pos);
         }
 
         if (tileentity2 != null && this.processingLoadedTiles) {
@@ -116,35 +116,6 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
             this.getChunkFromBlockCoords(pos).removeTileEntity(pos);
         }
         this.updateComparatorOutputLevel(pos, getBlockState(pos).getBlock()); //Notify neighbors of changes
-    }
-
-    private void checkAroundEntitiesAndKaiaManager(BlockPos pos) {
-        List<EntityItem> kaias = this.getEntitiesWithinAABB(EntityItem.class, new AxisAlignedBB(pos, pos.add(5, 5, 5)), e -> e.getItem().getItem() instanceof Kaia);
-        NBTTagCompound tagCompound;
-        for (EntityItem kaiaEntity : kaias) {
-            ItemStack item = kaiaEntity.getItem();
-            tagCompound = item.getTagCompound();
-            if (tagCompound.hasKey(KaiaConstantsNbt.ownerID) && tagCompound.hasKey(KaiaConstantsNbt.ownerName)) {
-                String ownerID = tagCompound.getString(KaiaConstantsNbt.ownerID);
-                EntityPlayerMP playerByUUID = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(UUID.fromString(ownerID));
-                if (playerByUUID != null) {
-                    if (KaiaUtil.isOwnerOfKaia(item, playerByUUID)) {
-                        playerByUUID.sendMessage(new TextComponentString(TextFormatting.AQUA + "Press G for return Kaia"));
-                        IKaiaBrand capability = playerByUUID.getCapability(KaiaProvider.KaiaBrand, null);
-                        capability.habilityBrand(Collections.singletonList(item));
-                        spawnEntity(new CustomLightningBolt((World) (Object) this, pos.getX(), pos.getY(), pos.getZ(), true));
-                        kaiaEntity.setDead();
-                    }
-                } else {
-                    try {
-                        addKaiaAndManagerInPlayarDataFile(item, getPlayerDataFileOfPlayer(UUID.fromString(ownerID)).getAbsolutePath());
-                        kaiaEntity.setDead();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
     }
 
     private void checkInventoryAndKaiaAndManager(BlockPos pos, IInventory container, int index, TileEntity tileentity2) {
@@ -169,7 +140,7 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
     }
 
     private void managerKaiaInContainerAndSaveInPlayerData(UUID uuid, ItemStack stackInSlot, List<EntityItem> entitiesWithinAABB) {
-        File playerData = getPlayerDataFileOfPlayer(uuid);
+        File playerData = UtilityHelper.getPlayerDataFileOfPlayer(uuid);
         try {
             String replace = playerData.getAbsolutePath();
             NBTTagCompound playerNbt = CompressedStreamTools.readCompressed(new FileInputStream(replace));
@@ -229,13 +200,6 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
         }
     }
 
-    private static File getPlayerDataFileOfPlayer(@Nonnull UUID uuid) {
-        MinecraftServer minecraftServer = FMLCommonHandler.instance().getMinecraftServerInstance();
-        String worldName = minecraftServer.getFolderName();
-        File playerData = new File(System.getProperty("user.dir").concat("\\saves").concat("\\" + worldName).concat("\\playerdata").concat("\\" + uuid.toString() + ".dat"));
-        return playerData;
-    }
-
     private void managerKaiaInContainerAndSaveInKaiaBrand(BlockPos pos, EntityPlayer player, ItemStack stackInSlot, List<EntityItem> entitiesWithinAABB) {
         player.sendMessage(new TextComponentString(TextFormatting.AQUA + "Press G for return Kaia"));
         List<ItemStack> kaiaItems = player.getCapability(KaiaProvider.KaiaBrand, null).returnList();
@@ -270,69 +234,6 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
         }
         for (Integer index : removeIndexs) {
             items.removeTag(index);
-        }
-    }
-
-    private void addKaiaAndManagerInPlayarDataFile(@Nonnull ItemStack kaia, @Nonnull String absolutePathOfPlayerDataFile) throws IOException {
-        NBTTagCompound playerNbt = CompressedStreamTools.readCompressed(new FileInputStream(absolutePathOfPlayerDataFile));
-        if (playerNbt == null) throw new FileNotFoundException("playerdata File not is valid or not found");
-        try {
-            NBTTagList inventory = playerNbt.getTagList("Inventory", 10);
-            ArrayList<Byte> slots = new ArrayList<>();
-            for (NBTBase nbt : inventory) {
-                if (nbt instanceof NBTTagCompound) {
-                    NBTTagCompound nbt1 = (NBTTagCompound) nbt;
-                    if (nbt1.hasKey("Slot")) {
-                        byte slot = nbt1.getByte("Slot");
-                        if (slot != 100 && slot != 101 && slot != 102 && slot != 103) {
-                            slots.add(slot);
-                        }
-                    }
-                }
-            }
-            if (slots.size() <= 36) {
-                NBTTagCompound nbt = new NBTTagCompound();
-                if (!slots.contains((byte) -106)) {
-                    kaia.writeToNBT(nbt);
-                    nbt.setByte("Slot", (byte) -106);
-                    inventory.appendTag(nbt);
-                } else {
-                    for (byte i = 0; i <= 35; i++) {
-                        if (!slots.contains(i)) {
-                            kaia.writeToNBT(nbt);
-                            nbt.setByte("Slot", i);
-                            inventory.appendTag(nbt);
-                            break;
-                        }
-                    }
-                }
-            } else {
-                try {
-                    for (byte i : slots) {
-                        NBTTagCompound nbtTag = (NBTTagCompound) inventory.get(i);
-                        if (!nbtTag.getString("id").equals("omnipotent:kaia")) {
-                            NBTTagCompound kaiaNbt = new NBTTagCompound();
-                            kaia.writeToNBT(kaiaNbt);
-                            kaiaNbt.setByte("Slot", i);
-                            NBTTagCompound nbtBase = (NBTTagCompound) inventory.get(i);
-                            ItemStack itemStack = new ItemStack(nbtBase);
-                            EntityPlayerMP entityPlayerMP = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayers().get(0);
-                            NonNullList<ItemStack> items = NonNullList.create();
-                            items.add(itemStack);
-                            addedItemsStacksInKaiaInventory(entityPlayerMP, items, kaia);
-                            inventory.set(i, kaiaNbt);
-                            break;
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            FileOutputStream fileOutputStream = new FileOutputStream(absolutePathOfPlayerDataFile);
-            CompressedStreamTools.writeCompressed(playerNbt, fileOutputStream);
-            fileOutputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

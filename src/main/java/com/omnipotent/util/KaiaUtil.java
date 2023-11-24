@@ -38,6 +38,8 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Enchantments;
 import net.minecraft.item.ItemAir;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.potion.Potion;
@@ -58,6 +60,10 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 
 import javax.annotation.Nonnull;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -634,5 +640,68 @@ public class KaiaUtil {
             return false;
         NBTTagList tagList = tagCompound.getTagList(effectsBlockeds, 8);
         return NbtListUtil.isElementAlreadyExists(tagList, potion.getRegistryName().toString());
+    }
+
+    public static void addKaiaAndManagerInPlayarDataFile(@Nonnull ItemStack kaia, @Nonnull String absolutePathOfPlayerDataFile) throws IOException {
+        NBTTagCompound playerNbt = CompressedStreamTools.readCompressed(new FileInputStream(absolutePathOfPlayerDataFile));
+        if (playerNbt == null) throw new FileNotFoundException("playerdata File not is valid or not found");
+        try {
+            NBTTagList inventory = playerNbt.getTagList("Inventory", 10);
+            ArrayList<Byte> slots = new ArrayList<>();
+            for (NBTBase nbt : inventory) {
+                if (nbt instanceof NBTTagCompound) {
+                    NBTTagCompound nbt1 = (NBTTagCompound) nbt;
+                    if (nbt1.hasKey("Slot")) {
+                        byte slot = nbt1.getByte("Slot");
+                        if (slot != 100 && slot != 101 && slot != 102 && slot != 103) {
+                            slots.add(slot);
+                        }
+                    }
+                }
+            }
+            if (slots.size() <= 36) {
+                NBTTagCompound nbt = new NBTTagCompound();
+                if (!slots.contains((byte) -106)) {
+                    kaia.writeToNBT(nbt);
+                    nbt.setByte("Slot", (byte) -106);
+                    inventory.appendTag(nbt);
+                } else {
+                    for (byte i = 0; i <= 35; i++) {
+                        if (!slots.contains(i)) {
+                            kaia.writeToNBT(nbt);
+                            nbt.setByte("Slot", i);
+                            inventory.appendTag(nbt);
+                            break;
+                        }
+                    }
+                }
+            } else {
+                try {
+                    for (byte i : slots) {
+                        NBTTagCompound nbtTag = (NBTTagCompound) inventory.get(i);
+                        if (!nbtTag.getString("id").equals("omnipotent:kaia")) {
+                            NBTTagCompound kaiaNbt = new NBTTagCompound();
+                            kaia.writeToNBT(kaiaNbt);
+                            kaiaNbt.setByte("Slot", i);
+                            NBTTagCompound nbtBase = (NBTTagCompound) inventory.get(i);
+                            ItemStack itemStack = new ItemStack(nbtBase);
+                            EntityPlayerMP entityPlayerMP = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayers().get(0);
+                            NonNullList<ItemStack> items = NonNullList.create();
+                            items.add(itemStack);
+                            addedItemsStacksInKaiaInventory(entityPlayerMP, items, kaia);
+                            inventory.set(i, kaiaNbt);
+                            break;
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            FileOutputStream fileOutputStream = new FileOutputStream(absolutePathOfPlayerDataFile);
+            CompressedStreamTools.writeCompressed(playerNbt, fileOutputStream);
+            fileOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

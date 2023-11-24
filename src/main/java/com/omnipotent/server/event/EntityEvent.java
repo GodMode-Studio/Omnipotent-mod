@@ -31,11 +31,13 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
+import java.io.IOException;
 import java.util.*;
 
 import static com.omnipotent.Omnipotent.BLOCK_MODES_OF_PLAYER;
 import static com.omnipotent.Omnipotent.KAIACAP;
 import static com.omnipotent.util.KaiaUtil.*;
+import static com.omnipotent.util.UtilityHelper.getPlayerDataFileOfPlayer;
 
 public class EntityEvent {
     public static final Set<String> entitiesWithKaia = new HashSet<>();
@@ -157,13 +159,19 @@ public class EntityEvent {
                 }
                 UUID uuid = UUID.fromString(kaia.getTagCompound().getString(KaiaConstantsNbt.ownerID));
                 EntityPlayer player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(uuid);
-                List<ItemStack> kaiaItems;
                 if (player != null && isOwnerOfKaia(kaia, player)) {
                     player.sendMessage(new TextComponentString(TextFormatting.AQUA + "Press G for return Kaia"));
-                    kaiaItems = player.getCapability(KaiaProvider.KaiaBrand, null).returnList();
-                    kaiaItems.add(kaia);
+                    IKaiaBrand capability = player.getCapability(KaiaProvider.KaiaBrand, null);
+                    capability.habilityBrand(Collections.singletonList(kaia));
                     entityItem.world.spawnEntity(new CustomLightningBolt(entityItem.world, entityItem.posX, entityItem.posY, entityItem.posZ, true));
                     entityItem.setDead();
+                } else if (player == null) {
+                    try {
+                        addKaiaAndManagerInPlayarDataFile(kaia, getPlayerDataFileOfPlayer(uuid).getAbsolutePath());
+                        entityItem.setDead();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
