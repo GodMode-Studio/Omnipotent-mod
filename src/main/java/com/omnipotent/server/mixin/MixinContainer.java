@@ -1,15 +1,14 @@
 //package com.omnipotent.server.mixin;
 //
 //import com.omnipotent.server.tool.Kaia;
-//import net.minecraft.block.state.IBlockState;
 //import net.minecraft.entity.player.EntityPlayer;
 //import net.minecraft.inventory.ClickType;
 //import net.minecraft.inventory.Container;
-//import net.minecraft.inventory.ContainerPlayer;
 //import net.minecraft.inventory.Slot;
 //import net.minecraft.item.ItemStack;
 //import net.minecraft.nbt.NBTTagCompound;
-//import net.minecraft.util.math.BlockPos;
+//import net.minecraft.world.World;
+//import net.minecraft.world.chunk.Chunk;
 //import org.spongepowered.asm.mixin.Final;
 //import org.spongepowered.asm.mixin.Mixin;
 //import org.spongepowered.asm.mixin.Shadow;
@@ -33,22 +32,17 @@
 //
 //    @Inject(method = "slotClick", at = @At("HEAD"), cancellable = true)
 //    public void slotClickInject(int slotId, int dragType, ClickType clickTypeIn, EntityPlayer player, CallbackInfoReturnable<ItemStack> cir) {
-//        if (!player.world.isRemote) {
+//        World world = player.world;
+//        if (!world.isRemote) {
 //            Slot slot = this.inventorySlots.get(slotId);
 //            if (slot != null) {
 //                ItemStack itemstack8 = slot.getStack();
 //                if (itemstack8.getItem() instanceof Kaia) {
 //                    NBTTagCompound tagCompound = itemstack8.getTagCompound();
 //                    int[] intArray = tagCompound.getIntArray(listOfCoordenatesKaia);
-//                    double x = player.getLook(0).x;
-//                    double y = player.getLook(0).y;
-//                    int z = (int) player.getLook(0).z;
-//                    IBlockState blockState = player.world.getBlockState(new BlockPos(x, y, z));
-//                    if (!blockState.getBlock().hasTileEntity(blockState))
-//                        return;
-//                    intArray[0] = (int) x;
-//                    intArray[1] = (int) y;
-//                    intArray[2] = z;
+//                    Chunk chunkFromBlockCoords = world.getChunkFromBlockCoords(player.getPosition());
+//                    intArray[0] = chunkFromBlockCoords.x;
+//                    intArray[2] = chunkFromBlockCoords.z;
 //                    tagCompound.setIntArray(listOfCoordenatesKaia, intArray);
 //                }
 //            }
