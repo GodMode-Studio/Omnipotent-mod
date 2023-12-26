@@ -10,6 +10,7 @@ import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -50,7 +51,7 @@ public class KaiaGui extends GuiScreen implements IGuiScrollSystem {
     private Integer valueSend;
     private String valueStringSend;
 
-    public KaiaGui(EntityPlayer player) {
+    public KaiaGui(EntityPlayerSP player) {
         this.player = player;
         this.kaia = KaiaUtil.getKaiaInMainHand(player);
     }
