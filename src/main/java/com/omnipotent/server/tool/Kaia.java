@@ -57,7 +57,7 @@ import static com.omnipotent.util.UtilityHelper.isPlayer;
 @Optional.InterfaceList({@Optional.Interface(modid = RedstoneFluxProps.MOD_ID, iface = "cofh.redstoneflux.api.IEnergyContainerItem", striprefs = true), @Optional.Interface(modid = "botania", iface = "vazkii.botania.api.mana.IManaReceiver", striprefs = true)})
 public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerItem {
 
-    private final String botaniaModid = "botania";
+    private static final String botaniaModid = "botania";
 
     public Kaia() {
         super(EnumHelper.addToolMaterial("kaia", Integer.MAX_VALUE, Integer.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE, Integer.MAX_VALUE));
@@ -78,7 +78,6 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
         tooltip.add("donoverdadeiro");
         tooltip.add("dono");
-        super.addInformation(stack, worldIn, tooltip, flagIn);
     }
 
     @Override

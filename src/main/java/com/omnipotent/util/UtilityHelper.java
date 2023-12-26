@@ -178,4 +178,8 @@ public class UtilityHelper {
         File playerData = new File(System.getProperty("user.dir").concat("\\saves").concat("\\" + worldName).concat("\\playerdata").concat("\\" + uuid.toString() + ".dat"));
         return playerData;
     }
+
+    public static <T, X extends Throwable> void throwExceptionIfNull(T object, X e) throws X {
+        if (object == null) throw e;
+    }
 }

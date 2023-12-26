@@ -7,6 +7,7 @@ import com.omnipotent.server.network.PacketInicialization;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.EventBus;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 
 import static com.omnipotent.Omnipotent.instance;
@@ -14,14 +15,15 @@ import static com.omnipotent.Omnipotent.instance;
 public class CommonProxy {
     public void preInit(FMLPreInitializationEvent event) {
         NetworkRegister.ACESS.sendToServer(new PacketInicialization());
-        MinecraftForge.EVENT_BUS.register(new KaiaEvent());
-        MinecraftForge.EVENT_BUS.register(new EntityEvent());
-        MinecraftForge.EVENT_BUS.register(new GuiHandler());
-        MinecraftForge.EVENT_BUS.register(new EventInitItems());
-        MinecraftForge.EVENT_BUS.register(new EntityStruckByLightningEventListener());
-        MinecraftForge.EVENT_BUS.register(new LivingSpawnEventCheckSpawnListener());
-        MinecraftForge.EVENT_BUS.register(new LivingSpawnEventSpecialSpawnListener());
-        MinecraftForge.EVENT_BUS.register(new AttachCapabilitiesEventWorldListener());
+        EventBus eventBus = MinecraftForge.EVENT_BUS;
+        eventBus.register(new KaiaEvent());
+        eventBus.register(new EntityEvent());
+        eventBus.register(new GuiHandler());
+        eventBus.register(new EventInitItems());
+        eventBus.register(new EntityStruckByLightningEventListener());
+        eventBus.register(new LivingSpawnEventCheckSpawnListener());
+        eventBus.register(new LivingSpawnEventSpecialSpawnListener());
+        eventBus.register(new AttachCapabilitiesEventWorldListener());
         NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
     }
 

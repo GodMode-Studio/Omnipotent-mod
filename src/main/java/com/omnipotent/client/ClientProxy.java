@@ -13,16 +13,18 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.EventBus;
 
 public class ClientProxy extends CommonProxy {
     @Override
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
-        MinecraftForge.EVENT_BUS.register(new KaiaToolTip());
-        MinecraftForge.EVENT_BUS.register(new KeyEvent());
-        MinecraftForge.EVENT_BUS.register(new EventInitTextures());
-        MinecraftForge.EVENT_BUS.register(new EventClient());
-        MinecraftForge.EVENT_BUS.register(new EventPlayerNameFormat());
+        EventBus eventBus = MinecraftForge.EVENT_BUS;
+        eventBus.register(new KaiaToolTip());
+        eventBus.register(new KeyEvent());
+        eventBus.register(new EventInitTextures());
+        eventBus.register(new EventClient());
+        eventBus.register(new EventPlayerNameFormat());
         RenderingRegistry.registerEntityRenderingHandler(CustomLightningBolt.class, RenderCustomLightningBolt::new);
     }
 

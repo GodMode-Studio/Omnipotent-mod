@@ -40,6 +40,7 @@ minecraft {
 
 repositories {
     maven { url = 'https://repo.spongepowered.org/maven' }
+    maven { url 'https://maven.cleanroommc.com'}
 }
 
 configurations {
@@ -48,13 +49,26 @@ configurations {
 }
 
 dependencies {
+    annotationProcessor 'org.ow2.asm:asm-debug-all:5.2'
+    annotationProcessor 'com.google.guava:guava:32.1.2-jre'
+    annotationProcessor 'com.google.code.gson:gson:2.8.9'
+
+    // ForgeGradle:
+
+    def s = 'zone.rong:mixinbooter:8.8'
+    implementation (s) {
+        transitive = false
+    }
+    annotationProcessor (s) {
+        transitive = false
+    }
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     compileOnly files('libs/LoliPickaxe-1.2.16f_V3_traducao_versao_santificada_brasileira_que_nao_veio_da-deepweb_chinesa.jar')
     implementation files('libs/RedstoneFlux-1.12-2.1.1.1-universal.jar')
     compileOnly files('libs/Botania+r1.10-364.4.jar')
     compileOnly files('libs/Draconic-Evolution-1.12.2-2.3.28.193-deobf.jar')
     compileOnly files('libs/BrandonsCore-1.12.2-2.4.20.22-deobf.jar')
-    implementation files('libs/!mixinbooter-8.6.jar')
+//    implementation files('libs/!mixinbooter-8.6.jar')
     implementation files('libs/AbyssalCraft-1.12.2-1.10.4.jar')
     compileOnly files('libs/iceandfire-1.9.1-1.12.2.jar')
     embed('org.spongepowered:mixin:0.8.3-SNAPSHOT') {

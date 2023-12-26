@@ -5,6 +5,7 @@ import com.omnipotent.client.gui.potion.KaiaGuiBlockPotion;
 import com.omnipotent.client.gui.potion.KaiaGuiPotionAddedAndRemove;
 import com.omnipotent.server.specialgui.ContainerKaia;
 import com.omnipotent.server.specialgui.GUIContainerKaia;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
@@ -23,8 +24,6 @@ public class GuiHandler implements IGuiHandler {
     @Override
     public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
         switch (ID) {
-            case 0:
-                return new KaiaGui(player);
             case 3:
                 return new ContainerKaia(player, player.getHeldItem(y == 0 ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND), x);
         }
@@ -37,7 +36,7 @@ public class GuiHandler implements IGuiHandler {
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
         switch (ID) {
             case 0:
-                return new KaiaGui(player);
+                return new KaiaGui((EntityPlayerSP) player);
             case 1:
                 return new KaiaGuiEnchantment(player);
             case 3:

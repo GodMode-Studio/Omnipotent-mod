@@ -570,7 +570,7 @@ public class KaiaUtil {
         return entity.getLastDamageSource() != null && entity.getLastDamageSource().getTrueSource() != null && entity.getLastDamageSource().getDamageType().equals(new AbsoluteOfCreatorDamage(entity).getDamageType());
     }
 
-    public static void returnKaiaOfOwner(EntityPlayer player) {
+    public static void returnKaiaOfOwner(EntityPlayerMP player) {
         List<ItemStack> kaiaList = player.getCapability(KaiaProvider.KaiaBrand, null).getAndExcludeAllKaiaInList();
         kaiaList = kaiaList.stream().filter(item -> item.getItem() instanceof Kaia).collect(Collectors.toList());
         for (ItemStack kaia : kaiaList) {
