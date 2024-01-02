@@ -1,10 +1,10 @@
-package com.omnipotent.server.command;
+package com.omnipotent.common.command;
 
 import com.omnipotent.Config;
-import com.omnipotent.server.capability.AntiEntityProvider;
-import com.omnipotent.server.capability.IAntiEntitySpawn;
-import com.omnipotent.server.capability.IUnbanEntities;
-import com.omnipotent.server.capability.UnbanEntitiesProvider;
+import com.omnipotent.common.capability.AntiEntityProvider;
+import com.omnipotent.common.capability.IAntiEntitySpawn;
+import com.omnipotent.common.capability.IUnbanEntities;
+import com.omnipotent.common.capability.UnbanEntitiesProvider;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.resources.I18n;
