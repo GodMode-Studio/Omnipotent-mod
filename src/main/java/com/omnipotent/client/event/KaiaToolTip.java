@@ -1,6 +1,6 @@
 package com.omnipotent.client.event;
 
-import com.omnipotent.server.tool.Kaia;
+import com.omnipotent.common.tool.Kaia;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.resources.Language;
@@ -11,8 +11,6 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 import java.util.Objects;
@@ -30,7 +28,6 @@ public class KaiaToolTip {
     private final TextFormatting[] colors2 = {TextFormatting.WHITE, TextFormatting.WHITE, TextFormatting.WHITE, TextFormatting.GOLD, TextFormatting.GOLD, TextFormatting.GOLD, TextFormatting.GOLD};
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
     public void kaiaToolTipRender(ItemTooltipEvent event) {
         if (!event.getItemStack().isEmpty() && event.getItemStack().getItem() instanceof Kaia) {
             EntityPlayer player = null;

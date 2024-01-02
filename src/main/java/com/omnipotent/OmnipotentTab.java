@@ -3,7 +3,7 @@ package com.omnipotent;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
 
-import static com.omnipotent.server.event.EventInitItems.kaia;
+import static com.omnipotent.common.event.EventInitItems.kaia;
 
 public class OmnipotentTab extends CreativeTabs {
     public OmnipotentTab(String label) {

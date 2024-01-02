@@ -1,6 +1,6 @@
 {
   "compatibilityLevel": "JAVA_8",
-  "package": "com.omnipotent.server.mixin.mods",
+  "package": "com.omnipotent.common.mixin.mods",
   "refmap": "refmap.omnipotent.json",
   "mixins": [
     "IMixinDEEventHandler"

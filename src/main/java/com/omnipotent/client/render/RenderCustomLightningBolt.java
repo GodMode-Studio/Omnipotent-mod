@@ -1,6 +1,5 @@
 package com.omnipotent.client.render;
 
-import com.google.gson.stream.JsonReader;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -13,7 +12,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
-import java.awt.*;
 import java.util.Random;
 
 @SideOnly(Side.CLIENT)

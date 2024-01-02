@@ -8,17 +8,17 @@ import com.brandon3055.draconicevolution.handlers.DEEventHandler;
 import com.google.common.collect.Lists;
 import com.omnipotent.Config;
 import com.omnipotent.acessor.IEntityLivingBaseAcessor;
+import com.omnipotent.common.capability.AntiEntityProvider;
+import com.omnipotent.common.capability.IAntiEntitySpawn;
+import com.omnipotent.common.capability.KaiaProvider;
+import com.omnipotent.common.capability.UnbanEntitiesProvider;
+import com.omnipotent.common.damage.AbsoluteOfCreatorDamage;
+import com.omnipotent.common.entity.CustomLightningBolt;
+import com.omnipotent.common.mixin.mods.IMixinDEEventHandler;
+import com.omnipotent.common.specialgui.IContainer;
+import com.omnipotent.common.specialgui.InventoryKaia;
+import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.constant.NbtBooleanValues;
-import com.omnipotent.server.capability.AntiEntityProvider;
-import com.omnipotent.server.capability.IAntiEntitySpawn;
-import com.omnipotent.server.capability.KaiaProvider;
-import com.omnipotent.server.capability.UnbanEntitiesProvider;
-import com.omnipotent.server.damage.AbsoluteOfCreatorDamage;
-import com.omnipotent.server.entity.CustomLightningBolt;
-import com.omnipotent.server.mixin.mods.IMixinDEEventHandler;
-import com.omnipotent.server.specialgui.IContainer;
-import com.omnipotent.server.specialgui.InventoryKaia;
-import com.omnipotent.server.tool.Kaia;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.resources.I18n;
@@ -78,7 +78,7 @@ import static com.omnipotent.constant.NbtNumberValues.*;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.NbtListUtil.getUUIDOfNbtList;
 
-public class KaiaUtil {
+public final class KaiaUtil {
     public static List<Class> antiEntity = new ArrayList<>();
 
 
@@ -556,14 +556,11 @@ public class KaiaUtil {
     }
 
     public static void createOwnerIfNecessary(ItemStack stack, Entity entityIn) {
-        if (!stack.getTagCompound().hasKey(ownerName)) {
-            NBTTagCompound status = stack.getTagCompound();
-            status.setString(ownerName, entityIn.getName());
-        }
-        if (!stack.getTagCompound().hasKey(ownerID)) {
-            NBTTagCompound status = stack.getTagCompound();
-            status.setString(ownerID, entityIn.getUniqueID().toString());
-        }
+        NBTTagCompound tagCompound = stack.getTagCompound();
+        if (!tagCompound.hasKey(ownerName))
+            tagCompound.setString(ownerName, entityIn.getName());
+        if (!tagCompound.hasKey(ownerID))
+            tagCompound.setString(ownerID, entityIn.getUniqueID().toString());
     }
 
     public static boolean theLastAttackOfKaia(EntityLivingBase entity) {

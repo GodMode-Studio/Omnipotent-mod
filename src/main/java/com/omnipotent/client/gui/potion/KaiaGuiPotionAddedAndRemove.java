@@ -1,8 +1,8 @@
 package com.omnipotent.client.gui.potion;
 
 import com.omnipotent.Omnipotent;
-import com.omnipotent.server.network.NetworkRegister;
-import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
+import com.omnipotent.common.network.NetworkRegister;
+import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;

@@ -1,7 +1,7 @@
 package com.omnipotent.client.gui;
 
-import com.omnipotent.server.network.NetworkRegister;
-import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
+import com.omnipotent.common.network.NetworkRegister;
+import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.NbtListUtil;
 import net.minecraft.client.Minecraft;
@@ -59,7 +59,7 @@ public class KaiaGuiAntiEntities extends GuiScreen implements IGuiPages {
         drawString(fontRenderer, "Entidades que não podem ser mortas", getEquivalentValue(8, width), getEquivalentValue(30, height), Color.WHITE.getRGB());
         guisInPage.forEach(guiTextField -> guiTextField.drawTextBox());
         buttonList.forEach(button -> button.drawButton(Minecraft.getMinecraft(), mouseX, mouseY, partialTicks));
-        if(mouseX>getEquivalentValue(500, width))
+        if (mouseX > getEquivalentValue(500, width))
             player.closeScreen();
     }
 

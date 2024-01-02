@@ -1,8 +1,8 @@
 package com.omnipotent.client.gui;
 
 import com.omnipotent.client.gui.elementsmod.GuiTextFieldMod;
-import com.omnipotent.server.network.NetworkRegister;
-import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
+import com.omnipotent.common.network.NetworkRegister;
+import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;

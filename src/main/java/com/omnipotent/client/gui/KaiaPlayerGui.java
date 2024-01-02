@@ -1,7 +1,7 @@
 package com.omnipotent.client.gui;
 
-import com.omnipotent.server.network.NetworkRegister;
-import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
+import com.omnipotent.common.network.NetworkRegister;
+import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.NbtListUtil;
 import net.minecraft.client.Minecraft;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 import static com.omnipotent.constant.NbtBooleanValues.playerDontKillInDirectAttack;
 import static com.omnipotent.constant.NbtBooleanValues.playersWhoShouldNotKilledInCounterAttack;
-import static com.omnipotent.util.KaiaConstantsNbt.*;
+import static com.omnipotent.util.KaiaConstantsNbt.playersDontKill;
 import static com.omnipotent.util.UtilityHelper.getEquivalentValueOfscreenHeight;
 import static com.omnipotent.util.UtilityHelper.getEquivalentValueOfscreenWidth;
 import static net.minecraft.command.CommandBase.getListOfStringsMatchingLastWord;

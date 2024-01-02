@@ -1,7 +1,7 @@
 package com.omnipotent.client.event;
 
-import com.omnipotent.server.network.NetworkRegister;
-import com.omnipotent.server.network.nbtpackets.ChangedValuePacket;
+import com.omnipotent.common.network.NetworkRegister;
+import com.omnipotent.common.network.nbtpackets.ChangedValuePacket;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.entity.player.PlayerEvent;

@@ -2,11 +2,11 @@ package com.omnipotent.client.gui;
 
 import com.omnipotent.client.gui.elementsmod.GuiButtonMod;
 import com.omnipotent.client.gui.elementsmod.GuiTextFieldMod;
+import com.omnipotent.common.network.NetworkRegister;
+import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.constant.NbtNumberValues;
 import com.omnipotent.constant.NbtStringValues;
-import com.omnipotent.server.network.NetworkRegister;
-import com.omnipotent.server.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.Minecraft;
