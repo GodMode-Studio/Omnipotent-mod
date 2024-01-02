@@ -1,10 +1,10 @@
-package com.omnipotent.server.gui;
+package com.omnipotent.common.gui;
 
 import com.omnipotent.client.gui.*;
 import com.omnipotent.client.gui.potion.KaiaGuiBlockPotion;
 import com.omnipotent.client.gui.potion.KaiaGuiPotionAddedAndRemove;
-import com.omnipotent.server.specialgui.ContainerKaia;
-import com.omnipotent.server.specialgui.GUIContainerKaia;
+import com.omnipotent.common.specialgui.ContainerKaia;
+import com.omnipotent.common.specialgui.GUIContainerKaia;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
