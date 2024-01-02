@@ -49,6 +49,7 @@ guikaia.config.optionOfColor=Item color
 guikaia.config.activeCustomPlayerName=Custom player name
 guikaia.config.fastBreakBlocks=Break blocks quickly
 guikaia.config.rgbEnchantmentGlitch=RGB Effect in Enchantment Aura
+guikaia.config.banPlayerToSealedDimension=Ban player to sealed dimension
 #keys
 keykaia.category=Kaia Keys
 keykaia.config=Settings
@@ -102,3 +103,4 @@ function.description.optionOfColor=The values of this option define the color th
 function.description.customPlayerName=This option, when enabled, will display the player's name using special color effects. Other players will be able to see it.
 function.description.fastBreakBlocks=This option optimizes block breaking in the area to be faster (some effects such as sounds and breaking animation will not be executed).
 function.description.rgbEnchantmentGlitch=This option activates the RGB effect on sword enchantment.
+function.description.banPlayerToSealedDimension=This option bans player killed by kaia.
