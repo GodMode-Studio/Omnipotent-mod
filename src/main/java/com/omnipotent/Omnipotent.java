@@ -1,14 +1,12 @@
 package com.omnipotent;
 
-import com.omnipotent.server.CommonProxy;
-import com.omnipotent.server.capability.*;
-import com.omnipotent.server.command.CommandOmni;
-import com.omnipotent.server.entity.CustomLightningBolt;
-import com.omnipotent.server.entity.KaiaEntity;
+import com.omnipotent.common.CommonProxy;
+import com.omnipotent.common.command.CommandOmni;
+import com.omnipotent.common.entity.CustomLightningBolt;
+import com.omnipotent.common.entity.KaiaEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraft.world.DimensionType;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -21,7 +19,6 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
-import org.spongepowered.asm.mixin.Mixins;
 
 @Mod(modid = Omnipotent.MODID, name = Omnipotent.NAME, version = Omnipotent.VERSION, useMetadata = true)
 @Mod.EventBusSubscriber
@@ -35,33 +32,26 @@ public class Omnipotent {
     public static final ResourceLocation BLOCK_MODES_OF_PLAYER = new ResourceLocation(MODID, "blockmodesplayer");
     public static final ResourceLocation ANTIENTITYWORLD = new ResourceLocation(MODID, "antityentityworld");
     public static final ResourceLocation ENTITIESUNBANNABLE = new ResourceLocation(MODID, "entitiesunbannable");
+    public static final boolean NETHER_TYPE = false;
 
 
     @Mod.Instance(Omnipotent.MODID)
     public static Omnipotent instance;
 
-    @SidedProxy(clientSide = "com.omnipotent.client.ClientProxy", serverSide = "com.omnipotent.server.CommonProxy")
+    @SidedProxy(clientSide = "com.omnipotent.client.ClientProxy", serverSide = "com.omnipotent.common.CommonProxy")
     public static CommonProxy proxy;
+    public static int DIMID = 2832783;
+    public static DimensionType dimensionType;
+    private static int id = 0;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        Mixins.addConfiguration("mixins.omnipotent.json");
-        MinecraftForge.EVENT_BUS.register(instance);
-        CapabilityManager.INSTANCE.register(IKaiaBrand.class, new KaiaStorage(), KaiaBrandItems.class);
-        CapabilityManager.INSTANCE.register(IBlockMode.class, new BlockModeStorage(), BlockModePlayer.class);
-        CapabilityManager.INSTANCE.register(IAntiEntitySpawn.class, new AntiEntityStorage(), AntiEntitySpawn.class);
-        CapabilityManager.INSTANCE.register(IUnbanEntities.class, new UnbanEntitiesStorage(), UnbanEntities.class);
         proxy.preInit(event);
-        Config.init(event);
     }
-
-    private static int id = 0;
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
         proxy.init(event);
-        Config.reloadConfigs();
-        Config.reloadConfigsOfFile();
     }
 
     @SubscribeEvent

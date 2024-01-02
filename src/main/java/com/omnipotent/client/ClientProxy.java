@@ -1,14 +1,11 @@
 package com.omnipotent.client;
 
-import com.omnipotent.client.event.EventClient;
-import com.omnipotent.client.event.EventInitTextures;
-import com.omnipotent.client.event.EventPlayerNameFormat;
-import com.omnipotent.client.event.KaiaToolTip;
+import com.omnipotent.client.event.*;
 import com.omnipotent.client.key.KeyEvent;
 import com.omnipotent.client.key.KeyInit;
 import com.omnipotent.client.render.RenderCustomLightningBolt;
-import com.omnipotent.server.CommonProxy;
-import com.omnipotent.server.entity.CustomLightningBolt;
+import com.omnipotent.common.CommonProxy;
+import com.omnipotent.common.entity.CustomLightningBolt;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -25,6 +22,7 @@ public class ClientProxy extends CommonProxy {
         eventBus.register(new EventInitTextures());
         eventBus.register(new EventClient());
         eventBus.register(new EventPlayerNameFormat());
+        eventBus.register(new HandlerRenderGamerOverlay());
         RenderingRegistry.registerEntityRenderingHandler(CustomLightningBolt.class, RenderCustomLightningBolt::new);
     }
 
