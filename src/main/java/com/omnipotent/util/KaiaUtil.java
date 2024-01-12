@@ -7,6 +7,7 @@ import com.brandon3055.draconicevolution.achievements.Achievements;
 import com.brandon3055.draconicevolution.handlers.DEEventHandler;
 import com.google.common.collect.Lists;
 import com.omnipotent.Config;
+import com.omnipotent.Omnipotent;
 import com.omnipotent.acessor.IEntityLivingBaseAcessor;
 import com.omnipotent.common.capability.AntiEntityProvider;
 import com.omnipotent.common.capability.IAntiEntitySpawn;
@@ -25,6 +26,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityXPOrb;
@@ -210,6 +212,9 @@ public final class KaiaUtil {
         NBTTagCompound tagCompound = kaia.getTagCompound();
         if (!EntityIsWolfAndKaiaCanKillPlayerOwnedWolf(tagCompound, entityTarget, playerSource))
             return false;
+        if (entityTarget instanceof EntityLivingBase && tagCompound.getBoolean(banEntityToSealedDimension.getValue()))
+            if (banEntityToSealedDimension((EntityLivingBase) entityTarget))
+                return false;
         if (entityIsFriendEntity(entityTarget)) {
             if (entityFriendCanKilledByKaia(tagCompound, entityTarget, directAttack))
                 return true;
@@ -268,7 +273,10 @@ public final class KaiaUtil {
     }
 
     private static void killMobs(EntityLivingBase entity, EntityPlayer playerSource, ItemStack kaia) {
-        if (kaia.getTagCompound().getBoolean(summonLightBoltsInKill.getValue()))
+        NBTTagCompound tagCompound = kaia.getTagCompound();
+        if (tagCompound.getBoolean(banEntityToSealedDimension.getValue()) && (banEntityToSealedDimension(entity)))
+            return;
+        if (tagCompound.getBoolean(summonLightBoltsInKill.getValue()))
             generateLightBolts(playerSource);
         EntityLivingBase entityCreature = entity;
         ((IEntityLivingBaseAcessor) entityCreature).setRecentlyHit(60);
@@ -279,8 +287,18 @@ public final class KaiaUtil {
         verifyAndManagerAutoBackEntitiesAndApplyDamage(entityCreature, ds, playerSource, kaia);
         antiEntity.remove(entityCreature.getClass());
         entityCreature.setHealth(0.0F);
-        if (kaia.getTagCompound().getBoolean(banEntitiesAttacked.getValue()))
+        if (tagCompound.getBoolean(banEntitiesAttacked.getValue()))
             dennyEntitySpawnInWorld(playerSource.world, entity);
+    }
+
+    private static boolean banEntityToSealedDimension(EntityLivingBase entity) {
+        if (entity instanceof EntityPlayerMP)
+            ((EntityPlayerMP) entity).setSpawnDimension(Omnipotent.dimensionType.getId());
+        else if (entity instanceof EntityLiving) {
+            entity.changeDimension(Omnipotent.dimensionType.getId());
+            return true;
+        }
+        return false;
     }
 
     private static void verifyFireEnchantmentAndExecute(EntityPlayer playerSource, EntityLivingBase entityCreature) {
