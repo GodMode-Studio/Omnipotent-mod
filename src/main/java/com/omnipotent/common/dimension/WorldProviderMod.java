@@ -3,6 +3,8 @@ package com.omnipotent.common.dimension;
 import com.omnipotent.Omnipotent;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.audio.MusicTicker;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.BlockPos;
@@ -14,12 +16,14 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class WorldProviderMod extends WorldProvider {
     @Override
     public void init() {
         this.biomeProvider = new BiomeProviderCustom(this.world.getSeed());
         this.nether = Omnipotent.NETHER_TYPE;
+        this.hasSkyLight = true;
     }
 
     @Override
@@ -36,11 +40,6 @@ public class WorldProviderMod extends WorldProvider {
     @Override
     public IChunkGenerator createChunkGenerator() {
         return new ChunkProviderModded(this.world, this.world.getSeed() - Omnipotent.DIMID);
-    }
-
-    @Override
-    public boolean isSurfaceWorld() {
-        return false;
     }
 
     @Override
@@ -73,5 +72,16 @@ public class WorldProviderMod extends WorldProvider {
     @Override
     public void onPlayerAdded(EntityPlayerMP entity) {
         UtilityHelper.sendMessageToPlayer("seja bem vindo", entity);
+    }
+
+    @Override
+    public void onWorldUpdateEntities() {
+        List<Entity> loadedEntityList = this.world.getLoadedEntityList();
+        if (loadedEntityList.size() <= 100) {
+            for (Entity entity : loadedEntityList) {
+                if (entity instanceof EntityLiving)
+                    ((EntityLiving) entity).enablePersistence();
+            }
+        }
     }
 }
