@@ -413,15 +413,14 @@ public final class KaiaUtil {
             int areaBlock = tagCompound.getInteger(blockBreakArea.getValue());
             if (!player.world.isRemote && !player.capabilities.isCreativeMode && withKaiaMainHand(player)) {
                 if (areaBlock % 2 != 0) {
-                    if (tagCompound.getBoolean(fastBreakBlocks.getValue())) {
-                        long l = System.nanoTime();
-                        fastBreakBlocksInAreaOld(areaBlock, player, pos, tagCompound);
-                        UtilityHelper.sendMessageToPlayer("Em segundos fastblock " + (System.nanoTime() - l), player);
-                    } else {
-                        long l = System.nanoTime();
-                        breakBlocksInArea(areaBlock, player, pos);
-                        UtilityHelper.sendMessageToPlayer("Em segundos " + (System.nanoTime() - l), player);
-                    }
+//                    if (tagCompound.getBoolean(fastBreakBlocks.getValue())) {
+//                        long l = System.nanoTime();
+//                        fastBreakBlocksInAreaOld(areaBlock, player, pos, tagCompound);
+//                        UtilityHelper.sendMessageToPlayer("Em segundos fastblock " + (System.nanoTime() - l), player);
+//                    long l = System.nanoTime();
+                    breakBlocksInArea(areaBlock, player, pos);
+//                        UtilityHelper.sendMessageToPlayer("Em segundos " + (System.nanoTime() - l), player);
+//
                 }
             }
         } else
