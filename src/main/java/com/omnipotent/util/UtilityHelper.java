@@ -1,39 +1,43 @@
 package com.omnipotent.util;
 
 
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldType;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
+import static net.minecraft.world.chunk.Chunk.NULL_BLOCK_STORAGE;
 import static net.minecraftforge.fml.client.config.GuiUtils.drawGradientRect;
 
 public class UtilityHelper {
-
-    /**
-     * Este método retorna verdadeiro caso a string contenha apenas numeros inteiros e falso caso contrario.
-     *
-     * @Author gamerYToffi
-     */
-    public static boolean isJustNumber(String text) {
-        return text.matches("[-]?\\d+");
-    }
 
     /**
      * Este método com base no valor recebido e na altura da tela retorna um valor equivalente para qualquer monitor.
@@ -311,6 +315,155 @@ public class UtilityHelper {
             GlStateManager.enableDepth();
             RenderHelper.enableStandardItemLighting();
             GlStateManager.enableRescaleNormal();
+        }
+    }
+
+    public static boolean setBlockStateFast(World world, BlockPos pos, IBlockState newState, int flags) throws NoSuchFieldException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        if (world.isOutsideBuildHeight(pos)) {
+            return false;
+        } else if (!world.isRemote && world.getWorldInfo().getTerrainType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
+            return false;
+        } else {
+            Chunk chunk = world.getChunkFromBlockCoords(pos);
+
+            pos = pos.toImmutable(); // Forge - prevent mutable BlockPos leaks
+            net.minecraftforge.common.util.BlockSnapshot blockSnapshot = null;
+            if (world.captureBlockSnapshots && !world.isRemote) {
+                blockSnapshot = net.minecraftforge.common.util.BlockSnapshot.getBlockSnapshot(world, pos, flags);
+                world.capturedBlockSnapshots.add(blockSnapshot);
+            }
+            IBlockState oldState = world.getBlockState(pos);
+//            int oldLight = oldState.getLightValue(world, pos);
+//            int oldOpacity = oldState.getLightOpacity(world, pos);
+
+            IBlockState iblockstate = setBlockStateChuckFast(chunk, pos, newState);
+
+            if (iblockstate == null) {
+                if (blockSnapshot != null) world.capturedBlockSnapshots.remove(blockSnapshot);
+                return false;
+            } else {
+//                if (newState.getLightOpacity(world, pos) != oldOpacity || newState.getLightValue(world, pos) != oldLight) {
+//                    world.profiler.startSection("checkLight");
+//                    world.checkLight(pos);
+//                    world.profiler.endSection();
+//                }
+
+                if (blockSnapshot == null) // Don't notify clients or update physics while capturing blockstates
+                {
+                    world.markAndNotifyBlock(pos, chunk, iblockstate, newState, flags);
+                }
+                return true;
+            }
+        }
+    }
+
+    private static final Class<Chunk> chunkClass = Chunk.class;
+
+    @Nullable
+    public static IBlockState setBlockStateChuckFast(Chunk chunk, BlockPos pos, IBlockState state) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+        int i = pos.getX() & 15;
+        int j = pos.getY();
+        int k = pos.getZ() & 15;
+        int l = k << 4 | i;
+        Field field = chunkClass.getDeclaredField("precipitationHeightMap");
+        field.setAccessible(true);
+        final int[] precipitationHeightMap = (int[]) field.get(chunk);
+
+        if (j >= precipitationHeightMap[l] - 1) {
+            precipitationHeightMap[l] = -999;
+        }
+
+        Field field2 = chunkClass.getDeclaredField("heightMap");
+        field2.setAccessible(true);
+        final int[] heightMap = (int[]) field2.get(chunk);
+        int i1 = heightMap[l];
+        IBlockState iblockstate = chunk.getBlockState(pos);
+
+        if (iblockstate == state) {
+            return null;
+        } else {
+            Block block = state.getBlock();
+            Block block1 = iblockstate.getBlock();
+            ExtendedBlockStorage extendedblockstorage = chunk.getBlockStorageArray()[j >> 4];
+            boolean flag = false;
+
+            if (extendedblockstorage == NULL_BLOCK_STORAGE) {
+                if (block == Blocks.AIR) {
+                    return null;
+                }
+
+                extendedblockstorage = new ExtendedBlockStorage(j >> 4 << 4, chunk.getWorld().provider.hasSkyLight());
+                chunk.getBlockStorageArray()[j >> 4] = extendedblockstorage;
+                flag = j >= i1;
+            }
+
+            extendedblockstorage.set(i, j & 15, k, state);
+
+            //if (block1 != block)
+            {
+                if (!chunk.getWorld().isRemote) {
+                    if (block1 != block) //Only fire block breaks when the block changes.
+                        block1.breakBlock(chunk.getWorld(), pos, iblockstate);
+                    TileEntity te = chunk.getTileEntity(pos, Chunk.EnumCreateEntityType.CHECK);
+                    if (te != null && te.shouldRefresh(chunk.getWorld(), pos, iblockstate, state))
+                        chunk.getWorld().removeTileEntity(pos);
+                } else if (block1.hasTileEntity(iblockstate)) {
+                    TileEntity te = chunk.getTileEntity(pos, Chunk.EnumCreateEntityType.CHECK);
+                    if (te != null && te.shouldRefresh(chunk.getWorld(), pos, iblockstate, state))
+                        chunk.getWorld().removeTileEntity(pos);
+                }
+            }
+
+            if (extendedblockstorage.get(i, j & 15, k).getBlock() != block) {
+                return null;
+            } else {
+//                if (flag) {
+//                    chunk.generateSkylightMap();
+//                } else {
+//                    int j1 = state.getLightOpacity(chunk.getWorld(), pos);
+
+//                    if (j1 > 0) {
+//                        if (j >= i1) {
+//                            Method relightBlock = chunkClass.getMethod("relightBlock", int.class, int.class, int.class);
+//                            relightBlock.setAccessible(true);
+//                            relightBlock.invoke(chunk, i, j + 1, k);
+//                            chunk.relightBlock(i, j + 1, k);
+//                        }
+//                    } else if (j == i1 - 1) {
+//                        Method relightBlock = chunkClass.getMethod("relightBlock", int.class, int.class, int.class);
+//                        relightBlock.setAccessible(true);
+//                        relightBlock.invoke(chunk, i, j, k);
+//                        chunk.relightBlock(i, j, k);
+//                    }
+
+//                    if (j1 != k1 && (j1 < k1 || chunk.getLightFor(EnumSkyBlock.SKY, pos) > 0 || chunk.getLightFor(EnumSkyBlock.BLOCK, pos) > 0)) {
+//                        Method propagateSkylightOcclusion = chunkClass.getMethod("propagateSkylightOcclusion", int.class, int.class);
+//                        propagateSkylightOcclusion.setAccessible(true);
+//                        propagateSkylightOcclusion.invoke(chunk, i, k);
+////                        propagateSkylightOcclusion(i, k);
+//                    }
+            }
+
+            // If capturing blocks, only run block physics for TE's. Non-TE's are handled in ForgeHooks.onPlaceItemIntoWorld
+            if (!chunk.getWorld().isRemote && block1 != block && (!chunk.getWorld().captureBlockSnapshots || block.hasTileEntity(state))) {
+                block.onBlockAdded(chunk.getWorld(), pos, state);
+            }
+
+            if (block.hasTileEntity(state)) {
+                TileEntity tileentity1 = chunk.getTileEntity(pos, Chunk.EnumCreateEntityType.CHECK);
+
+                if (tileentity1 == null) {
+                    tileentity1 = block.createTileEntity(chunk.getWorld(), state);
+                    chunk.getWorld().setTileEntity(pos, tileentity1);
+                }
+
+                if (tileentity1 != null) {
+                    tileentity1.updateContainingBlockInfo();
+                }
+            }
+
+            chunk.setModified(true);
+            return iblockstate;
         }
     }
 }

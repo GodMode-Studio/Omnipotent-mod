@@ -31,11 +31,11 @@ public class RenderKaiaItem extends RenderItem {
             int count = stack.getCount();
             if (count != 1) {
                 if (count > 1000000000) {
-                    text = String.valueOf(stack.getCount() / 1000000000) + "G";
+                    text = stack.getCount() / 1000000000 + "G";
                 } else if (count > 1000000) {
-                    text = String.valueOf(stack.getCount() / 1000000) + "M";
+                    text = stack.getCount() / 1000000 + "M";
                 } else if (count > 1000) {
-                    text = String.valueOf(stack.getCount() / 1000) + "K";
+                    text = stack.getCount() / 1000 + "K";
                 }
             }
         }
