@@ -24,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.omnipotent.constant.NbtBooleanValues.*;
 
@@ -54,9 +55,10 @@ public abstract class MixinGuiIngameForge extends GuiIngame {
         EntityPlayerSP player = mc.player;
         GuiScreen currentScreen = mc.currentScreen;
         if (player == null || currentScreen != null) return;
-        ItemStack kaiaInMainHand = KaiaUtil.getKaiaInMainHand(player);
-        if (kaiaInMainHand == null) return;
-        NBTTagCompound tagCompound = kaiaInMainHand.getTagCompound();
+        Optional<ItemStack> kaiaInMainHand = KaiaUtil.getKaiaInMainHand(player);
+        if (!kaiaInMainHand.isPresent())
+            return;
+        NBTTagCompound tagCompound = kaiaInMainHand.get().getTagCompound();
         if (tagCompound == null) return;
         if (!tagCompound.getBoolean(showInfo.getValue())) return;
         List<String> values = new ArrayList<>();

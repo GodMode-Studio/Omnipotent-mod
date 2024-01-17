@@ -296,7 +296,7 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
             if (cancelAttack)
                 return cancelAttack;
             if (!player.world.isRemote)
-                killChoice(entityAttacked, player, getKaiaInMainHand(player).getTagCompound().getBoolean(killAllEntities.getValue()));
+                killChoice(entityAttacked, player, getKaiaInMainHand(player).get().getTagCompound().getBoolean(killAllEntities.getValue()));
             return cancelAttack;
         }
         return false;

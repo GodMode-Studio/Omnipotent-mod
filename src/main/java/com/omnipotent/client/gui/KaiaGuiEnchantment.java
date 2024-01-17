@@ -9,7 +9,8 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.awt.*;
 import java.io.IOException;
@@ -19,7 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import static com.omnipotent.util.KaiaConstantsNbt.kaiaEnchant;
-import static com.omnipotent.util.UtilityHelper.isJustNumber;
 
 public class KaiaGuiEnchantment extends GuiScreen {
 
@@ -178,11 +178,12 @@ public class KaiaGuiEnchantment extends GuiScreen {
         for (GuiTextField guiField : guiTextFieldList) {
             guiField.mouseClicked(mouseX, mouseY, mouseButton);
             if (guiField.isFocused()) {
-                if (isJustNumber(guiText.getText()) && (Integer.parseInt(guiText.getText()) <= Short.MAX_VALUE) && (Integer.parseInt(guiText.getText()) > 0)) {
+                short number = NumberUtils.toShort(guiText.getText(), (short) -20_000);
+                if (number > 0) {
                     lvl = Integer.parseInt(guiText.getText());
                 } else {
                     guiText.setText(I18n.format("guikaia.enchant.label0"));
-                    player.sendMessage(new TextComponentString(I18n.format("guikaia.enchant.message")));
+                    player.sendMessage(new TextComponentTranslation("guikaia.enchant.message"));
                     lvl = 1;
                 }
                 Enchantment enchantment = hashGuiTextEnchant.get(guiField);

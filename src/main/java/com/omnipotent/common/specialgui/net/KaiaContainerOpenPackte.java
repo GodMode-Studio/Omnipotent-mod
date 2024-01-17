@@ -40,9 +40,7 @@ public class KaiaContainerOpenPackte implements IMessage {
         public IMessage onMessage(KaiaContainerOpenPackte message, MessageContext ctx) {
             EntityPlayerMP player = ctx.getServerHandler().player;
             if (!player.getServer().isCallingFromMinecraftThread()) {
-                player.getServer().addScheduledTask(() -> {
-                    this.onMessage(message, ctx);
-                });
+                player.getServer().addScheduledTask(() -> this.onMessage(message, ctx));
             } else {
                 ItemStack stack = player.getHeldItemMainhand();
                 boolean mainhand = true;

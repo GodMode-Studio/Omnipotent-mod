@@ -21,7 +21,7 @@ public class InventoryKaia implements IInventory {
     private List<NonNullList<ItemStack>> pages;
     private int currentPage;
 
-
+    @Override
     public boolean hasCustomName() {
         return false;
     }

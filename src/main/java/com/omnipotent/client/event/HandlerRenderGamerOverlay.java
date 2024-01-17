@@ -1,27 +1,22 @@
 package com.omnipotent.client.event;
 
-import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.util.KaiaUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-import static com.omnipotent.constant.NbtBooleanValues.*;
+import static com.omnipotent.constant.NbtBooleanValues.showInfo;
 
 public class HandlerRenderGamerOverlay {
     private int displayWidth;
@@ -75,14 +70,14 @@ public class HandlerRenderGamerOverlay {
         GL11.glPopMatrix();
     }
 
-    private static NBTTagCompound getNbtTag(EntityPlayerSP player, GuiScreen currentScreen) {
-        if (player == null || currentScreen != null) return null;
-        ItemStack kaiaInMainHand = KaiaUtil.getKaiaInMainHand(player);
-        if (kaiaInMainHand == null) return null;
-        NBTTagCompound tagCompound = kaiaInMainHand.getTagCompound();
-        if (tagCompound == null) return null;
-        if (!tagCompound.getBoolean(showInfo.getValue())) return null;
-        return tagCompound;
+    private static Optional<NBTTagCompound> getNbtTag(EntityPlayerSP player, GuiScreen currentScreen) {
+        if (player == null || currentScreen != null) return Optional.empty();
+        Optional<ItemStack> kaiaInMainHand = KaiaUtil.getKaiaInMainHand(player);
+        if (!kaiaInMainHand.isPresent()) return Optional.empty();
+        NBTTagCompound tagCompound = kaiaInMainHand.get().getTagCompound();
+        if (tagCompound == null) return Optional.empty();
+        if (!tagCompound.getBoolean(showInfo.getValue())) return Optional.empty();
+        return Optional.of(tagCompound);
     }
 
     private float drawDescriptionAndGetLastElement(String description) {

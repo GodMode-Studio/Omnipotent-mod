@@ -3,6 +3,7 @@ package com.omnipotent.client.gui.potion;
 import com.omnipotent.Omnipotent;
 import com.omnipotent.acessor.IGuiTextFieldAcessor;
 import com.omnipotent.client.gui.elementsmod.GuiButtonMod;
+import com.omnipotent.common.gui.GuiHandler;
 import com.omnipotent.common.network.NetworkRegister;
 import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.KaiaConstantsNbt;
@@ -94,7 +95,7 @@ public class KaiaGuiBlockPotion extends GuiScreen {
     }
 
     private void addButtonChangeMainPage() {
-        GuiButton button = new GuiButtonMod(++idButtom, (int) (width / 40), height / 2, "<", () -> player.openGui(Omnipotent.instance, 4, player.world, 0, 0, 0));
+        GuiButton button = new GuiButtonMod(++idButtom, (int) (width / 40), height / 2, "<", () -> player.openGui(Omnipotent.instance, GuiHandler.KaiaGuiPotionAddedAndRemove, player.world, 0, 0, 0));
         button.setWidth((width / 23));
         button.height = height / 24;
         buttonList.add(button);
@@ -183,7 +184,7 @@ public class KaiaGuiBlockPotion extends GuiScreen {
             potions.add(potion);
         }
         int y = (int) ((int) (yElementControllerButtons / 8.5) / currentScrollOffset);
-        ArrayList<String> potionsBlocked = NbtListUtil.getValueOfElementsOfNbtList(KaiaUtil.getKaiaInMainHand(player).getTagCompound().getTagList(KaiaConstantsNbt.effectsBlockeds, 8));
+        ArrayList<String> potionsBlocked = NbtListUtil.getValueOfElementsOfNbtList(KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getTagList(KaiaConstantsNbt.effectsBlockeds, 8));
         for (int c = 0; c < potions.size(); c++) {
             GuiTextField guiTextField = new GuiTextField(++idGuiText, fontRenderer, (int) (width / 13.7142857143), y, (int) (xElementControllerButtons / 0.98), (int) (height / 21.25));
             guiTextField.setMaxStringLength(128);

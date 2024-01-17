@@ -6,7 +6,6 @@ import com.omnipotent.common.network.NetworkRegister;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
 import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -27,9 +26,7 @@ public class KaiaEvent {
     @SideOnly(Side.CLIENT)
     public void playerAttack(PlayerInteractEvent.LeftClickEmpty event) {
         EntityPlayer player = event.getEntityPlayer();
-        ItemStack kaia = getKaiaInMainHand(player);
-        if (kaia != null)
-            NetworkRegister.ACESS.sendToServer(new KillPacket());
+        getKaiaInMainHand(player).ifPresent(kaia -> NetworkRegister.ACESS.sendToServer(new KillPacket()));
     }
 
     @SubscribeEvent(receiveCanceled = true, priority = EventPriority.LOWEST)
@@ -47,7 +44,7 @@ public class KaiaEvent {
     public void playerClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         EntityPlayer entityPlayer = event.getEntityPlayer();
         World world = entityPlayer.world;
-        if (withKaiaMainHand(entityPlayer) && !world.isRemote && entityPlayer instanceof EntityPlayerMP && !entityPlayer.capabilities.isCreativeMode) {
+        if (withKaiaMainHand(entityPlayer) && !world.isRemote && !entityPlayer.capabilities.isCreativeMode) {
             decideBreakBlock((EntityPlayerMP) entityPlayer, event.getPos());
         }
     }

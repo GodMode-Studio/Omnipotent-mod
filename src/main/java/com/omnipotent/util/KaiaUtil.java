@@ -37,6 +37,7 @@ import net.minecraft.entity.passive.EntitySquid;
 import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Enchantments;
 import net.minecraft.item.ItemAir;
 import net.minecraft.item.ItemStack;
@@ -69,6 +70,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -105,7 +107,7 @@ public final class KaiaUtil {
 
     public static void killInAreaConstantly(EntityPlayer playerSource) {
         World world = playerSource.getEntityWorld();
-        NBTTagCompound tagCompoundOfKaia = (getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource)).getTagCompound();
+        NBTTagCompound tagCompoundOfKaia = getKaiaInMainHandOrInventory(playerSource).getTagCompound();
         if (tagCompoundOfKaia == null) return;
         boolean autoKill = tagCompoundOfKaia.getBoolean(NbtBooleanValues.autoKill.getValue());
         if (!autoKill)
@@ -118,6 +120,10 @@ public final class KaiaUtil {
         for (Entity entity : entities) {
             killChoice(entity, playerSource, killAllEntities);
         }
+    }
+
+    public static ItemStack getKaiaInMainHandOrInventory(final EntityPlayer playerSource) {
+        return getKaiaInMainHand(playerSource).orElseGet(() -> getKaiaInInventory(playerSource));
     }
 
     public static List<Entity> getEntitiesInArea(World world, BlockPos position, int rangeOfBlocks) {
@@ -134,7 +140,7 @@ public final class KaiaUtil {
     public static void killArea(EntityPlayer playerSource) {
         World world = playerSource.world;
         List<Entity> entities = Lists.newArrayList();
-        NBTTagCompound tagCompoundOfKaia = (getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource)).getTagCompound();
+        NBTTagCompound tagCompoundOfKaia = getKaiaInMainHandOrInventory(playerSource).getTagCompound();
         int range = tagCompoundOfKaia.getInteger(rangeAttack.getValue());
         boolean killAllEntities = tagCompoundOfKaia.getBoolean(NbtBooleanValues.killAllEntities.getValue());
         double slope = 0.1;
@@ -179,7 +185,7 @@ public final class KaiaUtil {
 
     public static boolean killChoice(Entity entity, EntityPlayer playerSource, boolean killAllEntities) {
         boolean mobKilled = false;
-        ItemStack kaia = getKaiaInMainHand(playerSource) == null ? getKaiaInInventory(playerSource) : getKaiaInMainHand(playerSource);
+        ItemStack kaia = getKaiaInMainHandOrInventory(playerSource);
         NBTTagCompound tagCompound = kaia.getTagCompound();
         if (!tagCompound.getBoolean(NbtBooleanValues.attackYourWolf.getValue()))
             if (entity instanceof EntityWolf && ((EntityWolf) entity).isOwner(playerSource))
@@ -204,7 +210,7 @@ public final class KaiaUtil {
     public static boolean checkIfKaiaCanKill(Entity entityTarget, EntityPlayer playerSource, boolean directAttack, boolean isCounterAttack) {
         if (playerSource == null)
             throw new RuntimeException("Player is null in checkKaia");
-        ItemStack kaia = getKaiaInMainHand(playerSource) == null ? getKaiaInMainHand(playerSource) : getKaiaInInventory(playerSource);
+        ItemStack kaia = getKaiaInMainHandOrInventory(playerSource);
         if (kaia == null)
             throw new RuntimeException("Use of method is incorrect, playerSource dont have Kaia");
         if (entityTarget == null || (UtilityHelper.isPlayer(entityTarget) && hasInInventoryKaia(entityTarget)))
@@ -386,8 +392,6 @@ public final class KaiaUtil {
         DoubleSupplier posXLight = () -> playerSource.posX + lookPlayer.x * rand.nextInt(100) - 20;
         DoubleSupplier posYLight = () -> playerSource.posY + lookPlayer.y * rand.nextInt(7);
         DoubleSupplier posZLight = () -> playerSource.posZ + lookPlayer.z * rand.nextInt(100) - 20;
-        NBTTagCompound nbttagcompound = new NBTTagCompound();
-        nbttagcompound.setString("id", "omnipotent:customligth");
         Consumer<Boolean> spawnLight = (value) -> playerSource.world.spawnEntity(new CustomLightningBolt(playerSource.world, posXLight.getAsDouble(), posYLight.getAsDouble(), posZLight.getAsDouble(), true));
         BiConsumer<Integer, Object> loop = (quantityOfLoop, object) -> {
             for (int c = 0; c < quantityOfLoop; c++) {
@@ -404,22 +408,27 @@ public final class KaiaUtil {
     }
 
     public static void decideBreakBlock(EntityPlayerMP player, BlockPos pos) {
-        NBTTagCompound tagCompound = getKaiaInMainHand(player).getTagCompound();
+        NBTTagCompound tagCompound = getKaiaInMainHand(player).get().getTagCompound();
         if (tagCompound.getInteger(blockBreakArea.getValue()) > 1) {
             int areaBlock = tagCompound.getInteger(blockBreakArea.getValue());
             if (!player.world.isRemote && !player.capabilities.isCreativeMode && withKaiaMainHand(player)) {
                 if (areaBlock % 2 != 0) {
-                    if (tagCompound.getBoolean(fastBreakBlocks.getValue()))
-                        fastBreakBlocksInArea(areaBlock, player, pos, tagCompound);
-                    else
+                    if (tagCompound.getBoolean(fastBreakBlocks.getValue())) {
+                        long l = System.nanoTime();
+                        fastBreakBlocksInAreaOld(areaBlock, player, pos, tagCompound);
+                        UtilityHelper.sendMessageToPlayer("Em segundos fastblock " + (System.nanoTime() - l), player);
+                    } else {
+                        long l = System.nanoTime();
                         breakBlocksInArea(areaBlock, player, pos);
+                        UtilityHelper.sendMessageToPlayer("Em segundos " + (System.nanoTime() - l), player);
+                    }
                 }
             }
         } else
             player.world.spawnEntity(new EntityXPOrb(player.world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, (int) breakBlockIfDropsIsEmpty(player, pos)));
     }
 
-    public static void fastBreakBlocksInArea(int areaBlock, EntityPlayer player, BlockPos centerPos, NBTTagCompound tagCompound) {
+    public static void fastBreakBlocksInAreaOld(int areaBlock, EntityPlayer player, BlockPos centerPos, NBTTagCompound tagCompound) {
         World world = player.world;
         int startX = centerPos.getX() - areaBlock / 2;
         int endX = centerPos.getX() + areaBlock / 2;
@@ -448,11 +457,95 @@ public final class KaiaUtil {
         world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
     }
 
+    public static void fastBreakBlocksInArea(final int areaBlock, final EntityPlayer player, final BlockPos centerPos, final NBTTagCompound tagCompound) {
+//        breakBlocksInArea(areaBlock, player, centerPos);
+
+//        World world = player.world;
+//        int startX = centerPos.getX() - areaBlock / 2;
+//        int endX = centerPos.getX() + areaBlock / 2;
+//        int startZ = centerPos.getZ() - areaBlock / 2;
+//        int endZ = centerPos.getZ() + areaBlock / 2;
+//        int startY = centerPos.getY() - areaBlock / 2;
+//        int endY = centerPos.getY() + areaBlock / 2;
+//        float xp = 0f;
+//        int totalArea = areaBlock * areaBlock * areaBlock;
+//        int nThreads = Runtime.getRuntime().availableProcessors();
+//        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+//        int initialCapacity = (int) Math.ceil(totalArea / nThreads);
+//        ArrayList<BlockPos> blocksToBreak = new ArrayList<>(totalArea);
+//        ArrayList<BlockPos> blocksToBreak2 = new ArrayList<>(initialCapacity);
+//        ArrayList<BlockPos> blocksToBreak3 = new ArrayList<>(initialCapacity);
+//        xp += fastBreakBlock((EntityPlayerMP) player, centerPos, tagCompound);
+//        if (tagCompound.getBoolean(noBreakTileEntity.getValue())) {
+//            if (checkTheAreaForTileEntityBlock(startX, startY, startZ, endX, endY, endZ, player.world)) {
+//                world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
+//                return;
+//            }
+//        }
+//        int count = 0;
+//        for (int x = startX; x <= endX; x++) {
+//            for (int z = startZ; z <= endZ; z++) {
+//                for (int y = startY; y <= endY; y++) {
+//                    BlockPos blockPos = new BlockPos(x, y, z);
+//                    if (!world.isAirBlock(blockPos)) {
+//                        if (count <= initialCapacity)
+//                            blocksToBreak.add(blockPos);
+//                        else if (count <= initialCapacity * 2)
+//                            blocksToBreak2.add(blockPos);
+//                        else
+//                            blocksToBreak3.add(blockPos);
+//                        count++;
+//                    }
+//                }
+//            }
+//        }
+
+        //deppois
+//       try {
+//           ForkJoinPool forkJoinPool = ForkJoinPool.commonPool();
+//           Long invoke = forkJoinPool.invoke(new BreakBlocksTask(blocksToBreak, (EntityPlayerMP) player, tagCompound));
+//           UtilityHelper.sendMessageToAllPlayers(String.valueOf(invoke));
+//       }catch (Exception e){
+//           System.out.println(e);
+//       }
+        //-------
+//        ArrayList<CompletableFuture<Integer>> blocksToBreakAllTask = new ArrayList<>();
+//        blocksToBreakAllTask.add(CompletableFuture.supplyAsync(() -> {
+//            int xp1 = 0;
+//            for (BlockPos b : blocksToBreak) {
+//                xp1 += fastBreakBlock((EntityPlayerMP) player, b, tagCompound);
+//            }
+//            return xp1;
+//        }));
+//        blocksToBreakAllTask.add(CompletableFuture.supplyAsync(() -> {
+//            int xp1 = 0;
+//            for (BlockPos b : blocksToBreak2) {
+//                xp1 += fastBreakBlock((EntityPlayerMP) player, b, tagCompound);
+//            }
+//            return xp1;
+//        }));
+//        blocksToBreakAllTask.add(CompletableFuture.supplyAsync(() -> {
+//            int xp1 = 0;
+//            for (BlockPos b : blocksToBreak3) {
+//                xp1 += fastBreakBlock((EntityPlayerMP) player, b, tagCompound);
+//            }
+//            return xp1;
+//        }));
+//        CompletableFuture<Void> blocksToBreakFuture = CompletableFuture.allOf(blocksToBreakAllTask.toArray(new CompletableFuture[0]));
+//        CompletableFuture<Integer> integerCompletableFuture = blocksToBreakFuture.thenApply(v -> blocksToBreakAllTask.stream().map(CompletableFuture::join).reduce(0, Integer::sum));
+//        try {
+//            xp += integerCompletableFuture.get();
+//        } catch (InterruptedException e) {
+//        } catch (ExecutionException e) {
+//        }
+//        world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
+    }
+
     public static float fastBreakBlock(EntityPlayerMP player, BlockPos pos, NBTTagCompound tagCompound) {
         IBlockState state = player.world.getBlockState(pos);
         Block block = state.getBlock();
         NonNullList<ItemStack> drops = NonNullList.create();
-        ItemStack kaiaInMainHand = getKaiaInMainHand(player);
+        ItemStack kaiaInMainHand = getKaiaInMainHand(player).get();
         int enchLevelFortune = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, kaiaInMainHand);
         Float xp = 0f;
         block.getDrops(drops, player.world, pos, state, enchLevelFortune);
@@ -465,7 +558,10 @@ public final class KaiaUtil {
         else
             drops.forEach(dropStack -> player.world.spawnEntity(new EntityItem(player.world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, dropStack)));
         xp += block.getExpDrop(state, player.world, pos, enchLevelFortune);
-        player.world.setBlockToAir(pos);
+        try {
+            UtilityHelper.setBlockStateFast(player.world, pos, Blocks.AIR.getDefaultState(), 3);
+        } catch (Exception e) {
+        }
         return xp;
     }
 
@@ -479,13 +575,12 @@ public final class KaiaUtil {
         int endY = centerPos.getY() + areaBlock / 2;
         float xp = 0f;
         xp += breakBlockIfDropsIsEmpty((EntityPlayerMP) player, centerPos);
-        if (getKaiaInMainHand(player).getTagCompound().getBoolean(noBreakTileEntity.getValue())) {
+        if (getKaiaInMainHand(player).get().getTagCompound().getBoolean(noBreakTileEntity.getValue())) {
             if (checkTheAreaForTileEntityBlock(startX, startY, startZ, endX, endY, endZ, player.world)) {
                 world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
                 return;
             }
         }
-        long startTime = System.currentTimeMillis();
         for (int x = startX; x <= endX; x++) {
             for (int z = startZ; z <= endZ; z++) {
                 for (int y = startY; y <= endY; y++) {
@@ -499,7 +594,8 @@ public final class KaiaUtil {
         world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
     }
 
-    private static boolean checkTheAreaForTileEntityBlock(int startX, int startY, int startZ, int endX, int endY, int endZ, World world) {
+    private static boolean checkTheAreaForTileEntityBlock(int startX, int startY, int startZ, int endX, int endY,
+                                                          int endZ, World world) {
         BlockPos startBlockPos = new BlockPos(startX, startY, startZ);
         for (BlockPos blockPos : BlockPos.getAllInBox(startBlockPos, new BlockPos(endX, endY, endZ))) {
             if (world.getBlockState(blockPos).getBlock().hasTileEntity(world.getBlockState(blockPos))) return true;
@@ -511,7 +607,7 @@ public final class KaiaUtil {
         IBlockState state = player.world.getBlockState(pos);
         Block block = state.getBlock();
         NonNullList<ItemStack> drops = NonNullList.create();
-        ItemStack kaiaInMainHand = getKaiaInMainHand(player);
+        ItemStack kaiaInMainHand = getKaiaInMainHand(player).get();
         int enchLevelFortune = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, kaiaInMainHand);
         Float xp = 0f;
         block.getDrops(drops, player.world, pos, state, enchLevelFortune);
@@ -532,7 +628,8 @@ public final class KaiaUtil {
         return xp;
     }
 
-    public static void addedItemsStacksInKaiaInventory(EntityPlayer playerOwnerOfKaia, NonNullList<ItemStack> drops, ItemStack kaiaItemStack) {
+    public static void addedItemsStacksInKaiaInventory(EntityPlayer
+                                                               playerOwnerOfKaia, NonNullList<ItemStack> drops, ItemStack kaiaItemStack) {
         InventoryKaia inventory = ((IContainer) kaiaItemStack.getItem()).getInventory(kaiaItemStack);
         for (ItemStack dropStack : drops) {
             boolean breakMainLoop = false;
@@ -574,6 +671,7 @@ public final class KaiaUtil {
     }
 
     public static void createOwnerIfNecessary(ItemStack stack, Entity entityIn) {
+        Objects.requireNonNull(stack, "kaia ItemStack should be non-null");
         NBTTagCompound tagCompound = stack.getTagCompound();
         if (!tagCompound.hasKey(ownerName))
             tagCompound.setString(ownerName, entityIn.getName());
@@ -609,8 +707,10 @@ public final class KaiaUtil {
         }
     }
 
-    public static ItemStack getKaiaInMainHand(EntityPlayer player) {
-        return withKaiaMainHand(player) ? player.getHeldItemMainhand() : null;
+    public static java.util.Optional<ItemStack> getKaiaInMainHand(EntityPlayer player) {
+        ItemStack stack = player.getHeldItemMainhand();
+        stack = stack.getItem() instanceof Kaia ? stack : null;
+        return java.util.Optional.ofNullable(stack);
     }
 
     public static ItemStack getKaiaInInventory(EntityPlayer player) throws RuntimeException {
@@ -639,7 +739,8 @@ public final class KaiaUtil {
                 String playerLanguage = (String) languageField.get(player);
                 if (playerLanguage.equals("pt_br"))
                     player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA NAO PODE SER MORTA"));
-                else player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA CANNOT BE KILLED"));
+                else
+                    player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA CANNOT BE KILLED"));
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 e.printStackTrace();
                 player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA CANNOT BE KILLED"));
@@ -650,14 +751,15 @@ public final class KaiaUtil {
     public static boolean effectIsBlockedByKaia(EntityPlayer player, Potion potion) {
         if (!hasInInventoryKaia(player))
             return false;
-        NBTTagCompound tagCompound = (getKaiaInMainHand(player) == null ? getKaiaInInventory(player) : getKaiaInMainHand(player)).getTagCompound();
+        NBTTagCompound tagCompound = getKaiaInMainHandOrInventory(player).getTagCompound();
         if (tagCompound == null)
             return false;
         NBTTagList tagList = tagCompound.getTagList(effectsBlockeds, 8);
         return NbtListUtil.isElementAlreadyExists(tagList, potion.getRegistryName().toString());
     }
 
-    public static void addKaiaAndManagerInPlayarDataFile(@Nonnull ItemStack kaia, @Nonnull String absolutePathOfPlayerDataFile) throws IOException {
+    public static void addKaiaAndManagerInPlayarDataFile(@Nonnull ItemStack kaia, @Nonnull String
+            absolutePathOfPlayerDataFile) throws IOException {
         NBTTagCompound playerNbt = CompressedStreamTools.readCompressed(new FileInputStream(absolutePathOfPlayerDataFile));
         if (playerNbt == null) throw new FileNotFoundException("playerdata File not is valid or not found");
         try {

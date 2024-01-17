@@ -71,9 +71,8 @@ public class GUIContainerKaia extends GuiContainer {
         FontRenderer font = stack.getItem().getFontRenderer(stack);
         net.minecraftforge.fml.client.config.GuiUtils.preItemToolTip(stack);
         List<String> tip = this.getItemToolTip(stack);
-        if (stack.getCount() > 1000) {
+        if (stack.getCount() > 1000)
             tip.add(TextFormatting.GREEN + I18n.format("container.kaia.stackCount") + " " + stack.getCount());
-        }
         this.drawHoveringText(tip, x, y, (font == null ? fontRenderer : font));
         net.minecraftforge.fml.client.config.GuiUtils.postItemToolTip();
     }

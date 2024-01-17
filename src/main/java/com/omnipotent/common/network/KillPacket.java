@@ -32,7 +32,7 @@ public class KillPacket implements IMessage {
             if (!player.getServer().isCallingFromMinecraftThread())
                 player.getServer().addScheduledTask(() -> this.onMessage(message, ctx));
             else {
-                if ((KaiaUtil.getKaiaInMainHand(player) == null ? KaiaUtil.getKaiaInInventory(player) : KaiaUtil.getKaiaInMainHand(player)).getTagCompound().getInteger(rangeAttack.getValue()) > 5)
+                if (KaiaUtil.getKaiaInMainHandOrInventory(player).getTagCompound().getInteger(rangeAttack.getValue()) > 5)
                     KaiaUtil.killArea(player);
             }
             return null;

@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.omnipotent.constant.NbtBooleanValues.interactLiquid;
 
@@ -44,20 +45,20 @@ public abstract class MixinEntity implements ICommandSender, net.minecraftforge.
     @Nullable
     @SideOnly(Side.CLIENT)
     public RayTraceResult rayTrace(double blockReachDistance, float partialTicks) {
-        boolean stopOnLiquid = false;
+        AtomicBoolean stopOnLiquid = new AtomicBoolean(false);
         if (this != null) {
             if ((EntityPlayer) (Object) this instanceof EntityPlayer) {
                 EntityPlayer player = (EntityPlayer) (Object) this;
-                if (player != null && KaiaUtil.withKaiaMainHand(player)) {
-                    if (KaiaUtil.getKaiaInMainHand(player).getTagCompound() != null) {
-                        stopOnLiquid = KaiaUtil.getKaiaInMainHand(player).getTagCompound().getBoolean(interactLiquid.getValue());
-                    }
-                }
+                KaiaUtil.getKaiaInMainHand(player).ifPresent(kaia -> {
+                    NBTTagCompound tagCompound = kaia.getTagCompound();
+                    if (tagCompound != null)
+                        stopOnLiquid.set(tagCompound.getBoolean(interactLiquid.getValue()));
+                });
             }
         }
         Vec3d vec3d = this.getPositionEyes(partialTicks);
         Vec3d vec3d1 = this.getLook(partialTicks);
         Vec3d vec3d2 = vec3d.addVector(vec3d1.x * blockReachDistance, vec3d1.y * blockReachDistance, vec3d1.z * blockReachDistance);
-        return this.world.rayTraceBlocks(vec3d, vec3d2, stopOnLiquid, false, true);
+        return this.world.rayTraceBlocks(vec3d, vec3d2, stopOnLiquid.get(), false, true);
     }
 }

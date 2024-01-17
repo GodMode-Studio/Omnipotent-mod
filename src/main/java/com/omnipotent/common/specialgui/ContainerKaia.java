@@ -16,8 +16,7 @@ import javax.annotation.Nullable;
 import java.util.Set;
 
 public class ContainerKaia extends Container {
-    public InventoryKaia inventory;
-    private EntityPlayer player;
+    protected InventoryKaia inventory;
     private ItemStack stack;
     private int slotIndex;
     private int dragMode = -1;
@@ -29,7 +28,6 @@ public class ContainerKaia extends Container {
             this.stack = stack;
             this.inventory = ((IContainer) stack.getItem()).getInventory(stack);
             this.inventory.openInventory(player);
-            this.player = player;
             this.slotIndex = slotIndex;
             for (int i = 0; i < 9; i++) {
                 for (int j = 0; j < 9; j++) {
@@ -54,7 +52,7 @@ public class ContainerKaia extends Container {
         return !stack.isEmpty() && (slotIndex == -1 && stack == player.getHeldItemOffhand() || slotIndex == player.inventory.currentItem && stack == player.getHeldItemMainhand());
     }
 
-    public static boolean kaiaCanAddItemToSlot(@Nullable Slot slotIn, ItemStack stack, boolean stackSizeMatters) {
+    public static boolean kaiaCanAddItemToSlot(@Nullable Slot slotIn, ItemStack stack) {
         boolean flag = slotIn == null || !slotIn.getHasStack();
         if (!flag && stack.isItemEqual(slotIn.getStack()) && ItemStack.areItemStackTagsEqual(slotIn.getStack(), stack)) {
             return true;
@@ -91,7 +89,7 @@ public class ContainerKaia extends Container {
             } else if (this.dragEvent == 1) {
                 Slot slot7 = this.inventorySlots.get(slotId);
                 ItemStack itemstack12 = inventoryplayer.getItemStack();
-                if (slot7 != null && kaiaCanAddItemToSlot(slot7, itemstack12, true) && slot7.isItemValid(itemstack12) && (this.dragMode == 2 || itemstack12.getCount() > this.dragSlots.size()) && this.canDragIntoSlot(slot7)) {
+                if (slot7 != null && kaiaCanAddItemToSlot(slot7, itemstack12) && slot7.isItemValid(itemstack12) && (this.dragMode == 2 || itemstack12.getCount() > this.dragSlots.size()) && this.canDragIntoSlot(slot7)) {
                     this.dragSlots.add(slot7);
                 }
             } else if (this.dragEvent == 2) {
@@ -100,7 +98,7 @@ public class ContainerKaia extends Container {
                     int k1 = inventoryplayer.getItemStack().getCount();
                     for (Slot slot8 : this.dragSlots) {
                         ItemStack itemstack13 = inventoryplayer.getItemStack();
-                        if (slot8 != null && kaiaCanAddItemToSlot(slot8, itemstack13, true) && slot8.isItemValid(itemstack13) && (this.dragMode == 2 || itemstack13.getCount() >= this.dragSlots.size()) && this.canDragIntoSlot(slot8)) {
+                        if (slot8 != null && kaiaCanAddItemToSlot(slot8, itemstack13) && slot8.isItemValid(itemstack13) && (this.dragMode == 2 || itemstack13.getCount() >= this.dragSlots.size()) && this.canDragIntoSlot(slot8)) {
                             ItemStack itemstack14 = itemstack9.copy();
                             int j3 = slot8.getHasStack() ? slot8.getStack().getCount() : 0;
                             computeStackSize(this.dragSlots, this.dragMode, itemstack14, j3);
@@ -173,7 +171,7 @@ public class ContainerKaia extends Container {
                                     l2 = slot6.getItemStackLimit(itemstack8);
                                 }
                                 if (l2 > itemstack8.getMaxStackSize()) {
-//                                    l2 = itemstack8.getMaxStackSize();
+//                                    l2 = itemstack8.getMaxStackSize(); //comentei para que ele não resete a quantidade de items stack, caso voce tenha por exemplo 200 diamentes e sete a quantidade maxima para 100 e então metade dos seus diamentes não sumirem
                                 }
                                 inventoryplayer.setItemStack(slot6.decrStackSize(l2));
                                 if (itemstack8.isEmpty()) {
@@ -265,7 +263,10 @@ public class ContainerKaia extends Container {
                 int i = dragType == 0 ? 0 : this.inventorySlots.size() - 1;
                 int j = dragType == 0 ? 1 : -1;
                 for (int k = 0; k < 2; ++k) {
-                    for (int l = i; l >= 0 && l < this.inventorySlots.size() && itemstack1.getCount() < itemstack1.getMaxStackSize(); l += j) {
+                    int size = this.inventorySlots.size();
+                    int count = itemstack1.getCount();
+                    int maxStackSize = itemstack1.getMaxStackSize();
+                    for (int l = i; l >= 0 && l < size && count < maxStackSize; l += j) {
                         Slot slot1 = this.inventorySlots.get(l);
                         if (slot1.getHasStack() && canAddItemToSlot(slot1, itemstack1, true) && slot1.canTakeStack(player) && this.canMergeSlot(itemstack1, slot1)) {
                             ItemStack itemstack2 = slot1.getStack();

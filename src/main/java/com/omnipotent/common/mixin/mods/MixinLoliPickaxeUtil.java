@@ -41,7 +41,7 @@ public abstract class MixinLoliPickaxeUtil {
     @Final
     public static void killPlayer(EntityPlayer player, EntityLivingBase source) {
         if (KaiaUtil.hasInInventoryKaia(player)) {
-            ItemStack stack = KaiaUtil.getKaiaInMainHand(player) == null ? KaiaUtil.getKaiaInInventory(player) : KaiaUtil.getKaiaInMainHand(player);
+            ItemStack stack = KaiaUtil.getKaiaInMainHandOrInventory(player);
             if (stack.getTagCompound().getBoolean(counterAttack.getValue()) && !player.world.isRemote)
                 KaiaUtil.killChoice(source, player, stack.getTagCompound().getBoolean(killAllEntities.getValue()));
             return;

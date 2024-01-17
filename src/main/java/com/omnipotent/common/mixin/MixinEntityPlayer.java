@@ -135,7 +135,7 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
     public void attackEntityFrom(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         EntityPlayer player = (EntityPlayer) (Object) this;
         if (hasInInventoryKaia(player)) {
-            ItemStack kaia = getKaiaInMainHand(player) == null ? getKaiaInInventory(player) : getKaiaInMainHand(player);
+            ItemStack kaia = getKaiaInMainHandOrInventory(player);
             Entity enemie;
             if (source != null && source.getTrueSource() != null) {
                 enemie = source.getTrueSource();

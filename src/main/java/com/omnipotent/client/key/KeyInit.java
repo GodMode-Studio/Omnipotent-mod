@@ -1,6 +1,7 @@
 package com.omnipotent.client.key;
 
 import com.omnipotent.Omnipotent;
+import com.omnipotent.common.gui.GuiHandler;
 import com.omnipotent.common.network.NetworkRegister;
 import com.omnipotent.common.network.ReturnKaiaPacket;
 import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.omnipotent.common.gui.GuiHandler.*;
 import static com.omnipotent.constant.NbtBooleanValues.showInfo;
 import static net.minecraftforge.client.settings.KeyConflictContext.IN_GAME;
 
@@ -72,7 +74,7 @@ public class KeyInit {
     private static final KeyBinding kaiaGui = new KeyMod("keykaia.config", IN_GAME, Keyboard.KEY_R, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         EntityPlayer player = (EntityPlayer) object;
         if (KeyInit.kaiaGui.isPressed() && hasKaia) {
-            player.openGui(Omnipotent.instance, 0, player.world, 0, 0, 0);
+            player.openGui(Omnipotent.instance, GuiHandler.KaiaGui, player.world, 0, 0, 0);
             return true;
         }
         return false;
@@ -88,15 +90,14 @@ public class KeyInit {
     private static final KeyBinding kaiaGuiEnchantment = new KeyMod(I18n.format("keykaia.enchantmentkaia"), IN_GAME, Keyboard.KEY_L, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         EntityPlayer player = (EntityPlayer) object;
         if (KeyInit.kaiaGuiEnchantment.isPressed() && hasKaia) {
-            player.openGui(Omnipotent.instance, 1, player.world, 0, 0, 0);
+            player.openGui(Omnipotent.instance, KaiaGuiEnchantment, player.world, 0, 0, 0);
             return true;
         }
         return false;
     });
     private static final KeyBinding kaiaGuiBackpack = new KeyMod(I18n.format("keykaia.backpack"), IN_GAME, Keyboard.KEY_P, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
-        EntityPlayer player = (EntityPlayer) object;
         if (KeyInit.kaiaGuiBackpack.isPressed() && hasKaia) {
-            NetworkRegister.ACESS.sendToServer(new KaiaContainerOpenPackte(3));
+            NetworkRegister.ACESS.sendToServer(new KaiaContainerOpenPackte(GUIContainerKaia));
             return true;
         }
         return false;
@@ -104,7 +105,7 @@ public class KeyInit {
     private static final KeyBinding kaiaGuiPotion = new KeyMod(I18n.format("keykaia.potion"), Keyboard.KEY_O, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         EntityPlayer player = (EntityPlayer) object;
         if (KeyInit.kaiaGuiPotion.isPressed() && hasKaia) {
-            player.openGui(Omnipotent.instance, 4, player.world, 0, 0, 0);
+            player.openGui(Omnipotent.instance, KaiaGuiPotionAddedAndRemove, player.world, 0, 0, 0);
             return true;
         }
         return false;
@@ -112,7 +113,7 @@ public class KeyInit {
     private static final KeyBinding kaiaGuiDimension = new KeyMod(I18n.format("keykaia.dimension"), Keyboard.KEY_K, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         EntityPlayer player = (EntityPlayer) object;
         if (KeyInit.kaiaGuiDimension.isPressed() && hasKaia) {
-            player.openGui(Omnipotent.instance, 5, player.world, 0, 0, 0);
+            player.openGui(Omnipotent.instance, KaiaGuiDimension, player.world, 0, 0, 0);
             return true;
         }
         return false;
@@ -120,7 +121,7 @@ public class KeyInit {
     private static final KeyBinding kaiaPlayerGui = new KeyMod(I18n.format("keykaia.player"), Keyboard.KEY_H, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         EntityPlayer player = (EntityPlayer) object;
         if (KeyInit.kaiaPlayerGui.isPressed() && hasKaia) {
-            player.openGui(Omnipotent.instance, 6, player.world, 0, 0, 0);
+            player.openGui(Omnipotent.instance, KaiaPlayerGui, player.world, 0, 0, 0);
             return true;
         }
         return false;
@@ -142,7 +143,7 @@ public class KeyInit {
     private static final KeyBinding kaiaShowOrHideInfo = new KeyMod(I18n.format("keykaia.kaiashowinfo"), Keyboard.KEY_MULTIPLY, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         EntityPlayer player = (EntityPlayer) object;
         if (KeyInit.kaiaShowOrHideInfo.isPressed() && hasKaia) {
-            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(showInfo.getValue(), !KaiaUtil.getKaiaInMainHand(player).getTagCompound().getBoolean(showInfo.getValue())));
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(showInfo.getValue(), !KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getBoolean(showInfo.getValue())));
             return true;
         }
         return false;

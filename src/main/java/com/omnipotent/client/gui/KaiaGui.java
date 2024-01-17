@@ -53,7 +53,7 @@ public class KaiaGui extends GuiScreen implements IGuiScrollSystem {
 
     public KaiaGui(EntityPlayerSP player) {
         this.player = player;
-        this.kaia = KaiaUtil.getKaiaInMainHand(player);
+        this.kaia = KaiaUtil.getKaiaInMainHand(player).get();
     }
 
     @Override
@@ -201,7 +201,7 @@ public class KaiaGui extends GuiScreen implements IGuiScrollSystem {
     public void actionPerformed(GuiButton button) {
         GuiButtonMod buttonMod = (GuiButtonMod) button;
         NbtBooleanValues valueNbt = buttonMod.getValueNbtBoolean();
-        this.kaia = KaiaUtil.getKaiaInMainHand(player);
+        this.kaia = KaiaUtil.getKaiaInMainHand(player).get();
         NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(valueNbt.getValue(), !kaia.getTagCompound().getBoolean(valueNbt.getValue())));
     }
 
@@ -286,12 +286,12 @@ public class KaiaGui extends GuiScreen implements IGuiScrollSystem {
         }
         actualGuiChangeNumberConfigRended = new GuiTextFieldMod(5000, fontRenderer, (int) (widthOfScreen / 2.5), (int) (heightOfScreen / 1.05), widthOfScreen / 5, heightOfScreen / 20, String.valueOf(kaia.getTagCompound().getInteger(value.getValue())));
         actualGuiChangeNumberConfigRended.setNbtNumberValue(value);
-        actualGuiChangeNumberConfigRended.setText(String.valueOf(KaiaUtil.getKaiaInMainHand(player).getTagCompound().getInteger(value.getValue())));
+        actualGuiChangeNumberConfigRended.setText(String.valueOf(KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getInteger(value.getValue())));
     }
 
     private void drawAndCreateButtonAndSelectValue(NbtBooleanValues value, NbtNumberValues valueNumber, int mouseX, int mouseY, float partialTicks) {
         if (!buttonList.isEmpty() && ((GuiButtonMod) buttonList.get(0)).getValueNbtBoolean() == value) {
-            buttonList.get(0).displayString = String.valueOf(KaiaUtil.getKaiaInMainHand(player).getTagCompound().getBoolean(value.getValue()));
+            buttonList.get(0).displayString = String.valueOf(KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getBoolean(value.getValue()));
             buttonList.get(0).drawButton(minecraft, mouseX, mouseY, partialTicks);
             if (valueNumber != null)
                 createGuiIntegerValue(valueNumber);
@@ -307,7 +307,7 @@ public class KaiaGui extends GuiScreen implements IGuiScrollSystem {
 
     private void drawAndCreateButtonAndSelectValueString(NbtBooleanValues value, NbtStringValues valueString, int mouseX, int mouseY, float partialTicks) {
         if (!buttonList.isEmpty() && ((GuiButtonMod) buttonList.get(0)).getValueNbtBoolean() == value) {
-            buttonList.get(0).displayString = String.valueOf(KaiaUtil.getKaiaInMainHand(player).getTagCompound().getBoolean(value.getValue()));
+            buttonList.get(0).displayString = String.valueOf(KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getBoolean(value.getValue()));
             buttonList.get(0).drawButton(minecraft, mouseX, mouseY, partialTicks);
             if (valueString != null)
                 createGuiStringValue(valueString);
@@ -328,7 +328,7 @@ public class KaiaGui extends GuiScreen implements IGuiScrollSystem {
         }
         actualGuiChangeNumberConfigRended = new GuiTextFieldMod(5000, fontRenderer, (int) (widthOfScreen / 2.5), (int) (heightOfScreen / 1.05), widthOfScreen / 5, heightOfScreen / 20, kaia.getTagCompound().getString(valueString.getValue()));
         actualGuiChangeNumberConfigRended.setNbtStringValue(valueString);
-        actualGuiChangeNumberConfigRended.setText(KaiaUtil.getKaiaInMainHand(player).getTagCompound().getString(valueString.getValue()));
+        actualGuiChangeNumberConfigRended.setText(KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getString(valueString.getValue()));
     }
 
     private void createGuiIntegerValue(NbtNumberValues valueNumber) {
@@ -338,7 +338,7 @@ public class KaiaGui extends GuiScreen implements IGuiScrollSystem {
         }
         actualGuiChangeNumberConfigRended = new GuiTextFieldMod(5000, fontRenderer, (int) (widthOfScreen / 2.5), (int) (heightOfScreen / 1.05), widthOfScreen / 5, heightOfScreen / 20, String.valueOf(kaia.getTagCompound().getInteger(valueNumber.getValue())));
         actualGuiChangeNumberConfigRended.setNbtNumberValue(valueNumber);
-        actualGuiChangeNumberConfigRended.setText(String.valueOf(KaiaUtil.getKaiaInMainHand(player).getTagCompound().getInteger(valueNumber.getValue())));
+        actualGuiChangeNumberConfigRended.setText(String.valueOf(KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getInteger(valueNumber.getValue())));
     }
 
     private void drawDescription(String description) {

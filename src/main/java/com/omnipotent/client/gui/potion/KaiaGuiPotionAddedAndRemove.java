@@ -1,6 +1,7 @@
 package com.omnipotent.client.gui.potion;
 
 import com.omnipotent.Omnipotent;
+import com.omnipotent.common.gui.GuiHandler;
 import com.omnipotent.common.network.NetworkRegister;
 import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
 import net.minecraft.client.gui.GuiButton;
@@ -10,7 +11,8 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.awt.*;
 import java.io.IOException;
@@ -20,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import static com.omnipotent.util.KaiaConstantsNbt.kaiaPotion;
-import static com.omnipotent.util.UtilityHelper.isJustNumber;
 
 public class KaiaGuiPotionAddedAndRemove extends GuiScreen {
 
@@ -34,7 +35,7 @@ public class KaiaGuiPotionAddedAndRemove extends GuiScreen {
     private HashMap<GuiTextField, Potion> hashGuiTextPotion = new HashMap<>();
     private HashMap<GuiTextField, Potion> hashGuiTextEnchantPotion = new HashMap<>();
     private GuiTextField guiText;
-    private int lvl;
+    private byte lvl;
     private int idButtom = -1;
     private int xElementControllerOfRemoveButtons;
 
@@ -191,11 +192,12 @@ public class KaiaGuiPotionAddedAndRemove extends GuiScreen {
         for (GuiTextField guiField : guiTextFieldList) {
             guiField.mouseClicked(mouseX, mouseY, mouseButton);
             if (guiField.isFocused()) {
-                if (isJustNumber(guiText.getText()) && (Integer.parseInt(guiText.getText()) <= Short.MAX_VALUE) && (Integer.parseInt(guiText.getText()) > 0)) {
-                    lvl = Integer.parseInt(guiText.getText());
-                } else {
+                byte number = NumberUtils.toByte(guiText.getText(), (byte) -120);
+                if (number > 0)
+                    lvl = number;
+                else {
                     guiText.setText(I18n.format("guikaia.potion.label0"));
-                    player.sendMessage(new TextComponentString(I18n.format("guikaia.potion.message")));
+                    player.sendMessage(new TextComponentTranslation("guikaia.potion.message"));
                     lvl = 1;
                 }
                 Potion potion = hashGuiTextPotion.get(guiField);
@@ -240,7 +242,7 @@ public class KaiaGuiPotionAddedAndRemove extends GuiScreen {
                 this.pageRemoved++;
                 break;
             case 4:
-                player.openGui(Omnipotent.instance, 8, player.world, 0, 0, 0);
+                player.openGui(Omnipotent.instance, GuiHandler.KaiaGuiBlockPotion, player.world, 0, 0, 0);
                 break;
         }
         super.actionPerformed(button);
