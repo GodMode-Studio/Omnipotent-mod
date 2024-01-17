@@ -109,6 +109,12 @@ public class KaiaNbtPacket implements IMessage {
                 ctx.getServerHandler().player.getServer().addScheduledTask(() -> this.onMessage(message, ctx));
             else {
                 EntityPlayer player = ctx.getServerHandler().player;
+                if (message.type.equals("getKaiaBetweenSaves"))
+                    functionManageKaiaBetweenSaves(player, message);
+                else if (player.getCapability(KaiaProvider.KaiaBrand, null) != null)
+                    blockModeHandler(message, player);
+                if (!KaiaUtil.hasInInventoryKaia(player))
+                    return null;
                 switch (message.type) {
                     case "blockReachDistance":
                         UtilityHelper.modifyBlockReachDistance(ctx.getServerHandler().player, message.intValue);
@@ -125,22 +131,11 @@ public class KaiaNbtPacket implements IMessage {
                     case playersDontKill:
                         functionManagePlayersCantOfKaia(player, message);
                         break;
-                    case entitiesCantKill:
-                        functionManageEntitiesCantKillOfKaia(message, player);
-                        break;
-                    case kaiaBlockSpectator:
-                        IBlockMode capability = player.getCapability(BlockModeProvider.blockMode, null);
-                        capability.setBlockNoEditMode(!capability.getBlockNoEditMode());
-                        break;
-                    case kaiaBlockCreative:
-                        IBlockMode capability1 = player.getCapability(BlockModeProvider.blockMode, null);
-                        capability1.setBlockCreativeMode(!capability1.getBlockCreativeMode());
-                        break;
+//                    case entitiesCantKill:
+//                        functionManageEntitiesCantKillOfKaia(message, player);
+//                        break;
                     case effectsBlockeds:
                         functionManageEffectsBlocked(player, message);
-                        break;
-                    case "getKaiaBetweenSaves":
-                        functionManageKaiaBetweenSaves(player, message);
                         break;
                     default:
                         manageBooleansIntegersAndStringNbt(player, message);
@@ -148,6 +143,16 @@ public class KaiaNbtPacket implements IMessage {
                 }
             }
             return null;
+        }
+
+        private static void blockModeHandler(KaiaNbtPacket message, EntityPlayer player) {
+            if (message.type.equals(kaiaBlockSpectator)) {
+                IBlockMode capability = player.getCapability(BlockModeProvider.blockMode, null);
+                capability.setBlockNoEditMode(!capability.getBlockNoEditMode());
+            } else if (message.type.equals(kaiaBlockCreative)) {
+                IBlockMode capability1 = player.getCapability(BlockModeProvider.blockMode, null);
+                capability1.setBlockCreativeMode(!capability1.getBlockCreativeMode());
+            }
         }
 
         private void functionManageKaiaBetweenSaves(EntityPlayer player, KaiaNbtPacket message) {
@@ -209,7 +214,7 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private void functionManageEffectsBlocked(EntityPlayer player, KaiaNbtPacket message) {
-            ItemStack kaia = KaiaUtil.getKaiaInMainHand(player);
+            ItemStack kaia = KaiaUtil.getKaiaInMainHand(player).get();
             NBTTagList tagList = kaia.getTagCompound().getTagList(effectsBlockeds, 8);
             if (message.intValue == 0) {
                 tagList.appendTag(new NBTTagString(message.text));
@@ -220,7 +225,7 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private static void manageBooleansIntegersAndStringNbt(EntityPlayer player, KaiaNbtPacket message) {
-            NBTTagCompound tagCompound = KaiaUtil.getKaiaInMainHand(player).getTagCompound();
+            NBTTagCompound tagCompound = KaiaUtil.getKaiaInMainHand(player).get().getTagCompound();
             if (managerBooleanNbt(message, tagCompound)) return;
             if (managerIntegersNbt(message, tagCompound)) return;
             managerStringNbt(message, tagCompound);
@@ -266,7 +271,7 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private static void functionManageEntitiesCantKillOfKaia(KaiaNbtPacket message, EntityPlayer player) {
-            ItemStack kaia = KaiaUtil.getKaiaInMainHand(player) == null ? KaiaUtil.getKaiaInInventory(player) : KaiaUtil.getKaiaInMainHand(player);
+            ItemStack kaia = KaiaUtil.getKaiaInMainHandOrInventory(player);
             if (message.intValue == 0) {
                 NBTTagList tagList = kaia.getTagCompound().getTagList(entitiesCantKill, 8);
                 tagList.appendTag(new NBTTagString(message.text));
@@ -275,7 +280,7 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private void functionManagePlayersCantOfKaia(EntityPlayer player, KaiaNbtPacket message) {
-            NBTTagList tagList = KaiaUtil.getKaiaInMainHand(player).getTagCompound().getTagList(playersDontKill, 8);
+            NBTTagList tagList = KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getTagList(playersDontKill, 8);
             Iterator<NBTBase> iterator = tagList.iterator();
             ArrayList<String> names = new ArrayList<>();
             String tagForRemoved = null;
@@ -309,7 +314,7 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private static void functionManageEnchantments(KaiaNbtPacket message, EntityPlayer player) {
-            ItemStack kaiaItem = KaiaUtil.getKaiaInMainHand(player);
+            ItemStack kaiaItem = KaiaUtil.getKaiaInMainHand(player).get();
             if (message.intValue == 0) {
                 Enchantment enchantmentByLocation = Enchantment.getEnchantmentByLocation(message.text);
                 Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(kaiaItem);
@@ -325,7 +330,8 @@ public class KaiaNbtPacket implements IMessage {
 
         private static void functionManagePotions(KaiaNbtPacket message, EntityPlayer player) {
             Potion potionFromResourceLocation = Potion.getPotionFromResourceLocation(message.text);
-            if (message.intValue == 0) player.removePotionEffect(potionFromResourceLocation);
+            if (message.intValue == 0)
+                player.removePotionEffect(potionFromResourceLocation);
             else
                 player.addPotionEffect(new PotionEffect(potionFromResourceLocation, Integer.MAX_VALUE / 15, message.intValue, false, false));
         }
