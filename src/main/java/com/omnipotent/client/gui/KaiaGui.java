@@ -2,6 +2,7 @@ package com.omnipotent.client.gui;
 
 import com.omnipotent.client.gui.elementsmod.GuiButtonMod;
 import com.omnipotent.client.gui.elementsmod.GuiTextFieldMod;
+import com.omnipotent.client.gui.elementsmod.IScrollableGui;
 import com.omnipotent.common.network.NetworkRegister;
 import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.constant.NbtBooleanValues;
@@ -31,7 +32,7 @@ import static com.omnipotent.constant.NbtBooleanValues.*;
 import static com.omnipotent.constant.NbtNumberValues.rangeAutoKill;
 import static com.omnipotent.constant.NbtStringValues.customPlayerName;
 
-public class KaiaGui extends GuiScreen implements IGuiScrollSystem {
+public class KaiaGui extends GuiScreen implements IScrollableGui {
     private ItemStack kaia;
     private final EntityPlayer player;
     private int widthOfScreen;
@@ -262,6 +263,16 @@ public class KaiaGui extends GuiScreen implements IGuiScrollSystem {
             }
             yOffset += height / 21.25;
         }
+    }
+
+    @Override
+    public void addElements() {
+
+    }
+
+    @Override
+    public void resetGui() {
+
     }
 
     private void checkAndDrawActualPartScreen(int mouseX, int mouseY, float partialTicks, GuiTextFieldMod gui) {

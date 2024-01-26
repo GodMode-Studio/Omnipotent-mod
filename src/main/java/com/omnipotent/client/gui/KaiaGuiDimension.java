@@ -6,6 +6,7 @@ import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 
 import static com.omnipotent.util.KaiaConstantsNbt.kaiaDimension;
 
-public class KaiaGuiDimension extends GuiScrollable {
+public class KaiaGuiDimension extends GuiScreen {
 
     private final EntityPlayer player;
     private int widthOfScreen;
@@ -34,6 +35,11 @@ public class KaiaGuiDimension extends GuiScrollable {
     private int idGuiText = -1;
     List<GuiTextField> listFieldsTeleport = new ArrayList<>();
     private final HashMap<GuiTextField, Integer> guiFieldAndId = new HashMap<>();
+    private String oldTextInSearchBox = "";
+    private double currentScrollOffset = 1.0;
+    private int maxScrollOffset = Integer.MAX_VALUE;
+    private double targetScrollOffset = 1.0;
+    private GuiTextField searchBar;
 
 
     public KaiaGuiDimension(EntityPlayer player) {
@@ -42,12 +48,9 @@ public class KaiaGuiDimension extends GuiScrollable {
 
     @Override
     public void initGui() {
-        super.initGui();
         widthOfScreen = super.width;
         heightOfScreen = super.height;
         minecraft = Minecraft.getMinecraft();
-        setCurrentScrollOffset(1.0);
-        setTargetScrollOffset(1.0);
         elementsOfScreen.clear();
         elementsInScreenRendered.clear();
         listFieldsTeleport.clear();
@@ -55,7 +58,7 @@ public class KaiaGuiDimension extends GuiScrollable {
         addInputCoordenates();
         buttonList.clear();
         buttonList.add(new GuiButton(0, (int) (widthOfScreen / 2.2), (int) (heightOfScreen / 1.06), widthOfScreen / 12, heightOfScreen / 30, "Teleport"));
-        setSearchBar(new GuiTextField(++idGuiText, fontRenderer, (int) (widthOfScreen / 2.45), (heightOfScreen / 18), widthOfScreen / 5, heightOfScreen / 25));
+        searchBar = new GuiTextField(++idGuiText, fontRenderer, (int) (widthOfScreen / 2.45), (heightOfScreen / 18), widthOfScreen / 5, heightOfScreen / 25);
         UtilityHelper.sendMessageToPlayer(TextFormatting.GOLD + I18n.format("message.client.dimensionhelp"), player);
     }
 
@@ -65,15 +68,124 @@ public class KaiaGuiDimension extends GuiScrollable {
         drawString(fontRenderer, I18n.format("guikaia.dimension"), (int) (widthOfScreen / 2.13), 1, Color.WHITE.getRGB());
         drawRect(0, (int) (heightOfScreen / 1.36), widthOfScreen, heightOfScreen, -804253680);
         renderElements(mouseX, mouseY, partialTicks);
-        getSearchBar().drawTextBox();
+        searchBar.drawTextBox();
         drawRect(0, (int) (heightOfScreen / 1.36), widthOfScreen, (int) (heightOfScreen / 1.4), Color.BLACK.getRGB());
         buttonList.forEach(button -> button.drawButton(minecraft, mouseX, mouseY, partialTicks));
         listFieldsTeleport.forEach(GuiTextField::drawTextBox);
     }
 
+    private void createElementsAndPopulateElementsOfScreen() {
+        int y = (int) ((int) (heightOfScreen / 8.5) / currentScrollOffset);
+        List<DimensionType> dimensions = Arrays.stream(DimensionType.values()).collect(Collectors.toList());
+        for (DimensionType dimensionType : dimensions) {
+            GuiTextFieldMod guiTextField = new GuiTextFieldMod(++idGuiText, fontRenderer, (int) (width / 13.7142857143), y, (int) (widthOfScreen / 1.15), (int) (height / 21.25), "This dimension is from of mod: " + dimensionType.getSuffix());
+            guiFieldAndId.put(guiTextField, dimensionType.getId());
+            guiTextField.setMaxStringLength(50);
+            guiTextField.setFocused(false);
+            guiTextField.setText(I18n.format(dimensionType.getName().replace('_', ' ')));
+            guiTextField.setTextColor(Color.CYAN.getRGB());
+            guiTextField.height = (int) (height / 31.875);
+            guiTextField.drawTextBox();
+            elementsOfScreen.add(guiTextField);
+            y += height / 21.25;
+        }
+    }
+
+    @Override
+    public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
+        int scroll = Math.round(-Math.signum(Mouse.getEventDWheel()));
+        updateScrollOffset(scroll);
+    }
+
+    public void updateScrollOffset(int scroll) {
+        if (scroll == 0)
+            return;
+        double scrollFactor = 1.1;
+        double newScrollOffset = currentScrollOffset + scroll * scrollFactor;
+        newScrollOffset = Math.max(1.0, Math.min(maxScrollOffset, newScrollOffset));
+        targetScrollOffset = newScrollOffset;
+    }
+
+    public void renderElements(int mouseX, int mouseY, float partialTicks) {
+        currentScrollOffset = currentScrollOffset + ((targetScrollOffset - currentScrollOffset) * 0.1);
+        double v = currentScrollOffset;
+        int minY = heightOfScreen / 10;
+        double yOffset = (double) heightOfScreen / 9 * (1 / currentScrollOffset);
+        int count = 1;
+        Pattern pattern;
+        String text = searchBar.getText();
+        pattern = !text.trim().isEmpty() ? Pattern.compile(text, Pattern.CASE_INSENSITIVE) : null;
+        elementsInScreenRendered.clear();
+        double limitOfRender = heightOfScreen / 1.44871794872;
+        for (GuiTextFieldMod gui : elementsOfScreen) {
+            if (yOffset > limitOfRender)
+                break;
+            if (!oldTextInSearchBox.equals(text)) {
+                oldTextInSearchBox = text;
+                targetScrollOffset = 1;
+            }
+            if (pattern == null) {
+                if ((Math.round(v) != 1 && count < v)) {
+                    count++;
+                    continue;
+                }
+            } else if (!pattern.matcher(gui.getText()).find()) {
+                count++;
+                continue;
+            }
+
+            if (yOffset >= minY) {
+                gui.y = (int) yOffset;
+                checkAndDrawActualPartScreen(gui);
+                gui.drawTextBox();
+                elementsInScreenRendered.add(gui);
+            }
+            yOffset += height / 21.25;
+        }
+    }
+
+    @Override
+    public boolean doesGuiPauseGame() {
+        return false;
+    }
+
+    private void addInputCoordenates() {
+        int y = (int) (heightOfScreen / 1.06);
+        int widthCompriment = (int) (widthOfScreen / 9.6);
+        int heightCompriment = (int) (heightOfScreen / 50.9);
+        listFieldsTeleport.add(new GuiTextField(23930292, fontRenderer, (widthOfScreen / 20), y, widthCompriment, heightCompriment));
+        listFieldsTeleport.get(0).setText(String.valueOf((int) player.posX));
+        listFieldsTeleport.add(new GuiTextField(23930293, fontRenderer, (widthOfScreen / 6), y, widthCompriment, heightCompriment));
+        listFieldsTeleport.get(1).setText(String.valueOf((int) player.posY));
+        listFieldsTeleport.add(new GuiTextField(23930294, fontRenderer, (int) (width / 3.4), y, widthCompriment, heightCompriment));
+        listFieldsTeleport.get(2).setText(String.valueOf((int) player.posZ));
+    }
+
+    private void checkAndDrawActualPartScreen(GuiTextFieldMod gui) {
+        if (gui.isSelected())
+            drawDescription(gui.getDescription());
+    }
+
+    private void drawDescription(String description) {
+        List<String> strings = fontRenderer.listFormattedStringToWidth(I18n.format(description), widthOfScreen);
+        int spacing = 0;
+        for (String string : strings) {
+            drawString(fontRenderer, string, 0, (int) (heightOfScreen / 1.36) + spacing, Color.WHITE.getRGB());
+            spacing = (int) (heightOfScreen / 21.25);
+        }
+    }
+
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        listFieldsTeleport.forEach(guiTextField -> guiTextField.textboxKeyTyped(typedChar, keyCode));
+        searchBar.textboxKeyTyped(typedChar, keyCode);
+        super.keyTyped(typedChar, keyCode);
+    }
+
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        getSearchBar().mouseClicked(mouseX, mouseY, mouseButton);
+        searchBar.mouseClicked(mouseX, mouseY, mouseButton);
         listFieldsTeleport.forEach(gui -> gui.mouseClicked(mouseX, mouseY, mouseButton));
         if (theClickInButtonChangeConfig(mouseX, mouseY, mouseButton)) return;
         for (GuiTextFieldMod gui : elementsOfScreen) {
@@ -94,19 +206,18 @@ public class KaiaGuiDimension extends GuiScrollable {
         super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
+    private boolean stopClickInGuisNoRended(GuiTextFieldMod gui) {
+        String text = gui.getText();
+        List<String> collect = elementsInScreenRendered.stream().map(GuiTextField::getText).collect(Collectors.toList());
+        return !collect.contains(text);
+    }
+
     private boolean theClickInButtonChangeConfig(int mouseX, int mouseY, int mouseButton) throws IOException {
         if (!buttonList.isEmpty() && buttonList.get(0).mousePressed(minecraft, mouseX, mouseY)) {
             super.mouseClicked(mouseX, mouseY, mouseButton);
             return true;
         }
         return false;
-    }
-
-    @Override
-    protected void keyTyped(char typedChar, int keyCode) throws IOException {
-        listFieldsTeleport.forEach(guiTextField -> guiTextField.textboxKeyTyped(typedChar, keyCode));
-        getSearchBar().textboxKeyTyped(typedChar, keyCode);
-        super.keyTyped(typedChar, keyCode);
     }
 
     @Override
@@ -131,105 +242,6 @@ public class KaiaGuiDimension extends GuiScrollable {
             } catch (IllegalArgumentException e) {
                 UtilityHelper.sendMessageToPlayer("No dimensions selected", player);
             }
-        }
-    }
-
-    private void createElementsAndPopulateElementsOfScreen() {
-        int y = (int) ((int) (heightOfScreen / 8.5) / getCurrentScrollOffset());
-        List<DimensionType> dimensions = Arrays.stream(DimensionType.values()).collect(Collectors.toList());
-        for (DimensionType dimensionType : dimensions) {
-            GuiTextFieldMod guiTextField = new GuiTextFieldMod(++idGuiText, fontRenderer, (int) (width / 13.7142857143), y, (int) (widthOfScreen / 1.15), (int) (height / 21.25), "This dimension is from of mod: " + dimensionType.getSuffix());
-            guiFieldAndId.put(guiTextField, dimensionType.getId());
-            guiTextField.setMaxStringLength(50);
-            guiTextField.setFocused(false);
-            guiTextField.setText(I18n.format(dimensionType.getName().replace('_', ' ')));
-            guiTextField.setTextColor(Color.CYAN.getRGB());
-            guiTextField.height = (int) (height / 31.875);
-            guiTextField.drawTextBox();
-            elementsOfScreen.add(guiTextField);
-            y += height / 21.25;
-        }
-    }
-
-    private void addInputCoordenates() {
-        int y = (int) (heightOfScreen / 1.06);
-        int widthCompriment = (int) (widthOfScreen / 9.6);
-        int heightCompriment = (int) (heightOfScreen / 50.9);
-        listFieldsTeleport.add(new GuiTextField(23930292, fontRenderer, (widthOfScreen / 20), y, widthCompriment, heightCompriment));
-        listFieldsTeleport.get(0).setText(String.valueOf((int) player.posX));
-        listFieldsTeleport.add(new GuiTextField(23930293, fontRenderer, (widthOfScreen / 6), y, widthCompriment, heightCompriment));
-        listFieldsTeleport.get(1).setText(String.valueOf((int) player.posY));
-        listFieldsTeleport.add(new GuiTextField(23930294, fontRenderer, (int) (width / 3.4), y, widthCompriment, heightCompriment));
-        listFieldsTeleport.get(2).setText(String.valueOf((int) player.posZ));
-    }
-
-    private boolean stopClickInGuisNoRended(GuiTextFieldMod gui) {
-        String text = gui.getText();
-        List<String> collect = elementsInScreenRendered.stream().map(GuiTextField::getText).collect(Collectors.toList());
-        return !collect.contains(text);
-    }
-
-    @Override
-    public boolean doesGuiPauseGame() {
-        return false;
-    }
-
-    @Override
-    public void handleMouseInput() throws IOException {
-        super.handleMouseInput();
-        int scroll = Math.round(-Math.signum(Mouse.getEventDWheel()));
-        updateScrollOffset(scroll);
-    }
-
-    @Override
-    public void renderElements(int mouseX, int mouseY, float partialTicks) {
-        setCurrentScrollOffset(getCurrentScrollOffset() + ((getTargetScrollOffset() - getCurrentScrollOffset()) * 0.1));
-        double v = getCurrentScrollOffset();
-        int minY = heightOfScreen / 10;
-        double yOffset = (double) heightOfScreen / 9 * (1 / getCurrentScrollOffset());
-        int count = 1;
-        Pattern pattern;
-        String text = getSearchBar().getText();
-        pattern = !text.trim().isEmpty() ? Pattern.compile(text, Pattern.CASE_INSENSITIVE) : null;
-        elementsInScreenRendered.clear();
-        for (GuiTextFieldMod gui : elementsOfScreen) {
-            if (yOffset > heightOfScreen / 1.44871794872)
-                break;
-            if (!getOldTextInSearchBox().equals(text)) {
-                setOldTextInSearchBox(text);
-                setTargetScrollOffset(1);
-            }
-            if (pattern == null) {
-                if ((Math.round(v) != 1 && count < v)) {
-                    count++;
-                    continue;
-                }
-            } else if (!pattern.matcher(gui.getText()).find()) {
-                count++;
-                continue;
-            }
-
-            if (yOffset >= minY) {
-                gui.y = (int) yOffset;
-                checkAndDrawActualPartScreen(gui);
-                gui.drawTextBox();
-                elementsInScreenRendered.add(gui);
-            }
-            yOffset += height / 21.25;
-        }
-    }
-
-    private void checkAndDrawActualPartScreen(GuiTextFieldMod gui) {
-        if (gui.isSelected())
-            drawDescription(gui.getDescription());
-    }
-
-    private void drawDescription(String description) {
-        List<String> strings = fontRenderer.listFormattedStringToWidth(I18n.format(description), widthOfScreen);
-        int spacing = 0;
-        for (String string : strings) {
-            drawString(fontRenderer, string, 0, (int) (heightOfScreen / 1.36) + spacing, Color.WHITE.getRGB());
-            spacing = (int) (heightOfScreen / 21.25);
         }
     }
 }
