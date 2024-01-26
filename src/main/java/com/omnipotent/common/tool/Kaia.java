@@ -2,7 +2,6 @@ package com.omnipotent.common.tool;
 
 import cofh.redstoneflux.RedstoneFluxProps;
 import cofh.redstoneflux.api.IEnergyContainerItem;
-import com.omnipotent.common.entity.KaiaEntity;
 import com.omnipotent.common.specialgui.IContainer;
 import com.omnipotent.common.specialgui.InventoryKaia;
 import com.omnipotent.constant.NbtBooleanValues;
@@ -36,7 +35,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import vazkii.botania.api.mana.IManaItem;
 import vazkii.botania.api.mana.IManaReceiver;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -319,17 +317,6 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
                 player.world.spawnEntity(new EntityXPOrb(player.world, player.posX, player.posY, player.posZ, Integer.MAX_VALUE / 10000));
         }
         return super.onItemRightClick(worldIn, player, handIn);
-    }
-
-    @Override
-    public boolean hasCustomEntity(@Nonnull ItemStack stack) {
-        return true;
-    }
-
-    @Nullable
-    @Override
-    public Entity createEntity(@Nonnull World world, Entity location, @Nonnull ItemStack itemstack) {
-        return new KaiaEntity(world, location.posX, location.posY, location.posZ, itemstack);
     }
 
     @Override
