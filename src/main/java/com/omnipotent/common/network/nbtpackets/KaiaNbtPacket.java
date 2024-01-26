@@ -26,6 +26,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -70,6 +71,20 @@ public class KaiaNbtPacket implements IMessage {
     }
 
     @Override
+    public void toBytes(ByteBuf buf) {
+        byte[] bytes = type.getBytes(StandardCharsets.UTF_8);
+        buf.writeInt(bytes.length);
+        buf.writeBytes(bytes);
+        buf.writeBoolean(booleanValue);
+        if (text != null) {
+            byte[] bytes2 = text.getBytes(StandardCharsets.UTF_8);
+            buf.writeInt(bytes2.length);
+            buf.writeBytes(bytes2);
+        }
+        buf.writeInt(intValue);
+    }
+
+    @Override
     public void fromBytes(ByteBuf buf) {
         int length = buf.readInt();
         byte[] bytes = new byte[length];
@@ -87,20 +102,6 @@ public class KaiaNbtPacket implements IMessage {
 
     }
 
-    @Override
-    public void toBytes(ByteBuf buf) {
-        byte[] bytes = type.getBytes(StandardCharsets.UTF_8);
-        buf.writeInt(bytes.length);
-        buf.writeBytes(bytes);
-        buf.writeBoolean(booleanValue);
-        if (text != null) {
-            byte[] bytes2 = text.getBytes(StandardCharsets.UTF_8);
-            buf.writeInt(bytes2.length);
-            buf.writeBytes(bytes2);
-        }
-        buf.writeInt(intValue);
-    }
-
     public static class KaiaNbtPacketHandler implements IMessageHandler<KaiaNbtPacket, IMessage> {
         @Override
         public IMessage onMessage(KaiaNbtPacket message, MessageContext ctx) {
@@ -109,11 +110,12 @@ public class KaiaNbtPacket implements IMessage {
                 ctx.getServerHandler().player.getServer().addScheduledTask(() -> this.onMessage(message, ctx));
             else {
                 EntityPlayer player = ctx.getServerHandler().player;
+                boolean hasKaia = KaiaUtil.hasInInventoryKaia(player);
                 if (message.type.equals("getKaiaBetweenSaves"))
                     functionManageKaiaBetweenSaves(player, message);
-                else if (player.getCapability(KaiaProvider.KaiaBrand, null) != null)
+                else if (!player.getCapability(KaiaProvider.KaiaBrand, null).returnList().isEmpty() || hasKaia)
                     blockModeHandler(message, player);
-                if (!KaiaUtil.hasInInventoryKaia(player))
+                if (!hasKaia)
                     return null;
                 switch (message.type) {
                     case "blockReachDistance":
@@ -315,7 +317,9 @@ public class KaiaNbtPacket implements IMessage {
 
         private static void functionManageEnchantments(KaiaNbtPacket message, EntityPlayer player) {
             ItemStack kaiaItem = KaiaUtil.getKaiaInMainHand(player).get();
-            if (message.intValue == 0) {
+            int lvl = message.intValue;
+            short number = NumberUtils.toShort(String.valueOf(lvl), (short) -20_000);
+            if (number <= 0) {
                 Enchantment enchantmentByLocation = Enchantment.getEnchantmentByLocation(message.text);
                 Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(kaiaItem);
                 enchantments.remove(enchantmentByLocation);
@@ -323,17 +327,23 @@ public class KaiaNbtPacket implements IMessage {
             } else {
                 Enchantment enchantmentByLocation = Enchantment.getEnchantmentByLocation(message.text);
                 Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(kaiaItem);
-                enchantments.put(enchantmentByLocation, message.intValue);
+                enchantments.put(enchantmentByLocation, lvl);
                 EnchantmentHelper.setEnchantments(enchantments, kaiaItem);
             }
         }
 
         private static void functionManagePotions(KaiaNbtPacket message, EntityPlayer player) {
             Potion potionFromResourceLocation = Potion.getPotionFromResourceLocation(message.text);
-            if (message.intValue == 0)
+            if(potionFromResourceLocation==null) return;
+            int levelPotion = message.intValue;
+            if (levelPotion == 0) {
                 player.removePotionEffect(potionFromResourceLocation);
-            else
-                player.addPotionEffect(new PotionEffect(potionFromResourceLocation, Integer.MAX_VALUE / 15, message.intValue, false, false));
+                if (potionFromResourceLocation == Potion.getPotionById(22))
+                    player.setAbsorptionAmount(0);
+            } else {
+                boolean isValid = levelPotion <= 255 && levelPotion > -1;
+                player.addPotionEffect(new PotionEffect(potionFromResourceLocation, Integer.MAX_VALUE / 15, isValid ? levelPotion : 1, false, false));
+            }
         }
 
         private static void functionTeletransportDimension(KaiaNbtPacket message, EntityPlayer player) {
