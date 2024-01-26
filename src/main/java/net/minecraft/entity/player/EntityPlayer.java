@@ -98,6 +98,8 @@ public abstract class EntityPlayer extends EntityLivingBase
 {
 
     public boolean hasKaia = false;
+    //apenas pra compilação
+    public int hodeLoli;
     public static final String PERSISTED_NBT_TAG = "PlayerPersisted";
     protected java.util.HashMap<Integer, BlockPos> spawnChunkMap = new java.util.HashMap<Integer, BlockPos>();
     protected java.util.HashMap<Integer, Boolean> spawnForcedMap = new java.util.HashMap<Integer, Boolean>();
