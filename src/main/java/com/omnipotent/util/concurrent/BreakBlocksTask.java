@@ -25,7 +25,6 @@ public class BreakBlocksTask extends RecursiveTask<Long> {
         final int size = blocks.size();
         if (size <= 2000) {
             for (BlockPos block : blocks) {
-                System.out.println("bloco quebrado" + block);
                 fastBreakBlock(player, block, kaiaTagCompound);
             }
             return (long) blocks.size();

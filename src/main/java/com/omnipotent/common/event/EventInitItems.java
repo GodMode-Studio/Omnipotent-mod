@@ -1,7 +1,7 @@
 package com.omnipotent.common.event;
 
+import com.omnipotent.common.tool.DevTool;
 import com.omnipotent.common.tool.Kaia;
-import com.omnipotent.common.tool.ToolDevTest;
 import net.minecraft.item.Item;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -15,8 +15,7 @@ public class EventInitItems {
     public static List<Item> itemsInit = new ArrayList<>();
 
     public static Kaia kaia = new Kaia();
-    public static ToolDevTest testDev = new ToolDevTest();
-
+    public static DevTool testDev = new DevTool();
 
     @SubscribeEvent
     public void registerItem(RegistryEvent.Register<Item> event) throws IOException {

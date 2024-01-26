@@ -130,10 +130,6 @@ public class EntityEvent {
             return;
         if (!(event.getEntity() instanceof EntityPlayer) || !(event.getItem().getItem().getItem() instanceof Kaia))
             return;
-        if (((KaiaEntity) event.getItem()).kaiaDoNotTrue) {
-            event.setCanceled(true);
-            return;
-        }
         EntityPlayer player = event.getEntityPlayer();
         ItemStack kaia = event.getItem().getItem();
         if (!kaia.hasTagCompound())
@@ -149,8 +145,6 @@ public class EntityEvent {
             EntityItem entityItem = (EntityItem) entity;
             ItemStack kaia = entityItem.getItem();
             if (!kaia.isEmpty() && kaia.getItem() instanceof Kaia) {
-                if (((KaiaEntity) entity).kaiaDoNotTrue)
-                    return;
                 createTagCompoundStatusIfNecessary(kaia);
                 if (!kaia.getTagCompound().hasKey(KaiaConstantsNbt.ownerID) || !kaia.getTagCompound().hasKey(KaiaConstantsNbt.ownerName)) {
                     entityItem.setEntityInvulnerable(true);

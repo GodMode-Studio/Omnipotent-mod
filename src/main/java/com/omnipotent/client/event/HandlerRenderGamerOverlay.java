@@ -26,6 +26,8 @@ public class HandlerRenderGamerOverlay {
 
     @SubscribeEvent //em teste
     public void renderGuiPlayer(RenderGameOverlayEvent.Text event) {
+//        System.out.println(Minecraft.getMinecraft().currentScreen);
+
 //        Minecraft minecraft = Minecraft.getMinecraft();
 //        renderKaiaInfo(minecraft);
     }
