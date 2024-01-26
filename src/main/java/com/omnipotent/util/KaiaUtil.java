@@ -413,14 +413,10 @@ public final class KaiaUtil {
             int areaBlock = tagCompound.getInteger(blockBreakArea.getValue());
             if (!player.world.isRemote && !player.capabilities.isCreativeMode && withKaiaMainHand(player)) {
                 if (areaBlock % 2 != 0) {
-//                    if (tagCompound.getBoolean(fastBreakBlocks.getValue())) {
-//                        long l = System.nanoTime();
-//                        fastBreakBlocksInAreaOld(areaBlock, player, pos, tagCompound);
-//                        UtilityHelper.sendMessageToPlayer("Em segundos fastblock " + (System.nanoTime() - l), player);
-//                    long l = System.nanoTime();
-                    breakBlocksInArea(areaBlock, player, pos);
-//                        UtilityHelper.sendMessageToPlayer("Em segundos " + (System.nanoTime() - l), player);
-//
+                    if (tagCompound.getBoolean(fastBreakBlocks.getValue()))
+                        fastBreakBlocksInAreaOld(areaBlock, player, pos, tagCompound);
+                    else
+                        breakBlocksInArea(areaBlock, player, pos);
                 }
             }
         } else
@@ -456,7 +452,7 @@ public final class KaiaUtil {
         world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
     }
 
-    public static void fastBreakBlocksInArea(final int areaBlock, final EntityPlayer player, final BlockPos centerPos, final NBTTagCompound tagCompound) {
+//    public static void fastBreakBlocksInArea(final int areaBlock, final EntityPlayer player, final BlockPos centerPos, final NBTTagCompound tagCompound) {
 //        breakBlocksInArea(areaBlock, player, centerPos);
 
 //        World world = player.world;
@@ -499,7 +495,7 @@ public final class KaiaUtil {
 //            }
 //        }
 
-        //deppois
+    //deppois
 //       try {
 //           ForkJoinPool forkJoinPool = ForkJoinPool.commonPool();
 //           Long invoke = forkJoinPool.invoke(new BreakBlocksTask(blocksToBreak, (EntityPlayerMP) player, tagCompound));
@@ -507,7 +503,7 @@ public final class KaiaUtil {
 //       }catch (Exception e){
 //           System.out.println(e);
 //       }
-        //-------
+    //-------
 //        ArrayList<CompletableFuture<Integer>> blocksToBreakAllTask = new ArrayList<>();
 //        blocksToBreakAllTask.add(CompletableFuture.supplyAsync(() -> {
 //            int xp1 = 0;
@@ -538,7 +534,7 @@ public final class KaiaUtil {
 //        } catch (ExecutionException e) {
 //        }
 //        world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
-    }
+//    }
 
     public static float fastBreakBlock(EntityPlayerMP player, BlockPos pos, NBTTagCompound tagCompound) {
         IBlockState state = player.world.getBlockState(pos);
@@ -593,8 +589,7 @@ public final class KaiaUtil {
         world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
     }
 
-    private static boolean checkTheAreaForTileEntityBlock(int startX, int startY, int startZ, int endX, int endY,
-                                                          int endZ, World world) {
+    private static boolean checkTheAreaForTileEntityBlock(int startX, int startY, int startZ, int endX, int endY, int endZ, World world) {
         BlockPos startBlockPos = new BlockPos(startX, startY, startZ);
         for (BlockPos blockPos : BlockPos.getAllInBox(startBlockPos, new BlockPos(endX, endY, endZ))) {
             if (world.getBlockState(blockPos).getBlock().hasTileEntity(world.getBlockState(blockPos))) return true;
@@ -627,8 +622,7 @@ public final class KaiaUtil {
         return xp;
     }
 
-    public static void addedItemsStacksInKaiaInventory(EntityPlayer
-                                                               playerOwnerOfKaia, NonNullList<ItemStack> drops, ItemStack kaiaItemStack) {
+    public static void addedItemsStacksInKaiaInventory(EntityPlayer playerOwnerOfKaia, NonNullList<ItemStack> drops, ItemStack kaiaItemStack) {
         InventoryKaia inventory = ((IContainer) kaiaItemStack.getItem()).getInventory(kaiaItemStack);
         for (ItemStack dropStack : drops) {
             boolean breakMainLoop = false;
