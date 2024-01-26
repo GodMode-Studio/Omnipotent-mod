@@ -3,13 +3,10 @@ package com.omnipotent.common.tool;
 import com.omnipotent.common.event.EventInitItems;
 import com.omnipotent.common.network.NetworkRegister;
 import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
-import com.omnipotent.util.KaiaConstantsNbt;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.MobEffects;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.world.World;
@@ -17,8 +14,8 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ToolDevTest extends ItemTool {
-    public ToolDevTest() {
+public class DevTool extends ItemTool {
+    public DevTool() {
         super(ToolMaterial.DIAMOND, null);
         EventInitItems.itemsInit.add(this);
         setRegistryName("tooltestdev");
@@ -29,11 +26,15 @@ public class ToolDevTest extends ItemTool {
         if (!player.getName().equals("gamerYToffi"))
             return false;
         if (player.world.isRemote) {
-//            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.kaiaPotion, MobEffects.ABSORPTION.getRegistryName().toString(), 1000));
+//            try {
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket("", "", 1000));
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
         } else {
-            EntityPlayerMP entity1 = (EntityPlayerMP) player;
-            entity1.getActivePotionEffects().clear();
-            entity1.getActivePotionMap().clear();
+//            EntityPlayerMP entity1 = (EntityPlayerMP) player;
+//            entity1.getActivePotionEffects().clear();
+//            entity1.getActivePotionMap().clear();
         }
         return false;
     }
