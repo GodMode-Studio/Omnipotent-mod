@@ -37,10 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(value = EntityJzahar.class, remap = false)
-@Optional.Interface(
-        iface = "com.github.alexthe666.iceandfire.entity.IBlacklistedFromStatues",
-        modid = "iceandfire"
-)
+@Optional.Interface(iface = "com.github.alexthe666.iceandfire.entity.IBlacklistedFromStatues", modid = "iceandfire")
 public abstract class MixinEntityJzahar extends EntityMob implements IRangedAttackMob, IOmotholEntity, IBlacklistedFromStatues {
     @Shadow
     public int deathTicks;

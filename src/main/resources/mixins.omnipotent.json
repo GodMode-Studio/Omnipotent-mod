@@ -5,7 +5,7 @@
   "mixins": [
     "MixinCommandBanIp",
     "MixinCommandBanPlayer",
-    "MixinCommandBase",
+    "MixinCommandGive",
     "MixinEntity",
     "MixinEntityLivingBase",
     "MixinEntityPlayer",
