@@ -253,8 +253,7 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private static boolean managerIntegersNbt(KaiaNbtPacket message, NBTTagCompound tagCompound) {
-            ArrayList<String> listNBTInt = new ArrayList<>();
-            listNBTInt.addAll(Arrays.asList(blockBreakArea.getValue(), rangeAttack.getValue(), maxCountSlot.getValue(), rangeAutoKill.getValue(), chargeManaInBlocksAround.getValue(), chargeEnergyInBlocksAround.getValue(), optionOfColor.getValue()));
+            ArrayList<String> listNBTInt = new ArrayList<>(Arrays.asList(blockBreakArea.getValue(), rangeAttack.getValue(), maxCountSlot.getValue(), rangeAutoKill.getValue(), chargeManaInBlocksAround.getValue(), chargeEnergyInBlocksAround.getValue(), optionOfColor.getValue()));
             for (String nbt : listNBTInt) {
                 if (message.type.equals(nbt)) {
                     if (message.type.equals(optionOfColor.getValue())) {
