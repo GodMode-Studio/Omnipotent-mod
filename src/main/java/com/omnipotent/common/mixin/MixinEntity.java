@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.omnipotent.constant.NbtBooleanValues.interactLiquid;
+import static com.omnipotent.util.UtilityHelper.isPlayer;
 
 @Mixin(Entity.class)
 public abstract class MixinEntity implements ICommandSender, net.minecraftforge.common.capabilities.ICapabilitySerializable<NBTTagCompound> {
@@ -46,15 +47,13 @@ public abstract class MixinEntity implements ICommandSender, net.minecraftforge.
     @SideOnly(Side.CLIENT)
     public RayTraceResult rayTrace(double blockReachDistance, float partialTicks) {
         AtomicBoolean stopOnLiquid = new AtomicBoolean(false);
-        if (this != null) {
-            if ((EntityPlayer) (Object) this instanceof EntityPlayer) {
-                EntityPlayer player = (EntityPlayer) (Object) this;
-                KaiaUtil.getKaiaInMainHand(player).ifPresent(kaia -> {
-                    NBTTagCompound tagCompound = kaia.getTagCompound();
-                    if (tagCompound != null)
-                        stopOnLiquid.set(tagCompound.getBoolean(interactLiquid.getValue()));
-                });
-            }
+        if (isPlayer((Entity) (Object) this)) {
+            EntityPlayer player = (EntityPlayer) (Object) this;
+            KaiaUtil.getKaiaInMainHand(player).ifPresent(kaia -> {
+                NBTTagCompound tagCompound = kaia.getTagCompound();
+                if (tagCompound != null)
+                    stopOnLiquid.set(tagCompound.getBoolean(interactLiquid.getValue()));
+            });
         }
         Vec3d vec3d = this.getPositionEyes(partialTicks);
         Vec3d vec3d1 = this.getLook(partialTicks);
