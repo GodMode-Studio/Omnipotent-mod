@@ -30,7 +30,7 @@ import static com.omnipotent.constant.NbtBooleanValues.*;
 
 @Mixin(GuiIngameForge.class)
 public abstract class MixinGuiIngameForge extends GuiIngame {
-    @Shadow
+    @Shadow(remap = false)
     private FontRenderer fontrenderer;
     private int widthUsed;
     private int heigthUsed;
@@ -41,7 +41,7 @@ public abstract class MixinGuiIngameForge extends GuiIngame {
     }
 
     @Inject(method = "renderGameOverlay", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/client/Gui" +
-            "IngameForge;post(Lnet/minecraftforge/client/event/RenderGameOverlayEvent$ElementType;)V"))
+            "IngameForge;post(Lnet/minecraftforge/client/event/RenderGameOverlayEvent$ElementType;)V"), remap = false)
     public void renderGameOverlay(float partialTicks, CallbackInfo ci) {
         ScaledResolution scaledresolution = new ScaledResolution(this.mc);
         widthUsed = scaledresolution.getScaledWidth();

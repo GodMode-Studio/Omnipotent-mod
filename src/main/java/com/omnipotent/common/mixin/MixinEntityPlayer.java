@@ -48,16 +48,16 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
     @Shadow
     public PlayerCapabilities capabilities;
 
-    @Shadow
+    @Shadow(remap = false)
     public abstract String getDisplayNameString();
 
-    @Accessor("prefixes")
+    @Accessor(value = "prefixes", remap = false)
     abstract java.util.Collection<ITextComponent> getprefixes();
 
-    @Accessor("suffixes")
+    @Accessor(value = "suffixes", remap = false)
     abstract java.util.Collection<ITextComponent> getsuffixes();
 
-    @Shadow
+    @Shadow(remap = false)
     private String displayname;
 
     public boolean renderSpecialName = false;

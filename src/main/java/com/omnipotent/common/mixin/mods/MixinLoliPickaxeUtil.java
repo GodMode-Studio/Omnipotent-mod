@@ -37,7 +37,7 @@ public abstract class MixinLoliPickaxeUtil {
      * @author
      * @reason
      */
-    @Overwrite
+    @Overwrite(remap = false)
     @Final
     public static void killPlayer(EntityPlayer player, EntityLivingBase source) {
         if (KaiaUtil.hasInInventoryKaia(player)) {
@@ -88,7 +88,7 @@ public abstract class MixinLoliPickaxeUtil {
      * @author
      * @reason
      */
-    @Overwrite
+    @Overwrite(remap = false)
     @Final
     private static void delayKill(EntityLivingBase entity) {
         int tick = 21;

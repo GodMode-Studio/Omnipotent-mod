@@ -25,7 +25,7 @@ import java.util.List;
 @Mixin(GuiUtils.class)
 public abstract class MixinGuiUtils {
 
-    @Shadow
+    @Shadow(remap = false)
     public static void drawGradientRect(int zLevel, int left, int top, int right, int bottom, int startColor, int endColor) {
     }
 
@@ -36,7 +36,7 @@ public abstract class MixinGuiUtils {
      * @author
      * @reason
      */
-    @Overwrite
+    @Overwrite(remap = false)
     public static void drawHoveringText(@Nonnull final ItemStack stack, List<String> textLines, int mouseX, int mouseY, int screenWidth, int screenHeight, int maxTextWidth, FontRenderer font) {
         if (!textLines.isEmpty()) {
             RenderTooltipEvent.Pre event = new RenderTooltipEvent.Pre(stack, textLines, mouseX, mouseY, screenWidth, screenHeight, maxTextWidth, font);
