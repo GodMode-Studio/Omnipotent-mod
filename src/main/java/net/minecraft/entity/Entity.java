@@ -206,6 +206,8 @@ public abstract class Entity implements ICommandSender, ICapabilitySerializable<
     public ArrayList<EntityItem> capturedDrops = new ArrayList();
     private CapabilityDispatcher capabilities;
     private boolean isAddedToWorld;
+    public boolean absoluteDead;
+
     public final void setAbsoluteDead(){}
 
     public Entity(World worldIn) {
