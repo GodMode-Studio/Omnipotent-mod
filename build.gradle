@@ -40,7 +40,7 @@ minecraft {
 
 repositories {
     maven { url = 'https://repo.spongepowered.org/maven' }
-    maven { url 'https://maven.cleanroommc.com'}
+    maven { url 'https://maven.cleanroommc.com' }
 }
 
 configurations {
@@ -56,10 +56,10 @@ dependencies {
     // ForgeGradle:
 
     def s = 'zone.rong:mixinbooter:8.8'
-    implementation (s) {
+    implementation(s) {
         transitive = false
     }
-    annotationProcessor (s) {
+    annotationProcessor(s) {
         transitive = false
     }
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
@@ -72,6 +72,8 @@ dependencies {
     implementation files('libs/AbyssalCraft-1.12.2-1.10.4.jar')
     compileOnly files('libs/iceandfire-1.9.1-1.12.2.jar')
     implementation files('libs/FantasticLib-1.12.2.047d.jar')
+//    implementation files('libs/crazymonsters-1.12.2-1.0.jar')
+//    implementation files('libs/ChaosWither0.6.6.2.jar')
     embed('org.spongepowered:mixin:0.8.3-SNAPSHOT') {
         exclude module: 'guava'
         exclude module: 'commons-io'
