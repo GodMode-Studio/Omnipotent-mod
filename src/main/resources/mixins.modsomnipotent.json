@@ -4,7 +4,9 @@
   "refmap": "refmap.omnipotent.json",
   "mixins": [
     "IMixinDEEventHandler",
-    "MixinCmdGive"
+    "MixinCmdGive",
+    "MixinEnemyUpdate",
+    "MixinEventCrazyMonsters"
   ],
   "client": [
   ],

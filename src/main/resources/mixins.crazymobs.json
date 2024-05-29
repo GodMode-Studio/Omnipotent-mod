@@ -1,0 +1,11 @@
+{
+  "compatibilityLevel": "JAVA_8",
+  "package": "com.omnipotent.common.mixin.mods",
+  "refmap": "refmap.omnipotent.json",
+  "mixins": [
+    "MixinEntityNotch"
+  ],
+  "client": [
+  ],
+  "server": []
+}
