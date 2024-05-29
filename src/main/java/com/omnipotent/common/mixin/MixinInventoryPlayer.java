@@ -1,5 +1,6 @@
 package com.omnipotent.common.mixin;
 
+import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,8 +19,10 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Iterator;
 import java.util.List;
 
 @Mixin(InventoryPlayer.class)
@@ -27,6 +30,10 @@ public abstract class MixinInventoryPlayer implements IInventory {
 
     @Shadow
     public EntityPlayer player;
+
+    @Shadow
+    @Final
+    private List<NonNullList<ItemStack>> allInventories;
 
     @Accessor("allInventories")
     abstract List<NonNullList<ItemStack>> getAllInventories();
@@ -55,6 +62,26 @@ public abstract class MixinInventoryPlayer implements IInventory {
             return;
         for (List<ItemStack> list : this.getAllInventories()) {
             list.clear();
+        }
+    }
+
+    @Inject(method = "dropAllItems", at = @At("HEAD"), cancellable = true)
+    public void dropAllItemsInject(CallbackInfo ci) {
+        if (this.player != null && KaiaUtil.hasInInventoryKaia(this.player))
+            ci.cancel();
+    }
+
+    @Inject(method = "deleteStack", at = @At("HEAD"), cancellable = true)
+    public void deleteStack(ItemStack stack, CallbackInfo ci) {
+        if (stack.getItem() instanceof Kaia)
+            ci.cancel();
+        for (NonNullList<ItemStack> nonnulllist : this.allInventories) {
+            for (int i = 0; i < nonnulllist.size(); ++i) {
+                if (nonnulllist.get(i) == stack) {
+                    nonnulllist.set(i, ItemStack.EMPTY);
+                    break;
+                }
+            }
         }
     }
 }
