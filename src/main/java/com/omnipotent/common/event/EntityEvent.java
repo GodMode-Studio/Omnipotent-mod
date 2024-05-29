@@ -5,7 +5,6 @@ import com.omnipotent.common.capability.IKaiaBrand;
 import com.omnipotent.common.capability.KaiaProvider;
 import com.omnipotent.common.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.common.entity.CustomLightningBolt;
-import com.omnipotent.common.entity.KaiaEntity;
 import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
@@ -42,8 +41,8 @@ import static com.omnipotent.util.UtilityHelper.getPlayerDataFileOfPlayer;
 public class EntityEvent {
     public static final Set<String> entitiesWithKaia = new HashSet<>();
     public static final Set<String> entitiesFlightKaia = new HashSet<>();
-    public static ArrayList<EntityLivingBase> mobsNamedMkll = new ArrayList<>();
-    private static Map<EntityLivingBase, Integer> timeTeleportation = new HashMap<>();
+    private static final ArrayList<EntityLivingBase> mobsNamedMkll = new ArrayList<>();
+    private static final Map<EntityLivingBase, Integer> timeTeleportation = new HashMap<>();
 
     @SubscribeEvent
     public void updateAbilities(LivingEvent.LivingUpdateEvent event) {
@@ -198,6 +197,10 @@ public class EntityEvent {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void tickUpdate(TickEvent.WorldTickEvent event) {
         easterEggFunctionMkllVerify();
+        for (Entity entity : event.world.getLoadedEntityList()) {
+            if (entity.absoluteDead)
+                entity.isDead = true;
+        }
     }
 
     private static void easterEggFunctionMkllVerify() {

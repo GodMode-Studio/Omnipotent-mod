@@ -20,6 +20,8 @@ import com.omnipotent.common.specialgui.IContainer;
 import com.omnipotent.common.specialgui.InventoryKaia;
 import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.constant.NbtBooleanValues;
+import net.crazymonsters.entity.EntityNotch;
+import net.crazymonsters.event.EventCrazyMonsters;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.resources.I18n;
@@ -200,11 +202,24 @@ public final class KaiaUtil {
             killMobs((EntityLivingBase) entity, playerSource, kaia);
         } else if (killAllEntities) {
             mobKilled = true;
-            entity.setDead();
+            entity.setAbsoluteDead();
+            if (Loader.isModLoaded("crazymonsters") && entity instanceof EntityNotch) {
+                crazyDeath((EntityNotch) entity, playerSource);
+            }
             if (tagCompound.getBoolean(banEntitiesAttacked.getValue()))
                 dennyEntitySpawnInWorld(playerSource.world, entity);
         }
         return mobKilled;
+    }
+
+    @Optional.Method(modid = "crazymonsters")
+    private static void crazyDeath(EntityNotch entity, EntityPlayer playerSource) {
+        entity.setCrazyHealth(0);
+        DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
+        entity.getCombatTracker().trackDamage(ds, Float.MAX_VALUE, Float.MAX_VALUE);
+        entity.onDeath(ds);
+        entity.onRemovedFromWorld();
+        EventCrazyMonsters.setTelTime(0);
     }
 
     public static boolean checkIfKaiaCanKill(Entity entityTarget, EntityPlayer playerSource, boolean directAttack, boolean isCounterAttack) {
@@ -292,7 +307,7 @@ public final class KaiaUtil {
         antiEntity.add(entityCreature.getClass());
         verifyAndManagerAutoBackEntitiesAndApplyDamage(entityCreature, ds, playerSource, kaia);
         antiEntity.remove(entityCreature.getClass());
-        entityCreature.setHealth(0.0F);
+        entityCreature.setAbsoluteHealth(0.0F);
         if (tagCompound.getBoolean(banEntitiesAttacked.getValue()))
             dennyEntitySpawnInWorld(playerSource.world, entity);
     }
@@ -357,8 +372,8 @@ public final class KaiaUtil {
                 if (stack != null)
                     world.spawnEntity(new EntityItem(world, entityCreature.posX, entityCreature.posY, entityCreature.posZ, stack));
             }
-            entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
-            entityCreature.onDeath(ds);
+            entityCreature.AbsoluteAttackEntityFrom(ds, Float.MAX_VALUE);
+            entityCreature.onAbsoluteDeath(ds);
         }
     }
 

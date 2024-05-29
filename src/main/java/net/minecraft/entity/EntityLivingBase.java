@@ -131,6 +131,17 @@ public abstract class EntityLivingBase extends net.minecraft.entity.Entity {
     private long lastDamageStamp;
     public boolean captureDropsAbsolute = false;
 
+    public final boolean AbsoluteAttackEntityFrom(DamageSource source, float amount) {
+        return false;
+    }
+
+    public final void onAbsoluteDeath(DamageSource cause) {
+    }
+
+    public final void setAbsoluteHealth(float health) {
+    }
+
+
     public void onKillCommand() {
         this.attackEntityFrom(DamageSource.OUT_OF_WORLD, Float.MAX_VALUE);
     }
