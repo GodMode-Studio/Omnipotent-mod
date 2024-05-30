@@ -38,7 +38,7 @@ public abstract class MixinInventoryPlayer implements IInventory {
     @Accessor("allInventories")
     abstract List<NonNullList<ItemStack>> getAllInventories();
 
-    @Inject(method = "clearMatchingItems", at = @At("HEAD"))
+    @Inject(method = "clearMatchingItems", at = @At("HEAD"), cancellable = true)
     public void execute(Item itemIn, int metadataIn, int removeCount, NBTTagCompound itemNBT, CallbackInfoReturnable<Integer> cir) {
         if (KaiaUtil.hasInInventoryKaia(player)) {
             String currentLanguage = FMLCommonHandler.instance().getCurrentLanguage();
