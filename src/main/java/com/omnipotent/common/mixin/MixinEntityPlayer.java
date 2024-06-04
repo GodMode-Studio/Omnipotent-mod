@@ -82,6 +82,44 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
         return itextcomponent;
     }
 
+    //
+//    /**
+//     * @author
+//     * @reason
+//     */
+//    @Overwrite
+//    public void closeScreen() {
+//        if (KaiaUtil.hasInInventoryKaia(this)) {
+//            return;
+//        }
+//        this.openContainer = this.inventoryContainer;
+//    }
+//
+//    /**
+//     * @author
+//     * @reason
+//     */
+//    @Overwrite
+//    public void setItemStackToSlot(EntityEquipmentSlot slotIn, ItemStack stack) {
+//        if (slotIn == EntityEquipmentSlot.MAINHAND) {
+//            this.playEquipSound(stack);
+//            NonNullList<ItemStack> mainInventory = this.inventory.mainInventory;
+//            int currentItem = this.inventory.currentItem;
+//            if (mainInventory.get(currentItem).getItem() instanceof Kaia)
+//                return;
+//            mainInventory.set(currentItem, stack);
+//        } else if (slotIn == EntityEquipmentSlot.OFFHAND) {
+//            this.playEquipSound(stack);
+//            NonNullList<ItemStack> offHandInventory = this.inventory.offHandInventory;
+//            if (offHandInventory.get(0).getItem() instanceof Kaia)
+//                return;
+//            offHandInventory.set(0, stack);
+//        } else if (slotIn.getSlotType() == EntityEquipmentSlot.Type.ARMOR) {
+//            this.playEquipSound(stack);
+//            this.inventory.armorInventory.set(slotIn.getIndex(), stack);
+//        }
+//    }
+
     /**
      * @author
      * @reason
