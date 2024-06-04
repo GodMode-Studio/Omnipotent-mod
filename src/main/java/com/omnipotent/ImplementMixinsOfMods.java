@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 public class ImplementMixinsOfMods implements ILateMixinLoader {
     @Override
     public List<String> getMixinConfigs() {
-        return Arrays.asList("mixins.modsomnipotent.json", "mixin.abyssalcraft.json", "mixins.crazymobs.json");
+        return Arrays.asList("mixins.modsomnipotent.json", "mixin.abyssalcraft.json", "mixins.crazymobs.json", "mixins.players_weapon.json");
     }
 
     @Override
