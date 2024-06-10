@@ -62,6 +62,7 @@ public class KaiaGuiBlockPotion extends GuiScreen {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
+        drawString(fontRenderer, "Blocks Effects", (int) (xElementControllerButtons / 1.9), 0, Color.RED.getRGB());
         drawGradientRect(xElementControllerButtons / 415, yElementControllerButtons / 10, (int) (xElementControllerButtons / 0.8), (int) (yElementControllerButtons / 0.85), -1072689136, -804253680);
         renderGuis();
         guiTextField.drawTextBox();
