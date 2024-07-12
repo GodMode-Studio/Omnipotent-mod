@@ -73,7 +73,6 @@ public abstract class MixinEnemyUpdate {
                             Minecraft.getMinecraft().player.sendMessage((ITextComponent) message3);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
                     }
                 }
             }

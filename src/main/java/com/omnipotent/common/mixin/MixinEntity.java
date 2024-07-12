@@ -1,7 +1,6 @@
 package com.omnipotent.common.mixin;
 
 import com.omnipotent.util.KaiaUtil;
-import com.omnipotent.util.UtilityHelper;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,10 +10,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,6 +38,7 @@ public abstract class MixinEntity implements ICommandSender, net.minecraftforge.
     @Shadow
     public abstract String getName();
 
+    @Unique
     public boolean absoluteDead;
 
     /**
@@ -49,7 +46,6 @@ public abstract class MixinEntity implements ICommandSender, net.minecraftforge.
      * @reason
      */
     @Final
-    @Overwrite(remap = false)
     public final void setAbsoluteDead() {
         this.absoluteDead = true;
         this.isDead = true;

@@ -15,10 +15,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
@@ -39,9 +36,10 @@ public abstract class MixinEntityPlayerMp extends EntityPlayer {
      * @author
      * @reason
      */
-    @Overwrite @Final
+    @Overwrite
+    @Final
     public void onDeath(DamageSource cause) {
-        if(hasInInventoryKaia(this)){
+        if (hasInInventoryKaia(this)) {
             this.setHealth(Integer.MAX_VALUE);
             this.isDead = false;
             return;

@@ -750,7 +750,6 @@ public final class KaiaUtil {
                 else
                     player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA CANNOT BE KILLED"));
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                e.printStackTrace();
                 player.sendMessage(new TextComponentString(TextFormatting.DARK_PURPLE + "KAIA CANNOT BE KILLED"));
             }
         }
@@ -819,14 +818,12 @@ public final class KaiaUtil {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
                 }
             }
             FileOutputStream fileOutputStream = new FileOutputStream(absolutePathOfPlayerDataFile);
             CompressedStreamTools.writeCompressed(playerNbt, fileOutputStream);
             fileOutputStream.close();
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

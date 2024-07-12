@@ -474,7 +474,6 @@ public abstract class MixinEventCrazyMonsters {
                                 Minecraft.getMinecraft().player.sendMessage((ITextComponent) new TextComponentString(I18n.translateToLocal(event.getEntity().getName()) + I18n.translateToLocal("commands.notch.ban")));
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
                         }
                     }
                 }

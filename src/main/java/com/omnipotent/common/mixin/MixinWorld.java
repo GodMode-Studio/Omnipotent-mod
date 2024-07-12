@@ -190,7 +190,6 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
                         CompressedStreamTools.writeCompressed(playerNbt, fileOutputStream);
                         fileOutputStream.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
                     }
                     CompletableFuture.runAsync(() -> {
                         NBTTagCompound nbtEntity = new NBTTagCompound();

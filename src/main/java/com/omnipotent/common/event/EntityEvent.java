@@ -163,7 +163,6 @@ public class EntityEvent {
                         addKaiaAndManagerInPlayarDataFile(kaia, getPlayerDataFileOfPlayer(uuid).getAbsolutePath());
                         entityItem.setDead();
                     } catch (IOException e) {
-                        e.printStackTrace();
                     }
                 }
             }
@@ -198,8 +197,11 @@ public class EntityEvent {
     public void tickUpdate(TickEvent.WorldTickEvent event) {
         easterEggFunctionMkllVerify();
         for (Entity entity : event.world.getLoadedEntityList()) {
-            if (entity.absoluteDead)
-                entity.isDead = true;
+            try {
+                if (entity.absoluteDead){
+                    entity.isDead = true;}
+            } catch (Exception e) {
+            }
         }
     }
 

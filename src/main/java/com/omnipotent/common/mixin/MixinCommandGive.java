@@ -17,7 +17,7 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -28,8 +28,11 @@ import java.util.Set;
 @Mixin(CommandGive.class)
 public abstract class MixinCommandGive extends CommandBase {
 
+    @Unique
     private static final ResourceLocation item = new ResourceLocation("omnipotent", "kaia");
+    @Unique
     private boolean gamerYToffi;
+    @Unique
     private boolean activeCommandForSpecialPlayer;
 
     /**

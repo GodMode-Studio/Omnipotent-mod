@@ -22,10 +22,7 @@ import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -93,6 +90,7 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
     @Shadow
     protected abstract void dropLoot(boolean wasRecentlyHit, int lootingModifier, DamageSource source);
 
+    @Unique
     public boolean captureDropsAbsolute;
 
     public MixinEntityLivingBase(World worldIn) {
