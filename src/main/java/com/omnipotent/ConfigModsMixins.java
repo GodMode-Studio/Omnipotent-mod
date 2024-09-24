@@ -4,12 +4,12 @@ import zone.rong.mixinbooter.ILateMixinLoader;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 
-public class ImplementMixinsOfMods implements ILateMixinLoader {
+public class ConfigModsMixins implements ILateMixinLoader {
     @Override
     public List<String> getMixinConfigs() {
-        return Arrays.asList("mixins.modsomnipotent.json", "mixin.abyssalcraft.json", "mixins.crazymobs.json", "mixins.players_weapon.json");
+        return Arrays.asList("mixins.players_weapon.json", "mixins.crazymobs.json", "mixin.abyssalcraft.json",
+                "mixins.modsomnipotent.json");
     }
 
     @Override
