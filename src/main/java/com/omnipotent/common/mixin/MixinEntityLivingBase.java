@@ -3,11 +3,15 @@ package com.omnipotent.common.mixin;
 import com.omnipotent.Config;
 import com.omnipotent.acessor.IEntityLivingBaseAcessor;
 import com.omnipotent.common.damage.AbsoluteOfCreatorDamage;
+import com.omnipotent.constant.NbtBooleanValues;
+import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.AbstractAttributeMap;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -15,6 +19,7 @@ import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
@@ -28,12 +33,16 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.stream.Stream;
+
 import static com.omnipotent.util.KaiaUtil.effectIsBlockedByKaia;
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
 import static com.omnipotent.util.UtilityHelper.isPlayer;
 
 @Mixin(EntityLivingBase.class)
 public abstract class MixinEntityLivingBase extends Entity implements IEntityLivingBaseAcessor {
+    @Shadow
+    private AbstractAttributeMap attributeMap;
     @Shadow
     protected int idleTime;
     @Shadow
@@ -58,6 +67,16 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
     @Override
     public void setRecentlyHit(int recentlyHit) {
         this.recentlyHit = recentlyHit;
+    }
+
+    @Override
+    public void setlastDamageSource(DamageSource lastDamageSource) {
+        this.lastDamageSource = lastDamageSource;
+    }
+
+    @Override
+    public void setlastDamageStamp(long lastDamageStamp) {
+        this.lastDamageStamp = lastDamageStamp;
     }
 
     @Shadow
@@ -241,14 +260,38 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
             this.dataManager.set(this.getHEALTH(), Float.valueOf(MathHelper.clamp(Integer.MAX_VALUE, 0.0F, entity.getMaxHealth())));
         else if (lastDamage != null && lastDamage.getTrueSource() != null) {
             Entity sourceOfDamage = lastDamage.getTrueSource();
-            if (lastDamage.damageType.equals(new AbsoluteOfCreatorDamage(sourceOfDamage).damageType))
+            if (lastDamage.damageType.equals(new AbsoluteOfCreatorDamage(sourceOfDamage).damageType)) {
                 this.dataManager.set(this.getHEALTH(), Float.valueOf(MathHelper.clamp(0, 0.0F, entity.getMaxHealth())));
-            else
+                obliteration(sourceOfDamage, entity);
+            } else
                 this.dataManager.set(this.getHEALTH(), Float.valueOf(MathHelper.clamp(health, 0.0F, entity.getMaxHealth())));
         } else
             this.dataManager.set(this.getHEALTH(), Float.valueOf(MathHelper.clamp(health, 0.0F, entity.getMaxHealth())));
     }
 
+    @Unique
+    private void obliteration(Entity sourceOfDamage, EntityLivingBase entity) {
+        if (sourceOfDamage instanceof EntityPlayerMP) {
+            EntityPlayerMP playerMP = (EntityPlayerMP) sourceOfDamage;
+            ItemStack kaia = KaiaUtil.getKaiaInMainHandOrInventory(playerMP);
+            if (kaia.getTagCompound().getBoolean(NbtBooleanValues.maximumObliteration.getValue())) {
+                entity.setDead();
+                Stream<IAttributeInstance> health1 = attributeMap.getAllAttributes().stream().filter(att -> att.getAttribute().getName().contains("health"));
+                health1.forEach(att -> att.setBaseValue(0));
+                Stream<EntityDataManager.DataEntry<?>> healthsEntities = dataManager.getAll().stream()
+                        .filter(entry -> entry.getValue() instanceof Number
+                                && entry.getKey().toString().contains("health"));
+                healthsEntities.forEach(entry -> {
+                    DataParameter<?> key = entry.getKey();
+                    if (key instanceof DataParameter<?>) {
+                        dataManager.set((DataParameter<Number>) key, 0);
+                    }
+                });
+            }
+        }
+    }
+
+    @Unique
     public final void onAbsoluteDeath(DamageSource cause) {
         EntityLivingBase entity1 = (EntityLivingBase) (Object) this;
         if (net.minecraftforge.common.ForgeHooks.onLivingDeath(entity1, cause)) return;

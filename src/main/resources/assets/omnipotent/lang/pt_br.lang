@@ -50,6 +50,7 @@ guikaia.config.activeCustomPlayerName=Nome personlizado do player
 guikaia.config.fastBreakBlocks=Quebrar blocos de forma rápida
 guikaia.config.rgbEnchantmentGlitch=Efeito RGB em aurea de encantamento
 guikaia.config.banEntityToSealedDimension=Banir a Entidade para uma dimensão selada
+guikaia.config.maximumObliteration=Oblitere a entidade
 #keys
 keykaia.category=Botões Kaia
 keykaia.config=Configurações
@@ -104,3 +105,4 @@ function.description.customPlayerName=Essa opção caso ativada irá exibir como
 function.description.fastBreakBlocks=Essa opção otimiza a quebra de blocos em area para ser mais rapido (alguns efeitos como sons, e animação de quebra não serão executados).
 function.description.rgbEnchantmentGlitch=Essa opção ativa o efeito RGB no encantamento da espada.
 function.description.banEntityToSealedDimension=Essa opção bani o player morto pela kaia para uma outra dimensão, nesta dimensão não nascem mobs, portais não funcionam todos os itens do player são deletados e o respawn é dentro dela, caso seja um mob ele não será morto só sera enviado para a outra dimensão.
+function.description.maximumObliteration=Essa opção oblitera a entidade, é útil quando a entidade não é morta pela kaia normal.
