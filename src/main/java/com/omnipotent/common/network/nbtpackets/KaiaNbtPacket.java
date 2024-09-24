@@ -32,6 +32,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -159,38 +162,45 @@ public class KaiaNbtPacket implements IMessage {
 
         private void functionManageKaiaBetweenSaves(EntityPlayer player, KaiaNbtPacket message) {
             if (!KaiaUtil.hasInInventoryKaia(player) && player.getCapability(KaiaProvider.KaiaBrand, null).returnList().isEmpty()) {
-                String path = System.getProperty("user.dir").concat("\\saves");
+                Path path = Paths.get(System.getProperty("user.dir"), "saves");
                 HashMap<Long, ItemStack> kaias = new HashMap<>();
                 iteratorInSaves(player, path, kaias);
                 addLastKaiaOfDataInInventory(player, kaias);
             }
         }
 
-        private void iteratorInSaves(EntityPlayer player, String path, HashMap<Long, ItemStack> kaias) {
-            File file = new File(path);
-            List<File> files = Arrays.asList(file.listFiles());
-            files.forEach(file2 -> verifyAndAcessSaves(player, file2, kaias));
+        private void iteratorInSaves(EntityPlayer player, Path path, HashMap<Long, ItemStack> kaias) {
+            try {
+                Files.list(path).filter(Files::isDirectory).forEach(file -> verifyAndAcessSaves(player, file.toFile(), kaias));
+            } catch (IOException ignored) {
+
+            }
         }
 
         private void verifyAndAcessSaves(EntityPlayer player, File saveFile, HashMap<Long, ItemStack> kaias) {
-            if (!saveFile.isDirectory())
-                return;
-            String absolutePath = saveFile.getAbsolutePath();
-            File file = new File(absolutePath.concat("\\playerdata"));
-            List<File> files = Arrays.asList(file.listFiles()).stream().filter(file2 -> file2.getName().endsWith(".dat") && file2.getName().split(".dat")[0].equals(player.getUniqueID().toString())).collect(Collectors.toList());
-            for (File file2 : files) {
-                try {
-                    NBTTagCompound nbtTagCompound = CompressedStreamTools.readCompressed(new FileInputStream(file2));
-                    if (nbtTagCompound != null) {
-                        ISaveHandler saveHandler = player.world.getSaveHandler();
-                        if (saveHandler instanceof SaveHandler) {
-                            ItemStack kaiaOfNbtCompound = getKaiaOfNbtCompound(nbtTagCompound);
-                            if (kaiaOfNbtCompound != null)
-                                kaias.put(file2.lastModified(), kaiaOfNbtCompound);
+            Path playerDataPath = saveFile.toPath().resolve("playerdata");
+            try {
+                List<File> files = Files.list(playerDataPath)
+                        .filter(path -> path.toString().endsWith(".dat"))
+                        .filter(path -> path.getFileName().toString().split(".dat")[0].equals(player.getUniqueID().toString()))
+                        .map(Path::toFile)
+                        .collect(Collectors.toList());
+
+                for (File file2 : files) {
+                    try (FileInputStream fis = new FileInputStream(file2)) {
+                        NBTTagCompound nbtTagCompound = CompressedStreamTools.readCompressed(fis);
+                        if (nbtTagCompound != null) {
+                            ISaveHandler saveHandler = player.world.getSaveHandler();
+                            if (saveHandler instanceof SaveHandler) {
+                                ItemStack kaiaOfNbtCompound = getKaiaOfNbtCompound(nbtTagCompound);
+                                if (kaiaOfNbtCompound != null)
+                                    kaias.put(file2.lastModified(), kaiaOfNbtCompound);
+                            }
                         }
+                    } catch (IOException e) {
                     }
-                } catch (IOException e) {
                 }
+            } catch (IOException e) {
             }
         }
 
@@ -333,7 +343,7 @@ public class KaiaNbtPacket implements IMessage {
 
         private static void functionManagePotions(KaiaNbtPacket message, EntityPlayer player) {
             Potion potionFromResourceLocation = Potion.getPotionFromResourceLocation(message.text);
-            if(potionFromResourceLocation==null) return;
+            if (potionFromResourceLocation == null) return;
             int levelPotion = message.intValue;
             if (levelPotion == 0) {
                 player.removePotionEffect(potionFromResourceLocation);

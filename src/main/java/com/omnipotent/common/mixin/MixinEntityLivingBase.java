@@ -337,7 +337,7 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
         }
     }
 
-    public final boolean AbsoluteAttackEntityFrom(DamageSource source, float amount) {
+    public final boolean absoluteAttackEntityFrom(DamageSource source, float amount) {
         EntityLivingBase thisEntity = (EntityLivingBase) (Object) this;
         if (!net.minecraftforge.common.ForgeHooks.onLivingAttack(thisEntity, source, amount)) return false;
         if (this.isEntityInvulnerable(source)) {

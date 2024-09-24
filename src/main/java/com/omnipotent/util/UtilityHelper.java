@@ -29,6 +29,9 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -187,8 +190,11 @@ public class UtilityHelper {
     public static File getPlayerDataFileOfPlayer(@Nonnull UUID uuid) {
         MinecraftServer minecraftServer = FMLCommonHandler.instance().getMinecraftServerInstance();
         String worldName = minecraftServer.getFolderName();
-        File playerData = new File(System.getProperty("user.dir").concat("\\saves").concat("\\" + worldName).concat("\\playerdata").concat("\\" + uuid.toString() + ".dat"));
-        return playerData;
+        Path playerDataPath = Paths.get(System.getProperty("user.dir"), "saves", worldName, "playerdata", uuid + ".dat");
+        if (Files.exists(playerDataPath)) {
+            return playerDataPath.toFile();
+        }
+        return null;
     }
 
 

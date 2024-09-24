@@ -26,10 +26,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityAgeable;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.*;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.monster.EntityGolem;
@@ -66,7 +63,6 @@ import net.minecraftforge.fml.common.Optional;
 
 import javax.annotation.Nonnull;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -197,12 +193,19 @@ public final class KaiaUtil {
                 mobKilled = true;
                 killPlayer((EntityPlayer) entity, playerSource, tagCompound);
             }
+        } else if (entity instanceof MultiPartEntityPart && ((MultiPartEntityPart) entity).parent instanceof EntityLivingBase) {
+            EntityLivingBase livingBase = (EntityLivingBase) ((MultiPartEntityPart) entity).parent;
+            if (!entity.world.isRemote && livingBase.getHealth() != 0.0F) {
+                mobKilled = true;
+                killMobs(livingBase, playerSource, kaia);
+            }
         } else if (entity instanceof EntityLivingBase && !(entity.world.isRemote || entity.isDead || ((EntityLivingBase) entity).getHealth() == 0.0F)) {
             mobKilled = true;
             killMobs((EntityLivingBase) entity, playerSource, kaia);
         } else if (killAllEntities) {
             mobKilled = true;
             entity.setAbsoluteDead();
+            entity.setDead();
             if (Loader.isModLoaded("crazymonsters") && entity instanceof EntityNotch) {
                 crazyDeath((EntityNotch) entity, playerSource);
             }
@@ -307,7 +310,6 @@ public final class KaiaUtil {
         antiEntity.add(entityCreature.getClass());
         verifyAndManagerAutoBackEntitiesAndApplyDamage(entityCreature, ds, playerSource, kaia);
         antiEntity.remove(entityCreature.getClass());
-        entityCreature.setAbsoluteHealth(0.0F);
         if (tagCompound.getBoolean(banEntitiesAttacked.getValue()))
             dennyEntitySpawnInWorld(playerSource.world, entity);
     }
@@ -372,9 +374,19 @@ public final class KaiaUtil {
                 if (stack != null)
                     world.spawnEntity(new EntityItem(world, entityCreature.posX, entityCreature.posY, entityCreature.posZ, stack));
             }
-            entityCreature.AbsoluteAttackEntityFrom(ds, Float.MAX_VALUE);
-            entityCreature.onAbsoluteDeath(ds);
         }
+        attackEntity(entityCreature, ds);
+    }
+
+    private static void attackEntity(EntityLivingBase entityCreature, DamageSource ds) {
+        entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
+        entityCreature.absoluteAttackEntityFrom(ds, Float.MAX_VALUE);
+        ((IEntityLivingBaseAcessor) entityCreature).setlastDamageStamp(entityCreature.world.getTotalWorldTime());
+        ((IEntityLivingBaseAcessor) entityCreature).setlastDamageSource(ds);
+        entityCreature.setHealth(0.0F);
+        entityCreature.setAbsoluteHealth(0.0F);
+        entityCreature.onDeath(ds);
+        entityCreature.onAbsoluteDeath(ds);
     }
 
     @Optional.Method(modid = DraconicEvolution.MODID)
@@ -767,9 +779,9 @@ public final class KaiaUtil {
 
     public static void addKaiaAndManagerInPlayarDataFile(@Nonnull ItemStack kaia, @Nonnull String
             absolutePathOfPlayerDataFile) throws IOException {
-        NBTTagCompound playerNbt = CompressedStreamTools.readCompressed(new FileInputStream(absolutePathOfPlayerDataFile));
-        if (playerNbt == null) throw new FileNotFoundException("playerdata File not is valid or not found");
+//        if (playerNbt == null) throw new FileNotFoundException("playerdata File not is valid or not found");
         try {
+            NBTTagCompound playerNbt = CompressedStreamTools.readCompressed(new FileInputStream(absolutePathOfPlayerDataFile));
             NBTTagList inventory = playerNbt.getTagList("Inventory", 10);
             ArrayList<Byte> slots = new ArrayList<>();
             for (NBTBase nbt : inventory) {
