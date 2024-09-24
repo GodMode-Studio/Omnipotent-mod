@@ -1,7 +1,7 @@
 {
   "compatibilityLevel": "JAVA_8",
   "package": "com.omnipotent.common.mixin",
-  "refmap": "refmap.omnipotent.json",
+  "refmap": "mixins.${mod_id}.refmap.json",
   "mixins": [
     "MixinCommandBanIp",
     "MixinCommandBanPlayer",
