@@ -21,7 +21,7 @@ import static com.omnipotent.Omnipotent.*;
 
 public class CommonProxy {
     public void preInit(FMLPreInitializationEvent event) {
-        Mixins.addConfiguration("mixins.omnipotent.json");
+//        Mixins.addConfiguration("mixins.omnipotent.json");
         MinecraftForge.EVENT_BUS.register(instance);
         CapabilityManager instanceCap = CapabilityManager.INSTANCE;
         instanceCap.register(IKaiaBrand.class, new KaiaStorage(), KaiaBrandItems.class);

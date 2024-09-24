@@ -162,7 +162,7 @@ public class EntityEvent {
                     try {
                         addKaiaAndManagerInPlayarDataFile(kaia, getPlayerDataFileOfPlayer(uuid).getAbsolutePath());
                         entityItem.setDead();
-                    } catch (IOException e) {
+                    } catch (IOException ignored) {
                     }
                 }
             }
