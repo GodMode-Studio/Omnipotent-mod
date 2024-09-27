@@ -8,8 +8,10 @@ import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.common.specialgui.net.KaiaContainerOpenPackte;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import org.lwjgl.input.Keyboard;
@@ -23,6 +25,7 @@ import java.util.stream.Stream;
 
 import static com.omnipotent.common.gui.GuiHandler.*;
 import static com.omnipotent.constant.NbtBooleanValues.showInfo;
+import static com.omnipotent.util.UtilityHelper.rayTraceClient;
 import static net.minecraftforge.client.settings.KeyConflictContext.IN_GAME;
 
 public class KeyInit {
@@ -144,6 +147,15 @@ public class KeyInit {
         EntityPlayer player = (EntityPlayer) object;
         if (KeyInit.kaiaShowOrHideInfo.isPressed() && hasKaia) {
             NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(showInfo.getValue(), !KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getBoolean(showInfo.getValue())));
+            return true;
+        }
+        return false;
+    });
+    private static final KeyBinding kaiaAttackShow = new KeyMod(I18n.format("keykaia.kaiaattackshow"), Keyboard.KEY_SUBTRACT, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
+        if (KeyInit.kaiaAttackShow.isPressed() && hasKaia) {
+            Entity entityHit = rayTraceClient(Minecraft.getMinecraft(), 300, 0).entityHit;
+            if (entityHit != null)
+                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket("kaiaattackshow", entityHit.getEntityId()));
             return true;
         }
         return false;

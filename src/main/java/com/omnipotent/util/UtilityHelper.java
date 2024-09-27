@@ -1,8 +1,11 @@
 package com.omnipotent.util;
 
 
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -13,7 +16,12 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EntitySelectors;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
@@ -471,5 +479,64 @@ public class UtilityHelper {
             chunk.setModified(true);
             return iblockstate;
         }
+    }
+
+    public static RayTraceResult rayTraceClient(Minecraft mc, int distance, float partialTicks) {
+        Entity entity = mc.getRenderViewEntity();
+        if (entity != null && mc.world != null) {
+            mc.mcProfiler.startSection("pick");
+            RayTraceResult originalObjectMouseOver = entity.rayTrace(distance, partialTicks);
+            Vec3d vec3d = entity.getPositionEyes(partialTicks);
+            Vec3d vec3d1 = entity.getLook(1.0F);
+            Vec3d vec3d2 = vec3d.addVector(vec3d1.x * distance, vec3d1.y * distance, vec3d1.z * distance);
+            Entity pointedEntity = null;
+            Vec3d vec3d3 = null;
+            List<Entity> list = mc.world.getEntitiesInAABBexcluding(entity, entity.getEntityBoundingBox().expand(vec3d1.x * distance, vec3d1.y * distance, vec3d1.z * distance).grow(1.0D, 1.0D, 1.0D), Predicates.and(EntitySelectors.NOT_SPECTATING, new Predicate<Entity>() {
+                public boolean apply(@Nullable Entity p_apply_1_) {
+                    return p_apply_1_ != null && p_apply_1_.canBeCollidedWith();
+                }
+            }));
+            double d2 = distance;
+            for (int j = 0; j < list.size(); ++j) {
+                Entity entity1 = list.get(j);
+                AxisAlignedBB axisalignedbb = entity1.getEntityBoundingBox().grow((double) entity1.getCollisionBorderSize());
+                RayTraceResult raytraceresult = axisalignedbb.calculateIntercept(vec3d, vec3d2);
+
+                if (axisalignedbb.contains(vec3d)) {
+                    if (d2 >= 0.0D) {
+                        pointedEntity = entity1;
+                        vec3d3 = raytraceresult == null ? vec3d : raytraceresult.hitVec;
+                        d2 = 0.0D;
+                    }
+                } else if (raytraceresult != null) {
+                    double d3 = vec3d.distanceTo(raytraceresult.hitVec);
+
+                    if (d3 < d2 || d2 == 0.0D) {
+                        if (entity1.getLowestRidingEntity() == entity.getLowestRidingEntity() && !entity1.canRiderInteract()) {
+                            if (d2 == 0.0D) {
+                                pointedEntity = entity1;
+                                vec3d3 = raytraceresult.hitVec;
+                            }
+                        } else {
+                            pointedEntity = entity1;
+                            vec3d3 = raytraceresult.hitVec;
+                            d2 = d3;
+                        }
+                    }
+                }
+            }
+            if (pointedEntity != null && vec3d.distanceTo(vec3d3) > distance) {
+                pointedEntity = null;
+                originalObjectMouseOver = new RayTraceResult(RayTraceResult.Type.MISS, vec3d3, (EnumFacing) null, new BlockPos(vec3d3));
+            }
+            if (pointedEntity != null && (d2 < distance || originalObjectMouseOver == null)) {
+                originalObjectMouseOver = new RayTraceResult(pointedEntity, vec3d3);
+            }
+
+            mc.mcProfiler.endSection();
+
+            return originalObjectMouseOver;
+        }
+        return null;
     }
 }

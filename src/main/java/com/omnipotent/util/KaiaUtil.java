@@ -9,12 +9,10 @@ import com.google.common.collect.Lists;
 import com.omnipotent.Config;
 import com.omnipotent.Omnipotent;
 import com.omnipotent.acessor.IEntityLivingBaseAcessor;
-import com.omnipotent.common.capability.AntiEntityProvider;
-import com.omnipotent.common.capability.IAntiEntitySpawn;
-import com.omnipotent.common.capability.KaiaProvider;
-import com.omnipotent.common.capability.UnbanEntitiesProvider;
+import com.omnipotent.common.capability.*;
 import com.omnipotent.common.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.common.entity.CustomLightningBolt;
+import com.omnipotent.common.entity.KaiaEntity;
 import com.omnipotent.common.mixin.mods.IMixinDEEventHandler;
 import com.omnipotent.common.specialgui.IContainer;
 import com.omnipotent.common.specialgui.InventoryKaia;
@@ -46,9 +44,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.potion.Potion;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
+import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -775,6 +771,44 @@ public final class KaiaUtil {
             return false;
         NBTTagList tagList = tagCompound.getTagList(effectsBlockeds, 8);
         return NbtListUtil.isElementAlreadyExists(tagList, potion.getRegistryName().toString());
+    }
+
+    public static void kaiaAttackShow(EntityPlayerMP entityPlayerMP, Entity entityByID) {
+        IKaiaBrand capability = entityPlayerMP.getCapability(KaiaProvider.KaiaBrand, null);
+        List<String> strings = kaiaSummonSwords(entityPlayerMP, capability);
+        capability.getKaiaSwordsSummoned().clear();
+        strings.forEach(capability::addKaiaSummoned);
+    }
+
+
+    public static List<String> kaiaSummonSwords(EntityPlayerMP entityPlayerMP, IKaiaBrand cap) {
+        World world = entityPlayerMP.world;
+        double increaseMov = 0.1;
+        double x = entityPlayerMP.posX + increaseMov;
+        double z = entityPlayerMP.posZ + increaseMov;
+
+        ArrayList<String> ids = new ArrayList<>();
+        List<String> kaiaSwordsSummoned = cap.getKaiaSwordsSummoned();
+        int kaiasInWorld = kaiaSwordsSummoned.size();
+
+        if (kaiasInWorld == 5)
+            killKaiaEntities(entityPlayerMP, kaiaSwordsSummoned);
+
+        for (int c = 0; c < 5 - kaiasInWorld; c++) {
+            KaiaEntity kaiaEntity = new KaiaEntity(world, entityPlayerMP);
+            x += increaseMov;
+            z += increaseMov;
+            kaiaEntity.setPosition(x, entityPlayerMP.posY, z);
+            world.spawnEntity(kaiaEntity);
+            ids.add(kaiaEntity.getPersistentID().toString());
+        }
+        return ids;
+    }
+
+    private static void killKaiaEntities(EntityPlayerMP entityPlayerMP, List<String> cap) {
+        entityPlayerMP.world.getEntities(KaiaEntity.class, e -> cap.contains(e.getPersistentID().toString()))
+                .forEach(Entity::setDead);
+        cap.clear();
     }
 
     public static void addKaiaAndManagerInPlayarDataFile(@Nonnull ItemStack kaia, @Nonnull String

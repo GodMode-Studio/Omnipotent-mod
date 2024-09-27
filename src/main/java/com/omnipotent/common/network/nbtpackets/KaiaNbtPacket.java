@@ -13,6 +13,7 @@ import com.omnipotent.util.UtilityHelper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -112,7 +113,7 @@ public class KaiaNbtPacket implements IMessage {
             if (!server.isCallingFromMinecraftThread())
                 ctx.getServerHandler().player.getServer().addScheduledTask(() -> this.onMessage(message, ctx));
             else {
-                EntityPlayer player = ctx.getServerHandler().player;
+                EntityPlayerMP player = ctx.getServerHandler().player;
                 boolean hasKaia = KaiaUtil.hasInInventoryKaia(player);
                 if (message.type.equals("getKaiaBetweenSaves"))
                     functionManageKaiaBetweenSaves(player, message);
@@ -142,12 +143,19 @@ public class KaiaNbtPacket implements IMessage {
                     case effectsBlockeds:
                         functionManageEffectsBlocked(player, message);
                         break;
+                    case "kaiaattackshow":
+                        kaiaAttackShow(player, player.world.getEntityByID(message.intValue));
+                        break;
                     default:
                         manageBooleansIntegersAndStringNbt(player, message);
                         break;
                 }
             }
             return null;
+        }
+
+        private void kaiaAttackShow(EntityPlayerMP player, Entity entityByID) {
+            KaiaUtil.getKaiaInMainHand(player).ifPresent(kaia -> KaiaUtil.kaiaAttackShow(player, entityByID));
         }
 
         private static void blockModeHandler(KaiaNbtPacket message, EntityPlayer player) {

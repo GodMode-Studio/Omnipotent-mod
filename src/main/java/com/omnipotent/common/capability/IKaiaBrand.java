@@ -10,4 +10,8 @@ public interface IKaiaBrand {
     public List<ItemStack> getAndExcludeAllKaiaInList();
 
     public List<ItemStack> returnList();
+
+    public void addKaiaSummoned(String kaiaUUID);
+
+    public List<String> getKaiaSwordsSummoned();
 }

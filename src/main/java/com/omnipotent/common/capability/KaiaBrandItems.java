@@ -7,11 +7,13 @@ import java.util.List;
 
 public class KaiaBrandItems implements IKaiaBrand {
 
-    private List<ItemStack> kaiaItems = new ArrayList<>();
+    private final List<ItemStack> kaiaItems = new ArrayList<>();
+
+    private final List<String> kaiaSwordsSummoned = new ArrayList<>();
 
     @Override
     public void habilityBrand(List<ItemStack> kaiaList) {
-        kaiaList.forEach(item -> kaiaItems.add(item));
+        kaiaItems.addAll(kaiaList);
     }
 
     @Override
@@ -25,5 +27,15 @@ public class KaiaBrandItems implements IKaiaBrand {
     @Override
     public List<ItemStack> returnList() {
         return kaiaItems;
+    }
+
+    @Override
+    public void addKaiaSummoned(String uuid) {
+        kaiaSwordsSummoned.add(uuid);
+    }
+
+    @Override
+    public List<String> getKaiaSwordsSummoned() {
+        return kaiaSwordsSummoned;
     }
 }
