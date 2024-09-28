@@ -1,4 +1,4 @@
-package com.omnipotent.common.capability;
+package com.omnipotent.common.capability.kaiacap;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
@@ -27,7 +27,7 @@ public class KaiaStorage implements Capability.IStorage<IKaiaBrand> {
     @Override
     public void readNBT(Capability<IKaiaBrand> capability, IKaiaBrand instance, EnumFacing side, NBTBase nbt) {
         NBTTagCompound nbtTagCompound = (NBTTagCompound) nbt;
-        NBTTagList kaiaSwordsSummonedsTags = nbtTagCompound.getTagList("kaiaswordssummoned", 9);
+        NBTTagList kaiaSwordsSummonedsTags = nbtTagCompound.getTagList("kaiaswordssummoned", 8);
         NBTTagList kaias = nbtTagCompound.getTagList("kaias", 10);
 
         List<ItemStack> kaiasPlayer = instance.returnList();

@@ -1,4 +1,4 @@
-package com.omnipotent.common.capability;
+package com.omnipotent.common.capability.kaiacap;
 
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
