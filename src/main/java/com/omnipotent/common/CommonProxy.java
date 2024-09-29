@@ -39,6 +39,7 @@ public class CommonProxy {
         eventBus.register(new LivingSpawnEventCheckSpawnListener());
         eventBus.register(new LivingSpawnEventSpecialSpawnListener());
         eventBus.register(new AttachCapabilitiesEventWorldListener());
+        eventBus.register(new PlayerLoggedInEventHandler());
         registerDimension();
         NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
         Config.init(event);

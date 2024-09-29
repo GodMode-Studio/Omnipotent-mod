@@ -715,8 +715,8 @@ public final class KaiaUtil {
                         for (int index = 0; index < player.inventory.mainInventory.size(); index++) {
                             ItemStack itemStack = player.inventory.mainInventory.get(index);
                             if (!itemStack.isEmpty() && !(itemStack.getItem() instanceof Kaia)) {
-                                player.world.spawnEntity(new EntityItem(player.world, player.posX + 20, player.posY, player.posZ, player.inventory.mainInventory.get(index)));
-                                player.sendMessage(new TextComponentString(I18n.format("kaia.message.returndropitems") + " X: " + ((int) player.posX + 20) + "Y: " + ((int) player.posY) + "Z: " + ((int) player.posZ)));
+                                player.world.spawnEntity(new EntityItem(player.world, player.posX + 8, player.posY, player.posZ, player.inventory.mainInventory.get(index)));
+                                player.sendMessage(new TextComponentString(I18n.format("kaia.message.returndropitems") + " X: " + ((int) player.posX + 8) + " Y: " + ((int) player.posY) + " Z: " + ((int) player.posZ)));
                                 player.inventory.mainInventory.set(index, kaia.copy());
                                 break;
                             }

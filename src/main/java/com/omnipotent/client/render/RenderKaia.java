@@ -85,9 +85,11 @@ public class RenderKaia extends Render<KaiaEntity> {
     }
 
     private void rotationEntityToTarget(KaiaEntity entity) {
-        final float deltaX = (float) (entity.posX - entity.getAttackTarget().posX);
+        EntityLivingBase attackTarget = entity.getAttackTarget();
+        if (attackTarget == null) return;
+        final float deltaX = (float) (entity.posX - attackTarget.posX);
         GlStateManager.rotate(deltaX > 0 ? 90 : 270, 0.0F, 0.0F, 1.0F);
-        final float deltaZ = (float) (entity.posZ - entity.getAttackTarget().posZ);
+        final float deltaZ = (float) (entity.posZ - attackTarget.posZ);
         GlStateManager.rotate(deltaZ > 0 && deltaZ < 1 ? 0 : deltaZ > 0 ? 270 : 90, 1.0F, 0.0F, 0.0F);
     }
 

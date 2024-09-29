@@ -98,7 +98,7 @@ public class KaiaEntity extends Entity {
         double directionY = (attackTarget.posY + attackTarget.getEyeHeight() / 2.0F) - this.posY;
         double directionZ = attackTarget.posZ - this.posZ;
         double distance = MathHelper.sqrt(directionX * directionX + directionY * directionY + directionZ * directionZ);
-        double speed = 0.05;
+        double speed = 0.5;
         if (distance > 0.001) {
             this.posX += (directionX / distance) * speed;
             this.posY += (directionY / distance) * speed;
