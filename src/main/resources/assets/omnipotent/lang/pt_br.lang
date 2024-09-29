@@ -64,6 +64,8 @@ keykaia.spectate=Bloquear modo espectador
 keykaia.creative=Bloquear modo creativo
 keykaia.kaiashowinfo=Exibir/ocultar Info da Kaia
 keykaia.getKaiaBetweenSaves=Obter kaia dos saves
+keykaia.kaiasummonswords=Invocar entidade Kaia
+keykaia.kaiaattackshow=Atacar entidade com fantasmas da Kaia.
 #messages in chat
 kaia.message.void=PARADEIRO Y150
 kaia.message.returndropitems=item dropado na posição

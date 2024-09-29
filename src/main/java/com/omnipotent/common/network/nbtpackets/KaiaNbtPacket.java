@@ -2,7 +2,7 @@ package com.omnipotent.common.network.nbtpackets;
 
 import com.omnipotent.common.capability.BlockModeProvider;
 import com.omnipotent.common.capability.IBlockMode;
-import com.omnipotent.common.capability.KaiaProvider;
+import com.omnipotent.common.capability.kaiacap.KaiaProvider;
 import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.constant.NbtStringValues;
@@ -13,7 +13,7 @@ import com.omnipotent.util.UtilityHelper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -41,7 +41,9 @@ import java.util.stream.Collectors;
 
 import static com.omnipotent.constant.NbtNumberValues.*;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
+import static com.omnipotent.util.KaiaUtil.kaiaSummonSwords;
 import static com.omnipotent.util.NbtListUtil.divisionUUIDAndName;
+import static com.omnipotent.util.UtilityHelper.getKaiaCap;
 
 public class KaiaNbtPacket implements IMessage {
     private String type;
@@ -143,8 +145,15 @@ public class KaiaNbtPacket implements IMessage {
                     case effectsBlockeds:
                         functionManageEffectsBlocked(player, message);
                         break;
+                    case "kaiasummonswords":
+                        getKaiaCap(player).ifPresent(cap -> {
+                            kaiaSummonSwords(player, cap);
+                            cap.syncWithServer(player);
+                        });
+                        break;
                     case "kaiaattackshow":
-                        kaiaAttackShow(player, player.world.getEntityByID(message.intValue));
+                        if (player.world.getEntityByID(message.intValue) instanceof EntityLivingBase entityByID)
+                            kaiaAttackShow(player, entityByID);
                         break;
                     default:
                         manageBooleansIntegersAndStringNbt(player, message);
@@ -154,8 +163,10 @@ public class KaiaNbtPacket implements IMessage {
             return null;
         }
 
-        private void kaiaAttackShow(EntityPlayerMP player, Entity entityByID) {
-            KaiaUtil.getKaiaInMainHand(player).ifPresent(kaia -> KaiaUtil.kaiaAttackShow(player, entityByID));
+        private void kaiaAttackShow(EntityPlayerMP player, EntityLivingBase entityByID) {
+            ItemStack kaiaInMainHandOrInventory = KaiaUtil.getKaiaInMainHandOrInventory(player);
+            if (kaiaInMainHandOrInventory != null)
+                KaiaUtil.kaiaAttackShow(player, entityByID);
         }
 
         private static void blockModeHandler(KaiaNbtPacket message, EntityPlayer player) {

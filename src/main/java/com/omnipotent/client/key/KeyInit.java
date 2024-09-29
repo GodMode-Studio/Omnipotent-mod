@@ -1,6 +1,8 @@
 package com.omnipotent.client.key;
 
 import com.omnipotent.Omnipotent;
+import com.omnipotent.common.capability.kaiacap.KaiaProvider;
+import com.omnipotent.common.entity.KaiaEntity;
 import com.omnipotent.common.gui.GuiHandler;
 import com.omnipotent.common.network.NetworkRegister;
 import com.omnipotent.common.network.ReturnKaiaPacket;
@@ -12,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import org.lwjgl.input.Keyboard;
@@ -151,11 +154,24 @@ public class KeyInit {
         }
         return false;
     });
+    private static final KeyBinding kaiaSummonSwords = new KeyMod(I18n.format("keykaia.kaiasummonswords"), Keyboard.KEY_ADD, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
+        if (KeyInit.kaiaSummonSwords.isPressed() && hasKaia) {
+            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket("kaiasummonswords"));
+            return true;
+        }
+        return false;
+    });
     private static final KeyBinding kaiaAttackShow = new KeyMod(I18n.format("keykaia.kaiaattackshow"), Keyboard.KEY_SUBTRACT, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
-        if (KeyInit.kaiaAttackShow.isPressed() && hasKaia) {
-            Entity entityHit = rayTraceClient(Minecraft.getMinecraft(), 300, 0).entityHit;
-            if (entityHit != null)
+        if (KeyInit.kaiaAttackShow.isPressed()) {
+            Entity entityHit = rayTraceClient(Minecraft.getMinecraft(), KaiaEntity.class, 300, 0).entityHit;
+            EntityPlayer player = (EntityPlayer) object;
+            if (entityHit instanceof EntityLivingBase) {
+                List<String> kaiaSwordsSummoned = player.getCapability(KaiaProvider.KaiaBrand, null).getKaiaSwordsSummoned();
+                player.getEntityWorld().getLoadedEntityList().stream().filter(e ->
+                                e instanceof KaiaEntity && kaiaSwordsSummoned.contains(e.getPersistentID().toString())).map(KaiaEntity.class::cast)
+                        .forEach(e -> e.setAttackTarget((EntityLivingBase) entityHit));
                 NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket("kaiaattackshow", entityHit.getEntityId()));
+            }
             return true;
         }
         return false;

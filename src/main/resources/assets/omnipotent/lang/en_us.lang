@@ -64,6 +64,8 @@ keykaia.spectate=Block spectate mode
 keykaia.creative=Block creative mode
 keykaia.kaiashowinfo=Show/hide Kaia info
 keykaia.getKaiaBetweenSaves=To obtain the Kaia of the saves
+keykaia.kaiasummonswords=Summon Kaia entity
+keykaia.kaiaattackshow=Attack entity with Kaia's phantoms.
 #messages in chat
 kaia.message.void=WHEREABOUTS Y150
 kaia.message.returndropitems=Item dropped at position

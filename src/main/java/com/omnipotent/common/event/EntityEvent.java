@@ -1,8 +1,8 @@
 package com.omnipotent.common.event;
 
 import com.omnipotent.common.capability.BlockModeProvider;
-import com.omnipotent.common.capability.IKaiaBrand;
-import com.omnipotent.common.capability.KaiaProvider;
+import com.omnipotent.common.capability.kaiacap.IKaiaBrand;
+import com.omnipotent.common.capability.kaiacap.KaiaProvider;
 import com.omnipotent.common.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.common.entity.CustomLightningBolt;
 import com.omnipotent.common.tool.Kaia;
@@ -178,8 +178,6 @@ public class EntityEvent {
     @SubscribeEvent
     public void attachCapabilityEntity(AttachCapabilitiesEvent<Entity> event) {
         if (!(event.getObject() instanceof EntityPlayer))
-            return;
-        if (event.getObject().world.isRemote)
             return;
         event.addCapability(KAIACAP, new KaiaProvider());
         event.addCapability(BLOCK_MODES_OF_PLAYER, new BlockModeProvider());

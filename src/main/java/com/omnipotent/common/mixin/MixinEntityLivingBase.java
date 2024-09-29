@@ -271,8 +271,7 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
 
     @Unique
     private void obliteration(Entity sourceOfDamage, EntityLivingBase entity) {
-        if (sourceOfDamage instanceof EntityPlayerMP) {
-            EntityPlayerMP playerMP = (EntityPlayerMP) sourceOfDamage;
+        if (sourceOfDamage instanceof EntityPlayerMP playerMP) {
             ItemStack kaia = KaiaUtil.getKaiaInMainHandOrInventory(playerMP);
             if (kaia.getTagCompound().getBoolean(NbtBooleanValues.maximumObliteration.getValue())) {
                 entity.setDead();
@@ -291,7 +290,6 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
         }
     }
 
-    @Unique
     public final void onAbsoluteDeath(DamageSource cause) {
         EntityLivingBase entity1 = (EntityLivingBase) (Object) this;
         if (net.minecraftforge.common.ForgeHooks.onLivingDeath(entity1, cause)) return;

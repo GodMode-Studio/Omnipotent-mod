@@ -10,6 +10,8 @@ import com.omnipotent.Config;
 import com.omnipotent.Omnipotent;
 import com.omnipotent.acessor.IEntityLivingBaseAcessor;
 import com.omnipotent.common.capability.*;
+import com.omnipotent.common.capability.kaiacap.IKaiaBrand;
+import com.omnipotent.common.capability.kaiacap.KaiaProvider;
 import com.omnipotent.common.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.common.entity.CustomLightningBolt;
 import com.omnipotent.common.entity.KaiaEntity;
@@ -70,11 +72,13 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.omnipotent.constant.NbtBooleanValues.*;
 import static com.omnipotent.constant.NbtNumberValues.*;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.NbtListUtil.getUUIDOfNbtList;
+import static com.omnipotent.util.UtilityHelper.getKaiaCap;
 
 public final class KaiaUtil {
     public static List<Class> antiEntity = new ArrayList<>();
@@ -773,15 +777,21 @@ public final class KaiaUtil {
         return NbtListUtil.isElementAlreadyExists(tagList, potion.getRegistryName().toString());
     }
 
-    public static void kaiaAttackShow(EntityPlayerMP entityPlayerMP, Entity entityByID) {
-        IKaiaBrand capability = entityPlayerMP.getCapability(KaiaProvider.KaiaBrand, null);
-        List<String> strings = kaiaSummonSwords(entityPlayerMP, capability);
-        capability.getKaiaSwordsSummoned().clear();
-        strings.forEach(capability::addKaiaSummoned);
+    public static void kaiaAttackShow(EntityPlayerMP entityPlayerMP, EntityLivingBase entityByID) {
+        getKaiaCap(entityPlayerMP).ifPresent(cap -> {
+            List<String> kaiaSwordsSummoned = cap.getKaiaSwordsSummoned();
+            Stream<KaiaEntity> entityStream = entityPlayerMP.getEntityWorld().getLoadedEntityList().stream().filter(e ->
+                    e instanceof KaiaEntity && kaiaSwordsSummoned.contains(e.getPersistentID().toString())).map(e ->
+                    (KaiaEntity) e);
+            entityStream.forEach(e -> {
+                e.setAttackMode(true);
+                e.setAttackTarget(entityByID);
+            });
+        });
     }
 
 
-    public static List<String> kaiaSummonSwords(EntityPlayerMP entityPlayerMP, IKaiaBrand cap) {
+    public static void kaiaSummonSwords(EntityPlayerMP entityPlayerMP, IKaiaBrand cap) {
         World world = entityPlayerMP.world;
         double increaseMov = 0.1;
         double x = entityPlayerMP.posX + increaseMov;
@@ -795,14 +805,15 @@ public final class KaiaUtil {
             killKaiaEntities(entityPlayerMP, kaiaSwordsSummoned);
 
         for (int c = 0; c < 5 - kaiasInWorld; c++) {
-            KaiaEntity kaiaEntity = new KaiaEntity(world, entityPlayerMP);
+            KaiaEntity kaiaEntity = new KaiaEntity(world, entityPlayerMP, c);
             x += increaseMov;
             z += increaseMov;
             kaiaEntity.setPosition(x, entityPlayerMP.posY, z);
             world.spawnEntity(kaiaEntity);
             ids.add(kaiaEntity.getPersistentID().toString());
         }
-        return ids;
+        cap.getKaiaSwordsSummoned().clear();
+        ids.forEach(cap::addKaiaSummoned);
     }
 
     private static void killKaiaEntities(EntityPlayerMP entityPlayerMP, List<String> cap) {

@@ -1,7 +1,7 @@
 package com.omnipotent.common.mixin;
 
 import com.google.common.base.Predicate;
-import com.omnipotent.common.capability.KaiaProvider;
+import com.omnipotent.common.capability.kaiacap.KaiaProvider;
 import com.omnipotent.common.entity.CustomLightningBolt;
 import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.util.KaiaConstantsNbt;
