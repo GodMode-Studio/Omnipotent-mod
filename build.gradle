@@ -145,21 +145,6 @@ dependencies {
         testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     }
-
-//    compileOnly files('libs/LoliPickaxe-1.2.16f_V3_traducao_versao_santificada_brasileira_que_nao_veio_da-deepweb_chinesa.jar')
-    compileOnly files('libs/RedstoneFlux-1.12-2.1.1.1-universal.jar')
-    compileOnly files('libs/Botania+r1.10-364.4.jar')
-    compileOnly files('libs/Draconic-Evolution-1.12.2-2.3.28.193-deobf.jar')
-    compileOnly files('libs/BrandonsCore-1.12.2-2.4.20.22-deobf.jar')
-    compileOnly files('libs/AbyssalCraft-1.12.2-1.10.4.jar')
-    compileOnly files('libs/iceandfire-1.9.1-1.12.2.jar')
-    implementation files('libs/FantasticLib-1.12.2.047d.jar')
-    compileOnly files('libs/crazymonsters-1.12.2-1.0.jar')
-    compileOnly files('libs/ChaosWither0.6.6.2.jar')
-    compileOnly files('libs/Players Ultimate Weapon 1.12.2 - 1.0.1..jar')
-    api(rfg.deobf(project.files("libs/LoliPickaxe-1.2.16f_V3_traducao_versao_santificada_brasileira_que_nao_veio_da-deepweb_chinesa.jar")))
-    api(rfg.deobf(project.files("libs/MAC_API-2.7.jar")))
-    api(rfg.deobf(project.files("libs/The_Titans_Mod-0.6.1-indev.jar")))
 }
 
 apply from: 'gradle/scripts/dependencies.gradle'
