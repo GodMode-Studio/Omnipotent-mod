@@ -1,19 +1,26 @@
 package com.omnipotent.common.capability.kaiacap;
 
 import com.omnipotent.common.network.NetworkRegister;
+import com.omnipotent.common.network.PlayerSyncPacket;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
+import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.capabilities.Capability;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KaiaBrandItems implements IKaiaBrand {
+public class KaiaBrandItems implements IKaiaBrand, Capability.IStorage<IKaiaBrand> {
 
-    private final List<ItemStack> kaiaItems = new ArrayList<>();
+    private List<ItemStack> kaiaItems = new ArrayList<>();
 
-    private final List<String> kaiaSwordsSummoned = new ArrayList<>();
+    private List<String> kaiaSwordsSummoned = new ArrayList<>();
 
     @Override
     public void habilityBrand(List<ItemStack> kaiaList) {
@@ -43,20 +50,43 @@ public class KaiaBrandItems implements IKaiaBrand {
         return kaiaSwordsSummoned;
     }
 
-    public void readNBT(NBTTagCompound nbtTagCompound) {
-
+    @Override
+    public void reinserVariables(KaiaBrandItems data) {
+        this.kaiaItems = data.kaiaItems;
+        this.kaiaSwordsSummoned = data.kaiaSwordsSummoned;
     }
 
+    @Override
     public void syncWithServer(Entity entity) {
         if (entity instanceof EntityPlayerMP player)
-            NetworkRegister.ACESS.sendMessageToPlayer(player, new PlayerSyncPacket(this));
+            NetworkRegister.ACESS.sendMessageToPlayer(new PlayerSyncPacket(this), player);
     }
 
-    public NBTTagCompound writeNBT() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        nbt.putBoolean("isYuta", this.isYuta);
-        nbt.putIntArray("copiedTechniques", copiedTechniques);
-        nbt.putInt("currentIndex", this.currentIndex);
-        return nbt;
+    @Nullable
+    @Override
+    public NBTTagCompound writeNBT(Capability<IKaiaBrand> capability, IKaiaBrand instance, EnumFacing side) {
+        NBTTagCompound tagCompound = new NBTTagCompound();
+        NBTTagList kaiaSwordsSummoned = new NBTTagList();
+        NBTTagList kaias = new NBTTagList();
+
+        instance.returnList().forEach(itemStack -> kaias.appendTag(itemStack.serializeNBT()));
+        instance.getKaiaSwordsSummoned().forEach(uuid -> kaiaSwordsSummoned.appendTag(new NBTTagString(uuid)));
+        tagCompound.setTag("kaias", kaias);
+        tagCompound.setTag("kaiaswordssummoned", kaiaSwordsSummoned);
+        return tagCompound;
     }
+
+    @Override
+    public void readNBT(Capability<IKaiaBrand> capability, IKaiaBrand instance, EnumFacing side, NBTBase nbt) {
+        NBTTagCompound nbtTagCompound = (NBTTagCompound) nbt;
+        NBTTagList kaiaSwordsSummonedsTags = nbtTagCompound.getTagList("kaiaswordssummoned", 8);
+        NBTTagList kaias = nbtTagCompound.getTagList("kaias", 10);
+
+        IKaiaBrand common = instance != null ? instance : this;
+        List<ItemStack> kaiasPlayer = common.returnList();
+        List<String> kaiaSwordsSummoned = common.getKaiaSwordsSummoned();
+        kaias.forEach(tagKaia -> kaiasPlayer.add(new ItemStack((NBTTagCompound) tagKaia)));
+        kaiaSwordsSummonedsTags.forEach(uuid -> kaiaSwordsSummoned.add(((NBTTagString) uuid).getString()));
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.omnipotent.common.capability.kaiacap;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 
 import java.util.List;
@@ -14,4 +15,8 @@ public interface IKaiaBrand {
     public void addKaiaSummoned(String kaiaUUID);
 
     public List<String> getKaiaSwordsSummoned();
+
+    void reinserVariables(KaiaBrandItems data);
+
+    void syncWithServer(Entity entity);
 }

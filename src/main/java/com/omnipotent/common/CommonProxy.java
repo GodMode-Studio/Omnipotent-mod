@@ -4,7 +4,6 @@ import com.omnipotent.Config;
 import com.omnipotent.common.capability.*;
 import com.omnipotent.common.capability.kaiacap.IKaiaBrand;
 import com.omnipotent.common.capability.kaiacap.KaiaBrandItems;
-import com.omnipotent.common.capability.kaiacap.KaiaStorage;
 import com.omnipotent.common.dimension.WorldProviderMod;
 import com.omnipotent.common.event.*;
 import com.omnipotent.common.gui.GuiHandler;
@@ -26,7 +25,7 @@ public class CommonProxy {
 //        Mixins.addConfiguration("mixins.omnipotent.json");
         MinecraftForge.EVENT_BUS.register(instance);
         CapabilityManager instanceCap = CapabilityManager.INSTANCE;
-        instanceCap.register(IKaiaBrand.class, new KaiaStorage(), KaiaBrandItems::new);
+        instanceCap.register(IKaiaBrand.class, new KaiaBrandItems(), KaiaBrandItems::new);
         instanceCap.register(IBlockMode.class, new BlockModeStorage(), BlockModePlayer.class);
         instanceCap.register(IAntiEntitySpawn.class, new AntiEntityStorage(), AntiEntitySpawn.class);
         instanceCap.register(IUnbanEntities.class, new UnbanEntitiesStorage(), UnbanEntities.class);
