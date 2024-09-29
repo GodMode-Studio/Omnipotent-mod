@@ -73,7 +73,7 @@ public class KaiaGuiPotionAddedAndRemove extends GuiScrollable {
         lvl = lvl < 0 || lvl > 255 ? 1 : lvl;
         PotionEffect activePotionEffect = player.getActivePotionEffect(potion);
         boolean b = activePotionEffect != null && activePotionEffect.getAmplifier() >= lvl;
-        NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(kaiaPotion, potion.getRegistryName().toString(), b ? 0 : lvl));
+        NetworkRegister.sendToServer(new KaiaNbtPacket(kaiaPotion, potion.getRegistryName().toString(), b ? 0 : lvl));
     }
 
     @Override

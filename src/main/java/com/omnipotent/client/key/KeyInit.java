@@ -72,7 +72,7 @@ public class KeyInit {
 
     private static final KeyBinding keyReturnKaia = new KeyMod(I18n.format("keykaia.returnkaia"), IN_GAME, Keyboard.KEY_G, I18n.format(translateKeyOfCategory), (unused, unused2) -> {
         if (KeyInit.keyReturnKaia.isPressed()) {
-            NetworkRegister.ACESS.sendToServer(new ReturnKaiaPacket());
+            NetworkRegister.sendToServer(new ReturnKaiaPacket());
             return true;
         }
         return false;
@@ -88,7 +88,7 @@ public class KeyInit {
 
     private static final KeyBinding getKaiaBetweenSaves = new KeyMod("keykaia.getKaiaBetweenSaves", IN_GAME, Keyboard.KEY_NUMPAD2, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         if (KeyInit.getKaiaBetweenSaves.isPressed()) {
-            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket("getKaiaBetweenSaves"));
+            NetworkRegister.sendToServer(new KaiaNbtPacket("getKaiaBetweenSaves"));
         }
         return false;
     });
@@ -103,7 +103,7 @@ public class KeyInit {
     });
     private static final KeyBinding kaiaGuiBackpack = new KeyMod(I18n.format("keykaia.backpack"), IN_GAME, Keyboard.KEY_P, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         if (KeyInit.kaiaGuiBackpack.isPressed() && hasKaia) {
-            NetworkRegister.ACESS.sendToServer(new KaiaContainerOpenPackte(GUIContainerKaia));
+            NetworkRegister.sendToServer(new KaiaContainerOpenPackte(GUIContainerKaia));
             return true;
         }
         return false;
@@ -134,14 +134,14 @@ public class KeyInit {
     });
     private static final KeyBinding BlockSpectator = new KeyMod(I18n.format("keykaia.spectate"), Keyboard.KEY_J, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         if (KeyInit.BlockSpectator.isPressed()) {
-            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.kaiaBlockSpectator));
+            NetworkRegister.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.kaiaBlockSpectator));
             return true;
         }
         return false;
     });
     private static final KeyBinding BlockCreative = new KeyMod(I18n.format("keykaia.creative"), Keyboard.KEY_F, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         if (KeyInit.BlockCreative.isPressed()) {
-            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.kaiaBlockCreative));
+            NetworkRegister.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.kaiaBlockCreative));
             return true;
         }
         return false;
@@ -149,14 +149,14 @@ public class KeyInit {
     private static final KeyBinding kaiaShowOrHideInfo = new KeyMod(I18n.format("keykaia.kaiashowinfo"), Keyboard.KEY_MULTIPLY, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         EntityPlayer player = (EntityPlayer) object;
         if (KeyInit.kaiaShowOrHideInfo.isPressed() && hasKaia) {
-            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(showInfo.getValue(), !KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getBoolean(showInfo.getValue())));
+            NetworkRegister.sendToServer(new KaiaNbtPacket(showInfo.getValue(), !KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getBoolean(showInfo.getValue())));
             return true;
         }
         return false;
     });
     private static final KeyBinding kaiaSummonSwords = new KeyMod(I18n.format("keykaia.kaiasummonswords"), Keyboard.KEY_ADD, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         if (KeyInit.kaiaSummonSwords.isPressed() && hasKaia) {
-            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket("kaiasummonswords"));
+            NetworkRegister.sendToServer(new KaiaNbtPacket("kaiasummonswords"));
             return true;
         }
         return false;
@@ -170,7 +170,7 @@ public class KeyInit {
                 player.getEntityWorld().getLoadedEntityList().stream().filter(e ->
                                 e instanceof KaiaEntity && kaiaSwordsSummoned.contains(e.getPersistentID().toString())).map(KaiaEntity.class::cast)
                         .forEach(e -> e.setAttackTarget((EntityLivingBase) entityHit));
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket("kaiaattackshow", entityHit.getEntityId()));
+                NetworkRegister.sendToServer(new KaiaNbtPacket("kaiaattackshow", entityHit.getEntityId()));
             }
             return true;
         }

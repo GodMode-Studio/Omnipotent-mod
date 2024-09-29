@@ -233,7 +233,7 @@ public class KaiaGuiDimension extends GuiScreen {
                 posX = Integer.parseInt(listFieldsTeleport.get(0).getText());
                 posY = Integer.parseInt(listFieldsTeleport.get(1).getText());
                 posZ = Integer.parseInt(listFieldsTeleport.get(2).getText());
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(kaiaDimension, posX + "," + posY + "," + posZ, dimensionId));
+                NetworkRegister.sendToServer(new KaiaNbtPacket(kaiaDimension, posX + "," + posY + "," + posZ, dimensionId));
             } catch (NumberFormatException e) {
                 listFieldsTeleport.get(0).setText(String.valueOf((int) player.posX));
                 listFieldsTeleport.get(1).setText(String.valueOf((int) player.posY));

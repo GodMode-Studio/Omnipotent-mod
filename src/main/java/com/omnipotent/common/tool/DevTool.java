@@ -27,7 +27,7 @@ public class DevTool extends ItemTool {
             return false;
         if (player.world.isRemote) {
 //            try {
-            NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket("", "", 1000));
+            NetworkRegister.sendToServer(new KaiaNbtPacket("", "", 1000));
 //            } catch (IOException e) {
 //                throw new RuntimeException(e);
 //            }

@@ -124,7 +124,7 @@ public class KaiaGui extends GuiScreen implements IScrollableGui {
         String text = actualGuiChangeNumberConfigRended.getText();
         if (!text.trim().isEmpty()) {
             if (actualValueSendedString != nbtString || !valueStringSend.equals(text)) {
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(nbtString.getValue(), text, 0));
+                NetworkRegister.sendToServer(new KaiaNbtPacket(nbtString.getValue(), text, 0));
                 actualValueSendedString = nbtString;
                 valueStringSend = text;
             }
@@ -136,7 +136,7 @@ public class KaiaGui extends GuiScreen implements IScrollableGui {
             int integer = Integer.parseInt(actualGuiChangeNumberConfigRended.getText());
             if (actualValueSended != NbtNumber || !valueSend.equals(integer)) {
                 if (valueIsValid()) {
-                    NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(NbtNumber.getValue(), integer));
+                    NetworkRegister.sendToServer(new KaiaNbtPacket(NbtNumber.getValue(), integer));
                 } else {
                     UtilityHelper.sendMessageToPlayer("The value " + actualGuiChangeNumberConfigRended.getText() + " is bellow 1 or above 1000, this not allow value not changed.", player);
                 }
@@ -203,7 +203,7 @@ public class KaiaGui extends GuiScreen implements IScrollableGui {
         GuiButtonMod buttonMod = (GuiButtonMod) button;
         NbtBooleanValues valueNbt = buttonMod.getValueNbtBoolean();
         this.kaia = KaiaUtil.getKaiaInMainHand(player).get();
-        NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(valueNbt.getValue(), !kaia.getTagCompound().getBoolean(valueNbt.getValue())));
+        NetworkRegister.sendToServer(new KaiaNbtPacket(valueNbt.getValue(), !kaia.getTagCompound().getBoolean(valueNbt.getValue())));
     }
 
     @Override

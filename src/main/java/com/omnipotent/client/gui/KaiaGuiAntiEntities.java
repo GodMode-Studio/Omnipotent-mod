@@ -119,7 +119,7 @@ public class KaiaGuiAntiEntities extends GuiScreen implements IGuiPages {
             GuiTextField gui = guisInPage.get(c);
             gui.mouseClicked(mouseX, mouseY, mouseButton);
             if (gui.isFocused()) {
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(entitiesCantKill, uuidAndOrder.get(c), 1));
+                NetworkRegister.sendToServer(new KaiaNbtPacket(entitiesCantKill, uuidAndOrder.get(c), 1));
                 gui.setFocused(false);
             }
         }

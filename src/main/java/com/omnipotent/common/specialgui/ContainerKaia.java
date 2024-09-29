@@ -415,7 +415,7 @@ public class ContainerKaia extends Container {
                     for (int j = 0; j < listeners.size(); ++j) {
                         IContainerListener listener = listeners.get(j);
                         if (listener instanceof EntityPlayerMP) {
-                            NetworkRegister.ACESS.sendMessageToPlayer(new KaiaSlotChangePacket(windowId, i, stack), (EntityPlayerMP) listener);
+                            NetworkRegister.sendMessageToPlayer(new KaiaSlotChangePacket(windowId, i, stack), (EntityPlayerMP) listener);
                         } else {
                             listener.sendSlotContents(this, i, stack);
                         }

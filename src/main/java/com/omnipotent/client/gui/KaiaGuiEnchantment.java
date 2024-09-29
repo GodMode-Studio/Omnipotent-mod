@@ -60,7 +60,7 @@ public class KaiaGuiEnchantment extends GuiScrollable {
         String text = enchantmentLevel.getText();
         int lvl = NumberUtils.toShort(text, (short) -100);
         lvl = lvl < 0 ? 1 : lvl;
-        NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(kaiaEnchant, enchantment.getRegistryName().toString(), lvl));
+        NetworkRegister.sendToServer(new KaiaNbtPacket(kaiaEnchant, enchantment.getRegistryName().toString(), lvl));
     }
 
     @Override

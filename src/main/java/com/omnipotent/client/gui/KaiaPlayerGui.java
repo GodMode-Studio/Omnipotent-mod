@@ -149,7 +149,7 @@ public class KaiaPlayerGui extends GuiScreen {
         for (GuiTextField guiField : guiTextFieldList) {
             guiField.mouseClicked(mouseX, mouseY, mouseButton);
             if (guiField.isFocused()) {
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playersDontKill, guiField.getText(), 1));
+                NetworkRegister.sendToServer(new KaiaNbtPacket(playersDontKill, guiField.getText(), 1));
                 guiField.setFocused(false);
             }
         }
@@ -203,13 +203,13 @@ public class KaiaPlayerGui extends GuiScreen {
             case 2:
                 String namePlayer = listGuiTextField.get(0).getText();
                 if (!player.getName().equals(namePlayer))
-                    NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playersDontKill, namePlayer, 0));
+                    NetworkRegister.sendToServer(new KaiaNbtPacket(playersDontKill, namePlayer, 0));
                 break;
             case 3:
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playersWhoShouldNotKilledInCounterAttack.getValue(), !tagCompound.getBoolean(playersWhoShouldNotKilledInCounterAttack.getValue())));
+                NetworkRegister.sendToServer(new KaiaNbtPacket(playersWhoShouldNotKilledInCounterAttack.getValue(), !tagCompound.getBoolean(playersWhoShouldNotKilledInCounterAttack.getValue())));
                 break;
             case 4:
-                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(playerDontKillInDirectAttack.getValue(), !tagCompound.getBoolean(playerDontKillInDirectAttack.getValue())));
+                NetworkRegister.sendToServer(new KaiaNbtPacket(playerDontKillInDirectAttack.getValue(), !tagCompound.getBoolean(playerDontKillInDirectAttack.getValue())));
                 break;
         }
         super.actionPerformed(button);

@@ -25,7 +25,7 @@ public class EventPlayerNameFormat {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastNetworkCallTime >= 500) {
             lastNetworkCallTime = currentTime;
-            NetworkRegister.ACESS.sendToServer(new ChangedValuePacket(player.getUniqueID().toString(), true));
+            NetworkRegister.sendToServer(new ChangedValuePacket(player.getUniqueID().toString(), true));
         }
         if (player.renderSpecialName && player.hasCustomName()) {
             String str = player.getCustomNameTag();

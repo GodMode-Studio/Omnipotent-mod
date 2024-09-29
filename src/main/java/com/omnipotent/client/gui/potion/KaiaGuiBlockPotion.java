@@ -157,10 +157,10 @@ public class KaiaGuiBlockPotion extends GuiScreen {
                 effectBlocked = ((IGuiTextFieldAcessor) textField).acessorEnabledColor() == Color.RED.getRGB();
                 if (effectBlocked) {
                     textField.setTextColor(14737632);
-                    NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.effectsBlockeds, hashGuiTextPotion.get(textField).getRegistryName().toString(), 1));
+                    NetworkRegister.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.effectsBlockeds, hashGuiTextPotion.get(textField).getRegistryName().toString(), 1));
                 } else {
                     textField.setTextColor(Color.RED.getRGB());
-                    NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.effectsBlockeds, hashGuiTextPotion.get(textField).getRegistryName().toString(), 0));
+                    NetworkRegister.sendToServer(new KaiaNbtPacket(KaiaConstantsNbt.effectsBlockeds, hashGuiTextPotion.get(textField).getRegistryName().toString(), 0));
                     UtilityHelper.sendMessageToPlayer("Effect blocked", player);
                 }
                 textField.setFocused(false);

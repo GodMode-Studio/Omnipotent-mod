@@ -13,15 +13,13 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 
-public enum NetworkRegister {
-    ACESS;
+public class NetworkRegister {
 
-    private final SimpleNetworkWrapper channel = NetworkRegistry.INSTANCE.newSimpleChannel(Omnipotent.MODID);
+    private static SimpleNetworkWrapper channel;
+    private static int index = 0;
 
-
-    NetworkRegister() {
-        int index = 0;
-        channel.registerMessage(PacketInicialization.PacketInicializationHandler.class, PacketInicialization.class, ++index, Side.SERVER);
+    public static void preInitCommon() {
+        channel = NetworkRegistry.INSTANCE.newSimpleChannel(Omnipotent.MODID);
         channel.registerMessage(ReturnKaiaPacket.ReturnKaiaPacketHandler.class, ReturnKaiaPacket.class, ++index, Side.SERVER);
         channel.registerMessage(KaiaNbtPacket.KaiaNbtPacketHandler.class, KaiaNbtPacket.class, ++index, Side.SERVER);
         channel.registerMessage(KillPacket.killPacketHandler.class, KillPacket.class, ++index, Side.SERVER);
@@ -34,20 +32,20 @@ public enum NetworkRegister {
         channel.registerMessage(PlayerSyncPacket.PlayerSyncPacketHandler.class, PlayerSyncPacket.class, ++index, Side.CLIENT);
     }
 
-    public void sendToServer(IMessage message) {
+    public static void sendToServer(IMessage message) {
         channel.sendToServer(message);
     }
 
-    public void sendToAll(IMessage message) {
+    public static void sendToAll(IMessage message) {
         channel.sendToAll(message);
     }
 
-    public void sendToAround(IMessage message, int dimensionId, BlockPos pos, int range) {
+    public static void sendToAround(IMessage message, int dimensionId, BlockPos pos, int range) {
         NetworkRegistry.TargetPoint targetPoint = new NetworkRegistry.TargetPoint(dimensionId, pos.getX(), pos.getY(), pos.getZ(), range);
         channel.sendToAllAround(message, targetPoint);
     }
 
-    public void sendMessageToPlayer(IMessage msg, EntityPlayerMP player) {
+    public static void sendMessageToPlayer(IMessage msg, EntityPlayerMP player) {
         channel.sendTo(msg, player);
     }
 }

@@ -48,11 +48,11 @@ public class GUIContainerKaia extends GuiContainer {
             switch (button.id) {
                 case 0:
                     containerKaia.prePage();
-                    NetworkRegister.ACESS.sendToServer(new KaiaContainerPacket(false));
+                    NetworkRegister.sendToServer(new KaiaContainerPacket(false));
                     break;
                 case 1:
                     containerKaia.nextPage();
-                    NetworkRegister.ACESS.sendToServer(new KaiaContainerPacket(true));
+                    NetworkRegister.sendToServer(new KaiaContainerPacket(true));
                     break;
                 default:
                     break;

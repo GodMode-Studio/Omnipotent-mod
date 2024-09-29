@@ -59,7 +59,7 @@ public class KaiaBrandItems implements IKaiaBrand, Capability.IStorage<IKaiaBran
     @Override
     public void syncWithServer(Entity entity) {
         if (entity instanceof EntityPlayerMP player)
-            NetworkRegister.ACESS.sendMessageToPlayer(new PlayerSyncPacket(this), player);
+            NetworkRegister.sendMessageToPlayer(new PlayerSyncPacket(this), player);
     }
 
     @Nullable
