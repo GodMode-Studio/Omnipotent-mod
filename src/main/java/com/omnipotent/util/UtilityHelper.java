@@ -3,12 +3,18 @@ package com.omnipotent.util;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.omnipotent.common.capability.kaiacap.IKaiaBrand;
+import com.omnipotent.common.capability.kaiacap.KaiaProvider;
+import com.omnipotent.common.entity.KaiaEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -18,10 +24,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EntitySelectors;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
@@ -31,19 +34,21 @@ import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
-import java.util.UUID;
 
 import static net.minecraft.world.chunk.Chunk.NULL_BLOCK_STORAGE;
 import static net.minecraftforge.fml.client.config.GuiUtils.drawGradientRect;
@@ -481,7 +486,8 @@ public class UtilityHelper {
         }
     }
 
-    public static RayTraceResult rayTraceClient(Minecraft mc, int distance, float partialTicks) {
+    @SideOnly(Side.CLIENT)
+    public static RayTraceResult rayTraceClient(Minecraft mc, Class<? extends Entity> excludeClass, int distance, float partialTicks) {
         Entity entity = mc.getRenderViewEntity();
         if (entity != null && mc.world != null) {
             mc.mcProfiler.startSection("pick");
@@ -492,8 +498,11 @@ public class UtilityHelper {
             Entity pointedEntity = null;
             Vec3d vec3d3 = null;
             List<Entity> list = mc.world.getEntitiesInAABBexcluding(entity, entity.getEntityBoundingBox().expand(vec3d1.x * distance, vec3d1.y * distance, vec3d1.z * distance).grow(1.0D, 1.0D, 1.0D), Predicates.and(EntitySelectors.NOT_SPECTATING, new Predicate<Entity>() {
-                public boolean apply(@Nullable Entity p_apply_1_) {
-                    return p_apply_1_ != null && p_apply_1_.canBeCollidedWith();
+                public boolean apply(@Nullable Entity entity22) {
+                    if (excludeClass != null)
+                        return (entity22 != null && entity22.canBeCollidedWith()) || excludeClass.isInstance(entity22);
+                    else
+                        return entity22 != null && entity22.canBeCollidedWith();
                 }
             }));
             double d2 = distance;
@@ -538,5 +547,9 @@ public class UtilityHelper {
             return originalObjectMouseOver;
         }
         return null;
+    }
+
+    public static Optional<IKaiaBrand> getKaiaCap(EntityPlayer entityPlayer) {
+        return Optional.ofNullable(entityPlayer.getCapability(KaiaProvider.KaiaBrand, null));
     }
 }
