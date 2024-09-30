@@ -780,9 +780,8 @@ public final class KaiaUtil {
     public static void kaiaAttackShow(EntityPlayerMP entityPlayerMP, EntityLivingBase entityByID) {
         getKaiaCap(entityPlayerMP).ifPresent(cap -> {
             List<String> kaiaSwordsSummoned = cap.getKaiaSwordsSummoned();
-            Stream<KaiaEntity> entityStream = entityPlayerMP.getEntityWorld().getLoadedEntityList().stream().filter(e ->
-                    e instanceof KaiaEntity && kaiaSwordsSummoned.contains(e.getPersistentID().toString())).map(e ->
-                    (KaiaEntity) e);
+            Stream<KaiaEntity> entityStream = entityPlayerMP.getEntityWorld().loadedEntityList.stream().filter(e ->
+                    e instanceof KaiaEntity && kaiaSwordsSummoned.contains(e.getPersistentID().toString())).map(KaiaEntity.class::cast);
             entityStream.forEach(e -> {
                 e.setAttackMode(true);
                 e.setAttackTarget(entityByID);

@@ -194,7 +194,7 @@ public class EntityEvent {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void tickUpdate(TickEvent.WorldTickEvent event) {
         easterEggFunctionMkllVerify();
-        for (Entity entity : event.world.getLoadedEntityList()) {
+        for (Entity entity : event.world.loadedEntityList) {
             try {
                 if (entity.absoluteDead){
                     entity.isDead = true;}

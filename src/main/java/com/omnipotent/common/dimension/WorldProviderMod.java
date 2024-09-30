@@ -76,7 +76,7 @@ public class WorldProviderMod extends WorldProvider {
 
     @Override
     public void onWorldUpdateEntities() {
-        List<Entity> loadedEntityList = this.world.getLoadedEntityList();
+        List<Entity> loadedEntityList = this.world.loadedEntityList;
         if (loadedEntityList.size() <= 100) {
             for (Entity entity : loadedEntityList) {
                 if (entity instanceof EntityLiving)
