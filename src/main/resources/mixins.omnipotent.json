@@ -20,9 +20,7 @@
     "MixinKillCommand",
     "MixinMinecraft",
     "MixinRenderItem",
-    "MixinWorld",
-    "mods.MixinEntityLoli",
-    "mods.MixinLoliPickaxeUtil"
+    "MixinWorld"
   ],
   "client": [
     "MixinKeyBinding"

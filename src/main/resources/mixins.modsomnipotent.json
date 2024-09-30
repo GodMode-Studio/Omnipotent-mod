@@ -6,7 +6,9 @@
     "IMixinDEEventHandler",
     "MixinCmdGive",
     "MixinEnemyUpdate",
-    "MixinEventCrazyMonsters"
+    "MixinEventCrazyMonsters",
+    "MixinEntityLoli",
+    "MixinLoliPickaxeUtil"
   ],
   "client": [
   ],
