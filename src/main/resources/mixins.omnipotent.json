@@ -20,10 +20,15 @@
     "MixinKillCommand",
     "MixinMinecraft",
     "MixinRenderItem",
+    "MixinSPacketSetSlot",
+    "MixinSPacketWindowItems",
     "MixinWorld"
   ],
   "client": [
     "MixinKeyBinding"
   ],
-  "server": []
+  "server": [
+    "MixinSPacketSetSlot",
+    "MixinSPacketWindowItems"
+  ]
 }
