@@ -90,11 +90,11 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
     @Shadow
     public abstract ISaveHandler getSaveHandler();
 
-    @Inject(method = "removeEntity", at = @At("HEAD"), cancellable = true)
-    public void removeEntity(Entity entityIn, CallbackInfo ci) {
-        if (KaiaUtil.hasInInventoryKaia(entityIn))
-            ci.cancel();
-    }
+//    @Inject(method = "removeEntity", at = @At("HEAD"), cancellable = true)
+//    public void removeEntity(Entity entityIn, CallbackInfo ci) {
+//        if (KaiaUtil.hasInInventoryKaia(entityIn))
+//            ci.cancel();
+//    }
 
     /**
      * @author
