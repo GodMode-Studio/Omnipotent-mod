@@ -35,4 +35,8 @@ public class AbsoluteOfCreatorDamage extends EntityDamageSource {
         return new TextComponentTranslation(s, namePlayerDead, itemstack.getDisplayName());
     }
 
+    @Override
+    public String getDamageType() {
+        return super.getDamageType();
+    }
 }

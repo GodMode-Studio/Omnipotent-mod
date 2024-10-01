@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
 
-@Mixin(value = ForgeHooks.class, remap = false)
+@Mixin(ForgeHooks.class)
 public abstract class MixinForgeHooks {
 //    se onLivingDeath retorna true onDeath será cancelado
 
@@ -22,7 +22,7 @@ public abstract class MixinForgeHooks {
      * @author
      * @reason
      */
-    @Overwrite
+    @Overwrite(remap = false)
     @Final
     public static boolean onLivingDeath(EntityLivingBase entity, DamageSource src) {
         if (!UtilityHelper.isPlayer(entity)) {
@@ -46,7 +46,7 @@ public abstract class MixinForgeHooks {
      * @author
      * @reason
      */
-    @Overwrite
+    @Overwrite(remap = false)
     @Final
     public static boolean onLivingAttack(EntityLivingBase entity, DamageSource src, float amount) {
         if (UtilityHelper.isPlayer(entity))
