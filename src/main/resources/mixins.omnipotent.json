@@ -19,16 +19,13 @@
     "MixinInventoryPlayer",
     "MixinKillCommand",
     "MixinMinecraft",
-    "MixinRenderItem",
-    "MixinSPacketSetSlot",
-    "MixinSPacketWindowItems",
-    "MixinWorld"
-  ],
-  "client": [
-    "MixinKeyBinding"
-  ],
-  "server": [
+    "MixinWorld",
     "MixinSPacketSetSlot",
     "MixinSPacketWindowItems"
-  ]
+  ],
+  "client": [
+    "MixinKeyBinding",
+    "MixinRenderItem"
+  ],
+  "server": []
 }

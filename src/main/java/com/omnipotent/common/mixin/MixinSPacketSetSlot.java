@@ -52,7 +52,13 @@ public abstract class MixinSPacketSetSlot implements Packet<INetHandlerPlayClien
             buf.writeShort(-1);
         } else {
             buf.writeShort(Item.getIdFromItem(stack.getItem()));
-            buf.writeInt(stack.getCount());
+            int count = stack.getCount();
+            boolean largestThanByte = count > 127;
+            buf.writeBoolean(largestThanByte);
+            if (largestThanByte)
+                buf.writeInt(count);
+            else
+                buf.writeByte(count);
             buf.writeShort(stack.getMetadata());
             NBTTagCompound nbttagcompound = null;
 
@@ -70,7 +76,7 @@ public abstract class MixinSPacketSetSlot implements Packet<INetHandlerPlayClien
         if (i < 0) {
             return ItemStack.EMPTY;
         } else {
-            int j = buf.readInt();
+            int j = buf.readBoolean() ? buf.readInt() : buf.readByte();
             int k = buf.readShort();
             ItemStack itemstack = new ItemStack(Item.getItemById(i), j, k);
             itemstack.getItem().readNBTShareTag(itemstack, buf.readCompoundTag());
