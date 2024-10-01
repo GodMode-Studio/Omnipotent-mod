@@ -263,15 +263,12 @@ public class ContainerKaia extends Container {
                 int i = dragType == 0 ? 0 : this.inventorySlots.size() - 1;
                 int j = dragType == 0 ? 1 : -1;
                 for (int k = 0; k < 2; ++k) {
-                    int size = this.inventorySlots.size();
-                    int count = itemstack1.getCount();
-                    int maxStackSize = itemstack1.getMaxStackSize();
-                    for (int l = i; l >= 0 && l < size && count < maxStackSize; l += j) {
+                    for (int l = i; l >= 0 && l < this.inventorySlots.size() && itemstack1.getCount() < this.inventory.getInventoryStackLimit(); l += j) {
                         Slot slot1 = this.inventorySlots.get(l);
-                        if (slot1.getHasStack() && canAddItemToSlot(slot1, itemstack1, true) && slot1.canTakeStack(player) && this.canMergeSlot(itemstack1, slot1)) {
+                        if (slot1.getHasStack() && canAddItemToSlot(slot1, itemstack1, true, inventory) && slot1.canTakeStack(player) && this.canMergeSlot(itemstack1, slot1)) {
                             ItemStack itemstack2 = slot1.getStack();
-                            if (k != 0 || itemstack2.getCount() != itemstack2.getMaxStackSize()) {
-                                int i1 = Math.min(itemstack1.getMaxStackSize() - itemstack1.getCount(), itemstack2.getCount());
+                            if (k != 0 || itemstack2.getCount() != this.inventory.getInventoryStackLimit()) {
+                                int i1 = Math.min(this.inventory.getInventoryStackLimit() - itemstack1.getCount(), itemstack2.getCount());
                                 ItemStack itemstack3 = slot1.decrStackSize(i1);
                                 itemstack1.grow(i1);
                                 if (itemstack3.isEmpty()) {
@@ -286,6 +283,20 @@ public class ContainerKaia extends Container {
             this.detectAndSendChanges();
         }
         return itemstack;
+    }
+
+    public static boolean canAddItemToSlot(@Nullable Slot slotIn, ItemStack stack, boolean stackSizeMatters, InventoryKaia inventory) {
+        boolean flag = slotIn == null || !slotIn.getHasStack();
+
+        if (!flag && stack.isItemEqual(slotIn.getStack()) && ItemStack.areItemStackTagsEqual(slotIn.getStack(), stack)) {
+            int count = slotIn.getStack().getCount();
+            int i = stackSizeMatters ? 0 : stack.getCount();
+            int inventoryStackLimit = inventory.getInventoryStackLimit();
+            boolean b = count + i <= inventoryStackLimit;
+            return b;
+        } else {
+            return flag;
+        }
     }
 
     protected boolean mergeItemStack(ItemStack stack, int startIndex, int endIndex, boolean reverseDirection) {
