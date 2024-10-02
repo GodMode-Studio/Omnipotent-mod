@@ -81,6 +81,7 @@ import static com.omnipotent.util.NbtListUtil.getUUIDOfNbtList;
 import static com.omnipotent.util.UtilityHelper.getKaiaCap;
 
 public final class KaiaUtil {
+    private static final String DRACONIC_MODID = "draconicevolution";
     public static List<Class> antiEntity = new ArrayList<>();
 
 
@@ -357,7 +358,7 @@ public final class KaiaUtil {
         if (autoBackpackEntities) {
             entityCreature.captureDrops = false;
             entityCreature.captureDropsAbsolute = true;
-            if (Loader.isModLoaded(DraconicEvolution.MODID))
+            if (Loader.isModLoaded(DRACONIC_MODID))
                 soulReaper = setReaperEnchant(kaia, playerSource, entityCreature);
             entityCreature.attackEntityFrom(ds, Float.MAX_VALUE);
             entityCreature.onDeath(ds);
@@ -368,7 +369,7 @@ public final class KaiaUtil {
             UtilityHelper.compactListItemStacks(drops);
             addedItemsStacksInKaiaInventory(playerSource, drops, kaia);
         } else {
-            if (Loader.isModLoaded(DraconicEvolution.MODID)) {
+            if (Loader.isModLoaded(DRACONIC_MODID)) {
                 World world = playerSource.world;
                 ItemStack stack = setReaperEnchant(kaia, playerSource, entityCreature);
                 if (stack != null)
@@ -389,7 +390,7 @@ public final class KaiaUtil {
         entityCreature.onAbsoluteDeath(ds);
     }
 
-    @Optional.Method(modid = DraconicEvolution.MODID)
+    @Optional.Method(modid = DRACONIC_MODID)
     private static ItemStack setReaperEnchant(ItemStack kaia, EntityPlayer playerSource, EntityLivingBase entityCreature) {
         ItemStack soul = null;
         DEEventHandler deEventHandler = new DEEventHandler();
