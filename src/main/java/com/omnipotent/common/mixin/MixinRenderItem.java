@@ -1,5 +1,6 @@
 package com.omnipotent.common.mixin;
 
+import com.brandon3055.draconicevolution.DraconicEvolution;
 import com.omnipotent.common.tool.Kaia;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -13,6 +14,8 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,6 +27,7 @@ import java.awt.*;
 import java.util.Random;
 
 import static com.omnipotent.constant.NbtBooleanValues.rgbEnchantmentGlitch;
+import static com.zeitheron.hammercore.client.utils.ItemColorHelper.setTargetStackAndHandleRender;
 
 @Mixin(RenderItem.class)
 @SideOnly(Side.CLIENT)
@@ -72,6 +76,9 @@ public abstract class MixinRenderItem implements IResourceManagerReloadListener 
      */
     @Overwrite
     public void renderItem(ItemStack stack, IBakedModel model) {
+        if (Loader.isModLoaded("hammercore")) {
+            hammerCoreRender(stack);
+        }
         if (!stack.isEmpty()) {
             GlStateManager.pushMatrix();
             GlStateManager.translate(-0.5F, -0.5F, -0.5F);
@@ -90,6 +97,11 @@ public abstract class MixinRenderItem implements IResourceManagerReloadListener 
             }
             GlStateManager.popMatrix();
         }
+    }
+
+    @Optional.Method(modid = "hammercore")
+    private void hammerCoreRender(ItemStack stack) {
+        setTargetStackAndHandleRender(stack);
     }
 
 

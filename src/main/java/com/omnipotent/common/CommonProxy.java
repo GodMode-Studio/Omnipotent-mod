@@ -15,12 +15,17 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
+import org.apache.logging.log4j.Logger;
 
 import static com.omnipotent.Omnipotent.*;
 import static com.omnipotent.common.network.NetworkRegister.preInitCommon;
 
 public class CommonProxy {
+
+    public static Logger LOG;
+
     public void preInit(FMLPreInitializationEvent event) {
+        LOG = event.getModLog();
 //        Mixins.addConfiguration("mixins.omnipotent.json");
         MinecraftForge.EVENT_BUS.register(instance);
         CapabilityManager instanceCap = CapabilityManager.INSTANCE;
