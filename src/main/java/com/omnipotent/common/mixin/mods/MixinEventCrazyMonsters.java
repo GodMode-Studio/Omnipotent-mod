@@ -521,7 +521,7 @@ public abstract class MixinEventCrazyMonsters {
                     EventCrazyMonsters.logger.warn("EventCrazyMonsters.pushCount=" + EventCrazyMonsters.pushCount);
                     EventCrazyMonsters.logger.warn("EventCrazyMonsters.pushCountD=" + MixinEventCrazyMonsters.pushCountD);
                     ++MixinEventCrazyMonsters.pushCountD;
-                    if (EventCrazyMonsters.pushCount >= 5 * ((Minecraft.getMinecraft().world.getDifficulty().getDifficultyId() > 0) ? Minecraft.getMinecraft().world.getDifficulty().getDifficultyId() : 70)) {
+                    if (EventCrazyMonsters.pushCount >= 5 * ((Minecraft.getMinecraft().world.getDifficulty().getId() > 0) ? Minecraft.getMinecraft().world.getDifficulty().getId() : 70)) {
                         controlPlayer2(false, (Entity) player3, (Entity) player3, 0.0, 0);
                     }
                 } else if (MixinEventCrazyMonsters.pushCountD > 0) {

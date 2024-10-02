@@ -95,7 +95,7 @@ public class KaiaSlotChangePacket implements IMessage {
                 boolean flag = false;
                 if (mc.currentScreen instanceof GuiContainerCreative) {
                     GuiContainerCreative guicontainercreative = (GuiContainerCreative) mc.currentScreen;
-                    flag = guicontainercreative.getSelectedTabIndex() != CreativeTabs.INVENTORY.getTabIndex();
+                    flag = guicontainercreative.getSelectedTabIndex() != CreativeTabs.INVENTORY.getIndex();
                 }
                 if (message.getWindowId() == 0 && message.getSlotIndex() >= 36 && i < 45) {
                     if (!itemstack.isEmpty()) {

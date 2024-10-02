@@ -11,7 +11,7 @@ public class OmnipotentTab extends CreativeTabs {
     }
 
     @Override
-    public ItemStack getTabIconItem() {
+    public ItemStack createIcon() {
         return new ItemStack(kaia);
     }
 }

@@ -59,7 +59,7 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
 
     public Kaia() {
         super(EnumHelper.addToolMaterial("kaia", Integer.MAX_VALUE, Integer.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE, Integer.MAX_VALUE));
-        setUnlocalizedName("kaia");
+        setTranslationKey("kaia");
         setRegistryName("kaia");
         setCreativeTab(omnipotentTab);
         texturesItemsInit.add(this);

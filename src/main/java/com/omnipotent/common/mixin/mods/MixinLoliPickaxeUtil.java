@@ -96,8 +96,8 @@ public abstract class MixinLoliPickaxeUtil {
             ResourceLocation id = EntityList.getKey(entity);
             if (ConfigLoader.loliPickaxeDelayRemoveList.containsKey(id.toString())) {
                 tick = ConfigLoader.loliPickaxeDelayRemoveList.get(id.toString());
-            } else if (ConfigLoader.loliPickaxeDelayRemoveList.containsKey(id.getResourcePath())) {
-                tick = ConfigLoader.loliPickaxeDelayRemoveList.get(id.getResourcePath());
+            } else if (ConfigLoader.loliPickaxeDelayRemoveList.containsKey(id.getPath())) {
+                tick = ConfigLoader.loliPickaxeDelayRemoveList.get(id.getPath());
             }
         }
         LoliTickEvent.addTask(new LoliTickEvent.TickStartTask(tick, () -> {

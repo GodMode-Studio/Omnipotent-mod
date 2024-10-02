@@ -185,7 +185,7 @@ public class InventoryKaia implements IInventory {
                 nbttaglist.appendTag(nbttagcompound);
             }
         }
-        if (!nbttaglist.hasNoTags() || saveEmpty) {
+        if (!nbttaglist.isEmpty() || saveEmpty) {
             tag.setTag("Items", nbttaglist);
         }
         return tag;

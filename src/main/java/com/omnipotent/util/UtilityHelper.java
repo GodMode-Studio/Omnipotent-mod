@@ -138,7 +138,7 @@ public class UtilityHelper {
         Comparator comparator = new Comparator() {
             @Override
             public int compare(Object o1, Object o2) {
-                return ((ItemStack) o1).getUnlocalizedName().compareTo(((ItemStack) o2).getUnlocalizedName());
+                return ((ItemStack) o1).getTranslationKey().compareTo(((ItemStack) o2).getTranslationKey());
             }
 
             @Override
@@ -343,7 +343,7 @@ public class UtilityHelper {
         } else if (!world.isRemote && world.getWorldInfo().getTerrainType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
             return false;
         } else {
-            Chunk chunk = world.getChunkFromBlockCoords(pos);
+            Chunk chunk = world.getChunk(pos);
 
             pos = pos.toImmutable(); // Forge - prevent mutable BlockPos leaks
             net.minecraftforge.common.util.BlockSnapshot blockSnapshot = null;
@@ -494,7 +494,7 @@ public class UtilityHelper {
             RayTraceResult originalObjectMouseOver = entity.rayTrace(distance, partialTicks);
             Vec3d vec3d = entity.getPositionEyes(partialTicks);
             Vec3d vec3d1 = entity.getLook(1.0F);
-            Vec3d vec3d2 = vec3d.addVector(vec3d1.x * distance, vec3d1.y * distance, vec3d1.z * distance);
+            Vec3d vec3d2 = vec3d.add(vec3d1.x * distance, vec3d1.y * distance, vec3d1.z * distance);
             Entity pointedEntity = null;
             Vec3d vec3d3 = null;
             List<Entity> list = mc.world.getEntitiesInAABBexcluding(entity, entity.getEntityBoundingBox().expand(vec3d1.x * distance, vec3d1.y * distance, vec3d1.z * distance).grow(1.0D, 1.0D, 1.0D), Predicates.and(EntitySelectors.NOT_SPECTATING, new Predicate<Entity>() {
