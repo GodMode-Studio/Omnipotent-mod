@@ -940,7 +940,7 @@ public abstract class EntityLivingBase extends net.minecraft.entity.Entity {
             Vec3d vec3d1 = new Vec3d(((double) this.rand.nextFloat() - 0.5D) * 0.3D, d0, 0.6D);
             vec3d1 = vec3d1.rotatePitch(-this.rotationPitch * 0.017453292F);
             vec3d1 = vec3d1.rotateYaw(-this.rotationYaw * 0.017453292F);
-            vec3d1 = vec3d1.addVector(this.posX, this.posY + (double) this.getEyeHeight(), this.posZ);
+            vec3d1 = vec3d1.add(this.posX, this.posY + (double) this.getEyeHeight(), this.posZ);
             if (this.world instanceof WorldServer) //Forge: Fix MC-2518 spawnParticle is nooped on server, need to use server specific variant
                 ((WorldServer) this.world).spawnParticle(EnumParticleTypes.ITEM_CRACK, vec3d1.x, vec3d1.y, vec3d1.z, 0, vec3d.x, vec3d.y + 0.05D, vec3d.z, 0.0D, Item.getIdFromItem(stack.getItem()), stack.getMetadata());
             else //Fix the fact that spawning ItemCrack uses TWO arguments.
@@ -1396,8 +1396,8 @@ public abstract class EntityLivingBase extends net.minecraft.entity.Entity {
                 AxisAlignedBB axisalignedbb = new AxisAlignedBB(d5 - d7 / 2.0D, entityIn.getEntityBoundingBox().minY, d6 - d8 / 2.0D, d5 + d7 / 2.0D, Math.floor(entityIn.getEntityBoundingBox().minY) + (double) this.height, d6 + d8 / 2.0D);
 
                 for (int[] aint : aint1) {
-                    double d9 = (double) (enumfacing1.getFrontOffsetX() * aint[0] + enumfacing.getFrontOffsetX() * aint[1]);
-                    double d10 = (double) (enumfacing1.getFrontOffsetZ() * aint[0] + enumfacing.getFrontOffsetZ() * aint[1]);
+                    double d9 = (double) (enumfacing1.getXOffset() * aint[0] + enumfacing.getXOffset() * aint[1]);
+                    double d10 = (double) (enumfacing1.getZOffset() * aint[0] + enumfacing.getZOffset() * aint[1]);
                     double d11 = d5 + d9;
                     double d12 = d6 + d10;
                     AxisAlignedBB axisalignedbb1 = axisalignedbb.offset(d9, 0.0D, d10);
@@ -1502,7 +1502,7 @@ public abstract class EntityLivingBase extends net.minecraft.entity.Entity {
                         float f = this.rotationPitch * 0.017453292F;
                         double d6 = Math.sqrt(vec3d.x * vec3d.x + vec3d.z * vec3d.z);
                         double d8 = Math.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
-                        double d1 = vec3d.lengthVector();
+                        double d1 = vec3d.length();
                         float f4 = MathHelper.cos(f);
                         f4 = (float) ((double) f4 * (double) f4 * Math.min(1.0D, d1 / 0.4D));
                         this.motionY += -0.08D + (double) f4 * 0.06D;
@@ -1599,7 +1599,7 @@ public abstract class EntityLivingBase extends net.minecraft.entity.Entity {
                         } else {
                             blockpos$pooledmutableblockpos.setPos(this.posX, 0.0D, this.posZ);
 
-                            if (!this.world.isRemote || this.world.isBlockLoaded(blockpos$pooledmutableblockpos) && this.world.getChunkFromBlockCoords(blockpos$pooledmutableblockpos).isLoaded()) {
+                            if (!this.world.isRemote || this.world.isBlockLoaded(blockpos$pooledmutableblockpos) && this.world.getChunk(blockpos$pooledmutableblockpos).isLoaded()) {
                                 if (!this.hasNoGravity()) {
                                     this.motionY -= 0.08D;
                                 }
@@ -2241,7 +2241,7 @@ public abstract class EntityLivingBase extends net.minecraft.entity.Entity {
                     Vec3d vec3d1 = new Vec3d(((double) this.rand.nextFloat() - 0.5D) * 0.3D, d0, 0.6D);
                     vec3d1 = vec3d1.rotatePitch(-this.rotationPitch * 0.017453292F);
                     vec3d1 = vec3d1.rotateYaw(-this.rotationYaw * 0.017453292F);
-                    vec3d1 = vec3d1.addVector(this.posX, this.posY + (double) this.getEyeHeight(), this.posZ);
+                    vec3d1 = vec3d1.add(this.posX, this.posY + (double) this.getEyeHeight(), this.posZ);
 
                     if (stack.getHasSubtypes()) {
                         this.world.spawnParticle(EnumParticleTypes.ITEM_CRACK, vec3d1.x, vec3d1.y, vec3d1.z, vec3d.x, vec3d.y + 0.05D, vec3d.z, Item.getIdFromItem(stack.getItem()), stack.getMetadata());

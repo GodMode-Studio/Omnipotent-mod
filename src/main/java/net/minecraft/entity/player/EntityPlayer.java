@@ -984,12 +984,12 @@ public abstract class EntityPlayer extends EntityLivingBase
         this.capabilities.writeCapabilitiesToNBT(compound);
         compound.setTag("EnderItems", this.enderChest.saveInventoryToNBT());
 
-        if (!this.getLeftShoulderEntity().hasNoTags())
+        if (!this.getLeftShoulderEntity().isEmpty())
         {
             compound.setTag("ShoulderEntityLeft", this.getLeftShoulderEntity());
         }
 
-        if (!this.getRightShoulderEntity().hasNoTags())
+        if (!this.getRightShoulderEntity().isEmpty())
         {
             compound.setTag("ShoulderEntityRight", this.getRightShoulderEntity());
         }
@@ -1582,8 +1582,8 @@ public abstract class EntityPlayer extends EntityLivingBase
         this.setSize(0.2F, 0.2F);
 
         if (enumfacing != null) {
-            float f1 = 0.5F + (float)enumfacing.getFrontOffsetX() * 0.4F;
-            float f = 0.5F + (float)enumfacing.getFrontOffsetZ() * 0.4F;
+            float f1 = 0.5F + (float)enumfacing.getXOffset() * 0.4F;
+            float f = 0.5F + (float)enumfacing.getZOffset() * 0.4F;
             this.setRenderOffsetForSleep(enumfacing);
             this.setPosition((double)((float)bedLocation.getX() + f1), (double)((float)bedLocation.getY() + 0.6875F), (double)((float)bedLocation.getZ() + f));
         }
@@ -1623,8 +1623,8 @@ public abstract class EntityPlayer extends EntityLivingBase
 
     private void setRenderOffsetForSleep(EnumFacing bedDirection)
     {
-        this.renderOffsetX = -1.8F * (float)bedDirection.getFrontOffsetX();
-        this.renderOffsetZ = -1.8F * (float)bedDirection.getFrontOffsetZ();
+        this.renderOffsetX = -1.8F * (float)bedDirection.getXOffset();
+        this.renderOffsetZ = -1.8F * (float)bedDirection.getZOffset();
     }
 
     public void wakeUpPlayer(boolean immediately, boolean updateWorldFlag, boolean setSpawn)
@@ -2208,12 +2208,12 @@ public abstract class EntityPlayer extends EntityLivingBase
     {
         if (!this.isRiding() && this.onGround && !this.isInWater())
         {
-            if (this.getLeftShoulderEntity().hasNoTags())
+            if (this.getLeftShoulderEntity().isEmpty())
             {
                 this.setLeftShoulderEntity(p_192027_1_);
                 return true;
             }
-            else if (this.getRightShoulderEntity().hasNoTags())
+            else if (this.getRightShoulderEntity().isEmpty())
             {
                 this.setRightShoulderEntity(p_192027_1_);
                 return true;
@@ -2239,7 +2239,7 @@ public abstract class EntityPlayer extends EntityLivingBase
 
     private void spawnShoulderEntity(@Nullable NBTTagCompound p_192026_1_)
     {
-        if (!this.world.isRemote && !p_192026_1_.hasNoTags())
+        if (!this.world.isRemote && !p_192026_1_.isEmpty())
         {
             Entity entity = EntityList.createEntityFromNBT(p_192026_1_, this.world);
 

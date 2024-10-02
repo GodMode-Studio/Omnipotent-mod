@@ -1170,7 +1170,7 @@ public abstract class Entity implements ICommandSender, net.minecraftforge.commo
         }
 
         if (!this.world.isRemote)
-            this.world.getChunkFromChunkCoords((int) Math.floor(this.posX) >> 4, (int) Math.floor(this.posZ) >> 4); // Forge - ensure target chunk is loaded.
+            this.world.getChunk((int) Math.floor(this.posX) >> 4, (int) Math.floor(this.posZ) >> 4); // Forge - ensure target chunk is loaded.
         this.setPosition(this.posX, this.posY, this.posZ);
         this.setRotation(yaw, pitch);
     }
@@ -1323,7 +1323,7 @@ public abstract class Entity implements ICommandSender, net.minecraftforge.commo
     public RayTraceResult rayTrace(double blockReachDistance, float partialTicks) {
         Vec3d vec3d = this.getPositionEyes(partialTicks);
         Vec3d vec3d1 = this.getLook(partialTicks);
-        Vec3d vec3d2 = vec3d.addVector(vec3d1.x * blockReachDistance, vec3d1.y * blockReachDistance, vec3d1.z * blockReachDistance);
+        Vec3d vec3d2 = vec3d.add(vec3d1.x * blockReachDistance, vec3d1.y * blockReachDistance, vec3d1.z * blockReachDistance);
         return this.world.rayTraceBlocks(vec3d, vec3d2, false, false, true);
     }
 
@@ -1465,7 +1465,7 @@ public abstract class Entity implements ICommandSender, net.minecraftforge.commo
                     }
                 }
 
-                if (!nbttaglist1.hasNoTags()) {
+                if (!nbttaglist1.isEmpty()) {
                     compound.setTag("Passengers", nbttaglist1);
                 }
             }
@@ -1797,7 +1797,7 @@ public abstract class Entity implements ICommandSender, net.minecraftforge.commo
 
     @SideOnly(Side.CLIENT)
     public Vec3d getForward() {
-        return Vec3d.fromPitchYawVector(this.getPitchYaw());
+        return Vec3d.fromPitchYaw(this.getPitchYaw());
     }
 
     public void setPortal(BlockPos pos) {
@@ -2305,7 +2305,7 @@ public abstract class Entity implements ICommandSender, net.minecraftforge.commo
     }
 
     public EnumFacing getHorizontalFacing() {
-        return EnumFacing.getHorizontal(MathHelper.floor((double) (this.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3);
+        return EnumFacing.byHorizontalIndex(MathHelper.floor((double) (this.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3);
     }
 
     public EnumFacing getAdjustedHorizontalFacing() {
