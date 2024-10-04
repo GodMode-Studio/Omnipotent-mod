@@ -250,6 +250,7 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAutoKill.getValue(), 0);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeManaInBlocksAround.getValue(), 0);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeEnergyInBlocksAround.getValue(), 0);
+        checkAndOptionalSetIntegerNbtTag(tagCompoundOfKaia, blockReachDistance.getValue(), 5, 1);
         if (!tagCompoundOfKaia.hasKey(listOfCoordenatesKaia))
             status.setIntArray(listOfCoordenatesKaia, new int[]{0, 300, 0});
         if (!tagCompoundOfKaia.hasKey(maxCountSlot.getValue()) || tagCompoundOfKaia.getInteger(maxCountSlot.getValue()) < 1)
@@ -266,6 +267,13 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         int integer = tagCompoundOfKaia.getInteger(optionOfColor.getValue());
         if (!tagCompoundOfKaia.hasKey(optionOfColor.getValue()) || (integer < 0 || integer > 3))
             status.setInteger(optionOfColor.getValue(), 0);
+    }
+
+    private static void checkAndOptionalSetIntegerNbtTag(NBTTagCompound tagCompoundOfKaia, String nbtTag, int nbtCount, int minValue) {
+        if (!tagCompoundOfKaia.hasKey(nbtTag) || nbtCount < minValue) {
+            NBTTagCompound status = tagCompoundOfKaia;
+            status.setInteger(nbtTag, nbtCount);
+        }
     }
 
     private static void checkAndSetIntegerNbtTag(NBTTagCompound tagCompoundOfKaia, String nbtTag, int nbtCount) {

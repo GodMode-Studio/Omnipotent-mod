@@ -125,6 +125,7 @@ public class KaiaNbtPacket implements IMessage {
                     return null;
                 switch (message.type) {
                     case "blockReachDistance":
+                        managerIntegersNbt(message, KaiaUtil.getKaiaInMainHand(player).get().getTagCompound());
                         UtilityHelper.modifyBlockReachDistance(ctx.getServerHandler().player, message.intValue);
                         break;
                     case kaiaEnchant:
@@ -282,7 +283,7 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private static boolean managerIntegersNbt(KaiaNbtPacket message, NBTTagCompound tagCompound) {
-            ArrayList<String> listNBTInt = new ArrayList<>(Arrays.asList(blockBreakArea.getValue(), rangeAttack.getValue(), maxCountSlot.getValue(), rangeAutoKill.getValue(), chargeManaInBlocksAround.getValue(), chargeEnergyInBlocksAround.getValue(), optionOfColor.getValue()));
+            ArrayList<String> listNBTInt = new ArrayList<>(Arrays.asList(blockBreakArea.getValue(), rangeAttack.getValue(), maxCountSlot.getValue(), rangeAutoKill.getValue(), chargeManaInBlocksAround.getValue(), chargeEnergyInBlocksAround.getValue(), optionOfColor.getValue(), blockReachDistance.getValue()));
             for (String nbt : listNBTInt) {
                 if (message.type.equals(nbt)) {
                     if (message.type.equals(optionOfColor.getValue())) {
