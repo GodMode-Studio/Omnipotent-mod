@@ -1,11 +1,10 @@
 package com.omnipotent.common.mixin;
 
-import com.brandon3055.draconicevolution.DraconicEvolution;
+import com.omnipotent.common.specialgui.GUIContainerKaia;
 import com.omnipotent.common.tool.Kaia;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.ItemModelMesher;
-import net.minecraft.client.renderer.RenderItem;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelManager;
 import net.minecraft.client.renderer.color.ItemColors;
@@ -22,7 +21,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Accessor;
-
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import java.awt.*;
 import java.util.Random;
 
@@ -33,11 +33,11 @@ import static com.zeitheron.hammercore.client.utils.ItemColorHelper.setTargetSta
 @SideOnly(Side.CLIENT)
 public abstract class MixinRenderItem implements IResourceManagerReloadListener {
     @Shadow
-    private final TextureManager textureManager;
+    public final TextureManager textureManager;
     @Shadow
-    private final ItemModelMesher itemModelMesher;
+    public final ItemModelMesher itemModelMesher;
     @Shadow
-    private final ItemColors itemColors;
+    public final ItemColors itemColors;
 
     @Accessor("RES_ITEM_GLINT")
     abstract ResourceLocation getRES_ITEM_GLINT();
@@ -97,6 +97,26 @@ public abstract class MixinRenderItem implements IResourceManagerReloadListener 
             }
             GlStateManager.popMatrix();
         }
+    }
+
+    @ModifyVariable(method = "renderItemOverlayIntoGUI", at = @At("HEAD"), argsOnly = true)
+    public String renderItemOverlayIntoGUIKaia(String text, FontRenderer fr, ItemStack stack, int xPosition, int yPosition) {
+        boolean isKaiaGui = Minecraft.getMinecraft().currentScreen instanceof GUIContainerKaia;
+        if (!isKaiaGui)
+            return text;
+        if (!stack.isEmpty() && text == null) {
+            int count = stack.getCount();
+            if (count != 1) {
+                if (count > 1000000000) {
+                    text = stack.getCount() / 1000000000 + "G";
+                } else if (count > 1000000) {
+                    text = stack.getCount() / 1000000 + "M";
+                } else if (count > 1000) {
+                    text = stack.getCount() / 1000 + "K";
+                }
+            }
+        }
+        return text;
     }
 
     @Optional.Method(modid = "hammercore")

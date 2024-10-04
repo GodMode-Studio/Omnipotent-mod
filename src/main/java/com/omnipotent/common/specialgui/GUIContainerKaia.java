@@ -37,9 +37,6 @@ public class GUIContainerKaia extends GuiContainer {
         buttonList.clear();
         pre = addButton(new GuiButton(0, (width - xSize) / 2 + 173, (height - ySize) / 2 + 22, 20, 20, "<"));
         next = addButton(new GuiButton(1, (width - xSize) / 2 + 213, (height - ySize) / 2 + 22, 20, 20, ">"));
-        RenderKaiaItem.init();
-        RenderKaiaItem instance = RenderKaiaItem.instance;
-        itemRender = instance;
     }
 
     @Override
