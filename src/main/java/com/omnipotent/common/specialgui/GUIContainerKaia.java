@@ -88,5 +88,4 @@ public class GUIContainerKaia extends GuiContainer {
         this.mc.getTextureManager().bindTexture(kaiaContainerGuiTexture);
         this.drawTexturedModalRect((width - xSize) / 2, (height - ySize) / 2, 0, 0, xSize, ySize);
     }
-
 }
