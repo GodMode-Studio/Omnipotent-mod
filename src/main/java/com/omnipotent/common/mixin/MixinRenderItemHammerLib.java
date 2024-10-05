@@ -4,7 +4,9 @@ import com.omnipotent.common.specialgui.GUIContainerKaia;
 import com.omnipotent.common.tool.Kaia;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.ItemModelMesher;
+import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelManager;
 import net.minecraft.client.renderer.color.ItemColors;
@@ -23,6 +25,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+
 import java.awt.*;
 import java.util.Random;
 
@@ -31,7 +34,7 @@ import static com.zeitheron.hammercore.client.utils.ItemColorHelper.setTargetSta
 
 @Mixin(RenderItem.class)
 @SideOnly(Side.CLIENT)
-public abstract class MixinRenderItem implements IResourceManagerReloadListener {
+public abstract class MixinRenderItemHammerLib implements IResourceManagerReloadListener {
     @Shadow
     public final TextureManager textureManager;
     @Shadow
@@ -53,7 +56,7 @@ public abstract class MixinRenderItem implements IResourceManagerReloadListener 
     @Shadow
     abstract void renderEffect(IBakedModel model);
 
-    public MixinRenderItem(TextureManager p_i46552_1_, ModelManager p_i46552_2_, ItemColors p_i46552_3_) {
+    public MixinRenderItemHammerLib(TextureManager p_i46552_1_, ModelManager p_i46552_2_, ItemColors p_i46552_3_) {
         this.textureManager = p_i46552_1_;
         this.itemModelMesher = new net.minecraftforge.client.ItemModelMesherForge(p_i46552_2_);
         this.registerItems();
@@ -76,6 +79,7 @@ public abstract class MixinRenderItem implements IResourceManagerReloadListener 
      */
     @Overwrite
     public void renderItem(ItemStack stack, IBakedModel model) {
+        hammerCoreRender(stack);
         if (!stack.isEmpty()) {
             GlStateManager.pushMatrix();
             GlStateManager.translate(-0.5F, -0.5F, -0.5F);
@@ -114,6 +118,10 @@ public abstract class MixinRenderItem implements IResourceManagerReloadListener 
             }
         }
         return text;
+    }
+
+    private void hammerCoreRender(ItemStack stack) {
+        setTargetStackAndHandleRender(stack);
     }
 
 
