@@ -48,7 +48,7 @@ public class OmniJei implements IModPlugin {
             @Override
             public List<Slot> getInventorySlots(ContainerKaia container) {
                 List<Slot> slots = new ArrayList<>();
-                for (int i = 10; i < 126; i++) {
+                for (int i = 10; i < 127; i++) {
                     Slot slot = container.getSlot(i);
                     slots.add(slot);
                 }
