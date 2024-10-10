@@ -84,10 +84,50 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         EntityPlayer player = (EntityPlayer) entityIn;
         nbtManager(stack, entityIn);
         if (!isOwnerOfKaia(stack, player)) {
+            stack.getTagCompound().setBoolean("noowner", true);
             player.world.spawnEntity(new EntityItem(worldIn, player.posX, player.posY, player.posZ + 5, stack));
             player.inventory.deleteStack(stack);
+            return;
         }
         NBTTagCompound tagCompound = stack.getTagCompound();
+        energyManager(tagCompound, player);
+        manaManager(tagCompound, player);
+        managerPotion(player);
+        customNameManager(tagCompound, player);
+        KaiaUtil.killInAreaConstantly(player);
+    }
+
+    private static void managerPotion(EntityPlayer player) {
+        if (!player.getActivePotionEffects().isEmpty()) {
+            for (Potion potion : Potion.REGISTRY) {
+                if (effectIsBlockedByKaia(player, potion))
+                    player.removePotionEffect(potion);
+            }
+        }
+    }
+
+    private static void customNameManager(NBTTagCompound tagCompound, EntityPlayer player) {
+        if (tagCompound.getBoolean(activeCustomPlayerName.getValue())) {
+            String value = customPlayerName.getValue();
+            if (!player.getCustomNameTag().equals(value))
+                player.setCustomNameTag(tagCompound.getString(value));
+            player.setAlwaysRenderNameTag(true);
+        } else
+            player.setCustomNameTag("");
+    }
+
+    private void manaManager(NBTTagCompound tagCompound, EntityPlayer player) {
+        if (tagCompound.getBoolean(chargeManaItemsInInventory.getValue()) && Loader.isModLoaded(botaniaModid))
+                chargeManaInInventory(player);
+
+        if (tagCompound.getBoolean(chargeManaInBlocksAround.getValue())) {
+            int integer = tagCompound.getInteger(chargeManaInBlocksAround.getValue());
+            if (integer > 1 && Loader.isModLoaded(botaniaModid))
+                    chargeManaInAroundBlocks(player, integer);
+        }
+    }
+
+    private void energyManager(NBTTagCompound tagCompound, EntityPlayer player) {
         if (tagCompound.getBoolean(NbtBooleanValues.chargeEnergyItemsInInventory.getValue())) {
             chargeEnergyItems(player);
             if (Loader.isModLoaded(RedstoneFluxProps.MOD_ID))
@@ -100,33 +140,6 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
 //            if (Loader.isModLoaded(RedstoneFluxProps.MOD_ID))
 //                chargeRfEnergyInBlocksAround(player, stack.getTagCompound().getInteger(chargeEnergyInBlocksAround));
         }
-        if (tagCompound.getBoolean(chargeManaItemsInInventory.getValue())) {
-            if (Loader.isModLoaded(botaniaModid))
-                chargeManaInInventory(player);
-        }
-        if (tagCompound.getBoolean(chargeManaInBlocksAround.getValue())) {
-            int integer = tagCompound.getInteger(chargeManaInBlocksAround.getValue());
-            if (integer > 1)
-                if (Loader.isModLoaded(botaniaModid))
-                    chargeManaInAroundBlocks(player, integer);
-        }
-
-        if (!player.getActivePotionEffects().isEmpty()) {
-            Iterator<Potion> iterator = Potion.REGISTRY.iterator();
-            while (iterator.hasNext()) {
-                Potion potion = iterator.next();
-                if (effectIsBlockedByKaia(player, potion))
-                    player.removePotionEffect(potion);
-            }
-        }
-        if (tagCompound.getBoolean(activeCustomPlayerName.getValue())) {
-            String value = customPlayerName.getValue();
-            if (!player.getCustomNameTag().equals(value))
-                player.setCustomNameTag(tagCompound.getString(value));
-            player.setAlwaysRenderNameTag(true);
-        } else
-            player.setCustomNameTag("");
-        KaiaUtil.killInAreaConstantly(player);
     }
 
     private void chargeEnergyInBlocksAround(EntityPlayer player, int range) {

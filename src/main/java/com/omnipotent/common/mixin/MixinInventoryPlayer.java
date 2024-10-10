@@ -73,15 +73,11 @@ public abstract class MixinInventoryPlayer implements IInventory {
 
     @Inject(method = "deleteStack", at = @At("HEAD"), cancellable = true)
     public void deleteStack(ItemStack stack, CallbackInfo ci) {
-        if (stack.getItem() instanceof Kaia)
-            ci.cancel();
-        for (NonNullList<ItemStack> nonnulllist : this.allInventories) {
-            for (int i = 0; i < nonnulllist.size(); ++i) {
-                if (nonnulllist.get(i) == stack) {
-                    nonnulllist.set(i, ItemStack.EMPTY);
-                    break;
-                }
-            }
+        if (stack.getItem() instanceof Kaia) {
+            if (!stack.getTagCompound().hasKey("noowner"))
+                ci.cancel();
+            else
+                stack.getTagCompound().removeTag("noowner");
         }
     }
 }
