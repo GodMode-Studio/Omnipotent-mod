@@ -1,6 +1,7 @@
 package com.omnipotent.common.mixin;
 
 import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.KaiaWrapper;
 import com.omnipotent.util.NbtListUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.Entity;
@@ -172,20 +173,14 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
     public void attackEntityFrom(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         EntityPlayer player = (EntityPlayer) (Object) this;
         if (hasInInventoryKaia(player)) {
-            ItemStack kaia = getKaiaInMainHandOrInventory(player);
+            KaiaWrapper kaia = getKaiaInMainHandOrInventory(player);
             Entity enemie;
             if (source != null && source.getTrueSource() != null) {
                 enemie = source.getTrueSource();
-                if (UtilityHelper.isPlayer(enemie) && kaia.getTagCompound().getBoolean(playersWhoShouldNotKilledInCounterAttack.getValue())) {
-                    Iterator<NBTBase> iterator = kaia.getTagCompound().getTagList(playersDontKill, 8).iterator();
-                    while (iterator.hasNext()) {
-                        String string = iterator.next().toString();
-                        if (string.startsWith("\"") && string.endsWith("\""))
-                            string = string.substring(1, string.length() - 1);
-                        if (string.split(NbtListUtil.divisionUUIDAndName)[0].equals(enemie.getUniqueID().toString())) {
-                            cir.cancel();
-                            return;
-                        }
+                if (UtilityHelper.isPlayer(enemie) && kaia.getBoolean(playersWhoShouldNotKilledInCounterAttack)) {
+                    if(kaia.playerIsProtected(enemie.getUniqueID().toString())){
+                        cir.cancel();
+                        return;
                     }
                 }
 //                NBTTagList tagList = kaia.getTagCompound().getTagList(entitiesCantKill, 8);
@@ -196,16 +191,16 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
 //                            return;
 //                        }
 //                    }
-                if (kaia.getTagCompound().getBoolean(counterAttack.getValue())) {
+                if (kaia.getBoolean(counterAttack)) {
                     if (entityIsFriendEntity(source.getTrueSource())) {
-                        if (entityFriendCanKilledByKaia(kaia.getTagCompound(), source.getTrueSource(), false))
-                            KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities.getValue()));
-                    } else if (entityNoIsNormalAndCanKilledByKaia(kaia.getTagCompound(), source.getTrueSource()))
-                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities.getValue()));
-                    else if (entityIsPlayerAndKaiaCanKillPlayer(kaia.getTagCompound(), false, source.getTrueSource()))
-                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities.getValue()));
+                        if (entityFriendCanKilledByKaia(kaia, source.getTrueSource(), false))
+                            KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getBoolean(killAllEntities));
+                    } else if (entityNoIsNormalAndCanKilledByKaia(kaia, source.getTrueSource()))
+                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getBoolean(killAllEntities));
+                    else if (entityIsPlayerAndKaiaCanKillPlayer(kaia, false, source.getTrueSource()))
+                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getBoolean(killAllEntities));
                     else
-                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getTagCompound().getBoolean(killAllEntities.getValue()));
+                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getBoolean(killAllEntities));
                 }
             }
             cir.cancel();

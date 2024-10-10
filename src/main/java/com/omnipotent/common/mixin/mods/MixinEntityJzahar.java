@@ -157,7 +157,7 @@ public abstract class MixinEntityJzahar extends EntityMob implements IRangedAtta
                             WorldServer worldServer = (WorldServer) player.world;
                             EntityPlayerMP mp = (EntityPlayerMP) player;
                             mp.addPotionEffect(new PotionEffect(MobEffects.RESISTANCE, 80, 255));
-                            mp.mcServer.getPlayerList().transferPlayerToDimension(mp, ACLib.dark_realm_id, new TeleporterDarkRealm(worldServer));
+                            mp.server.getPlayerList().transferPlayerToDimension(mp, ACLib.dark_realm_id, new TeleporterDarkRealm(worldServer));
                             //							player.addStat(ACAchievements.enter_dark_realm, 1);
                         }
                     } else if (entity instanceof EntityLivingBase || entity instanceof EntityItem)

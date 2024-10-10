@@ -62,11 +62,7 @@ public abstract class MixinEntity implements ICommandSender, net.minecraftforge.
         AtomicBoolean stopOnLiquid = new AtomicBoolean(false);
         if (isPlayer((Entity) (Object) this)) {
             EntityPlayer player = (EntityPlayer) (Object) this;
-            KaiaUtil.getKaiaInMainHand(player).ifPresent(kaia -> {
-                NBTTagCompound tagCompound = kaia.getTagCompound();
-                if (tagCompound != null)
-                    stopOnLiquid.set(tagCompound.getBoolean(interactLiquid.getValue()));
-            });
+            KaiaUtil.getKaiaInMainHand(player).ifPresent(kaia -> stopOnLiquid.set(kaia.getBoolean(interactLiquid)));
         }
         Vec3d vec3d = this.getPositionEyes(partialTicks);
         Vec3d vec3d1 = this.getLook(partialTicks);

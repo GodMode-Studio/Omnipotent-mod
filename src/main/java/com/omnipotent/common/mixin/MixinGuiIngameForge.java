@@ -2,6 +2,7 @@ package com.omnipotent.common.mixin;
 
 import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.KaiaWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.FontRenderer;
@@ -55,16 +56,15 @@ public abstract class MixinGuiIngameForge extends GuiIngame {
         EntityPlayerSP player = mc.player;
         GuiScreen currentScreen = mc.currentScreen;
         if (player == null || currentScreen != null) return;
-        Optional<ItemStack> kaiaInMainHand = KaiaUtil.getKaiaInMainHand(player);
-        if (!kaiaInMainHand.isPresent())
+        Optional<KaiaWrapper> kaiaWrapper = KaiaUtil.getKaiaInMainHand(player);
+        if (!kaiaWrapper.isPresent())
             return;
-        NBTTagCompound tagCompound = kaiaInMainHand.get().getTagCompound();
-        if (tagCompound == null) return;
-        if (!tagCompound.getBoolean(showInfo.getValue())) return;
+        KaiaWrapper kaiaInMainHand = kaiaWrapper.get();
+        if (!kaiaInMainHand.getBoolean(showInfo)) return;
         List<String> values = new ArrayList<>();
         for (NbtBooleanValues key : NbtBooleanValues.values()) {
             if (!(key.getValue().equals(showInfo.getValue()) || key.getValue().equals(playersWhoShouldNotKilledInCounterAttack.getValue()) || key.getValue().equals(playerDontKillInDirectAttack.getValue())))
-                values.add(TextFormatting.GOLD + I18n.format("guikaia.config." + key.getValue()) + ": " + TextFormatting.BLUE + tagCompound.getBoolean(key.getValue()));
+                values.add(TextFormatting.GOLD + I18n.format("guikaia.config." + key.getValue()) + ": " + TextFormatting.BLUE + kaiaInMainHand.getBoolean(key));
         }
         drawHoveringText(values, widthUsed, heigthUsed);
     }

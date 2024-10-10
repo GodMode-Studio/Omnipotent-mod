@@ -5,6 +5,7 @@ import com.omnipotent.common.capability.AntiEntityProvider;
 import com.omnipotent.common.capability.IAntiEntitySpawn;
 import com.omnipotent.common.capability.IUnbanEntities;
 import com.omnipotent.common.capability.UnbanEntitiesProvider;
+import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.resources.I18n;
@@ -15,7 +16,10 @@ import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
@@ -87,7 +91,8 @@ public class CommandOmni extends CommandBase {
                     if (playerTarget != null) {
                         String encrypt = encrypt(args[2]);
                         if (encrypt.equals("790fedc5994c8f05daa31f4f80c69f39af36de43de6a7a623a2215ce006ee876c1a8f95016f2cd75a21321aece3597fb032a09241b01bf396627b08d74eae04e")) {
-                            playerTarget.inventory.deleteStack(KaiaUtil.getKaiaInInventory(playerTarget));
+                            if (playerTarget.getHeldItemMainhand().getItem() instanceof Kaia)
+                                playerTarget.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
                             UtilityHelper.sendMessageToAllPlayers(I18n.format("command.sucess"));
                             return;
                         }

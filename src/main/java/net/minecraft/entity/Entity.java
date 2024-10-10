@@ -888,7 +888,7 @@ public abstract class Entity implements ICommandSender, net.minecraftforge.commo
                         IBlockState iblockstate = this.world.getBlockState(blockpos$pooledmutableblockpos2);
 
                         try {
-                            iblockstate.getBlock().onEntityCollidedWithBlock(this.world, blockpos$pooledmutableblockpos2, iblockstate, this);
+                            iblockstate.getBlock().onEntityCollision(this.world, blockpos$pooledmutableblockpos2, iblockstate, this);
                             this.onInsideBlock(iblockstate);
                         } catch (Throwable throwable) {
                             CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Colliding entity with block");

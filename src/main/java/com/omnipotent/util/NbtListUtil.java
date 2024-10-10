@@ -2,9 +2,11 @@ package com.omnipotent.util;
 
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 public class NbtListUtil {
     public static final String divisionUUIDAndName = "::";
@@ -44,6 +46,13 @@ public class NbtListUtil {
         ArrayList<String> values = new ArrayList<>();
         getElementsOfNbt(nbt).forEach(element -> values.add(element.toString().substring(1, element.toString().length() - 1).split(divisionUUIDAndName)[0]));
         return values;
+    }
+
+    private static final Pattern SIMPLE_VALUE = Pattern.compile("[A-Za-z0-9._+-]+");
+
+    public static String handleEscape(String p_193582_0_)
+    {
+        return SIMPLE_VALUE.matcher(p_193582_0_).matches() ? p_193582_0_ : NBTTagString.quoteAndEscape(p_193582_0_);
     }
 
     /**

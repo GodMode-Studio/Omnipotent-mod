@@ -6,13 +6,9 @@ import com.omnipotent.common.capability.kaiacap.KaiaProvider;
 import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.constant.NbtStringValues;
-import com.omnipotent.util.KaiaUtil;
-import com.omnipotent.util.NbtListUtil;
-import com.omnipotent.util.Teleporte;
-import com.omnipotent.util.UtilityHelper;
+import com.omnipotent.util.*;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -125,7 +121,7 @@ public class KaiaNbtPacket implements IMessage {
                     return null;
                 switch (message.type) {
                     case "blockReachDistance":
-                        managerIntegersNbt(message, KaiaUtil.getKaiaInMainHand(player).get().getTagCompound());
+                        managerIntegersNbt(message, KaiaUtil.getKaiaInMainHand(player).get());
                         UtilityHelper.modifyBlockReachDistance(ctx.getServerHandler().player, message.intValue);
                         break;
                     case kaiaEnchant:
@@ -165,7 +161,7 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private void kaiaAttackShow(EntityPlayerMP player, EntityLivingBase entityByID) {
-            ItemStack kaiaInMainHandOrInventory = KaiaUtil.getKaiaInMainHandOrInventory(player);
+            KaiaWrapper kaiaInMainHandOrInventory = KaiaUtil.getKaiaInMainHandOrInventory(player);
             if (kaiaInMainHandOrInventory != null)
                 KaiaUtil.kaiaAttackShow(player, entityByID);
         }
@@ -246,43 +242,40 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private void functionManageEffectsBlocked(EntityPlayer player, KaiaNbtPacket message) {
-            ItemStack kaia = KaiaUtil.getKaiaInMainHand(player).get();
-            NBTTagList tagList = kaia.getTagCompound().getTagList(effectsBlockeds, 8);
+            KaiaWrapper kaia = KaiaUtil.getKaiaInMainHand(player).get();
             if (message.intValue == 0) {
-                tagList.appendTag(new NBTTagString(message.text));
-            } else {
-                if (NbtListUtil.isElementAlreadyExists(tagList, message.text))
-                    NbtListUtil.removeElement(tagList, message.text);
-            }
+                kaia.addInList(effectsBlockeds, new NBTTagString(message.text));
+            } else
+                kaia.removeInList(effectsBlockeds, message.text);
         }
 
         private static void manageBooleansIntegersAndStringNbt(EntityPlayer player, KaiaNbtPacket message) {
-            NBTTagCompound tagCompound = KaiaUtil.getKaiaInMainHand(player).get().getTagCompound();
-            if (managerBooleanNbt(message, tagCompound)) return;
-            if (managerIntegersNbt(message, tagCompound)) return;
-            managerStringNbt(message, tagCompound);
+            KaiaWrapper kaia = KaiaUtil.getKaiaInMainHand(player).get();
+            if (managerBooleanNbt(message, kaia)) return;
+            if (managerIntegersNbt(message, kaia)) return;
+            managerStringNbt(message, kaia);
         }
 
-        private static void managerStringNbt(KaiaNbtPacket message, NBTTagCompound tagCompound) {
+        private static void managerStringNbt(KaiaNbtPacket message, KaiaWrapper kaia) {
             for (NbtStringValues nbt : NbtStringValues.values()) {
                 if (message.type.equals(nbt.getValue())) {
-                    tagCompound.setString(nbt.getValue(), message.text);
+                    kaia.setString(nbt.getValue(), message.text);
                     return;
                 }
             }
         }
 
-        private static boolean managerBooleanNbt(KaiaNbtPacket message, NBTTagCompound tagCompound) {
+        private static boolean managerBooleanNbt(KaiaNbtPacket message, KaiaWrapper kaia) {
             for (String nbt : NbtBooleanValues.valuesNbt) {
                 if (message.type.equals(nbt)) {
-                    tagCompound.setBoolean(nbt, message.booleanValue);
+                    kaia.setBoolean(nbt, message.booleanValue);
                     return true;
                 }
             }
             return false;
         }
 
-        private static boolean managerIntegersNbt(KaiaNbtPacket message, NBTTagCompound tagCompound) {
+        private static boolean managerIntegersNbt(KaiaNbtPacket message, KaiaWrapper tagCompound) {
             ArrayList<String> listNBTInt = new ArrayList<>(Arrays.asList(blockBreakArea.getValue(), rangeAttack.getValue(), maxCountSlot.getValue(), rangeAutoKill.getValue(), chargeManaInBlocksAround.getValue(), chargeEnergyInBlocksAround.getValue(), optionOfColor.getValue(), blockReachDistance.getValue()));
             for (String nbt : listNBTInt) {
                 if (message.type.equals(nbt)) {
@@ -302,16 +295,15 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private static void functionManageEntitiesCantKillOfKaia(KaiaNbtPacket message, EntityPlayer player) {
-            ItemStack kaia = KaiaUtil.getKaiaInMainHandOrInventory(player);
+            KaiaWrapper kaia = KaiaUtil.getKaiaInMainHandOrInventory(player);
             if (message.intValue == 0) {
-                NBTTagList tagList = kaia.getTagCompound().getTagList(entitiesCantKill, 8);
-                tagList.appendTag(new NBTTagString(message.text));
+                kaia.addInList(entitiesCantKill, new NBTTagString(message.text));
             } else
-                NbtListUtil.removeString(kaia.getTagCompound().getTagList(entitiesCantKill, 8), message.text, 0);
+                kaia.removeInList(entitiesCantKill, message.text);
         }
 
         private void functionManagePlayersCantOfKaia(EntityPlayer player, KaiaNbtPacket message) {
-            NBTTagList tagList = KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getTagList(playersDontKill, 8);
+            NBTTagList tagList = player.getHeldItemMainhand().getTagCompound().getTagList(playersDontKill, 8);
             Iterator<NBTBase> iterator = tagList.iterator();
             ArrayList<String> names = new ArrayList<>();
             String tagForRemoved = null;
@@ -345,19 +337,19 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private static void functionManageEnchantments(KaiaNbtPacket message, EntityPlayer player) {
-            ItemStack kaiaItem = KaiaUtil.getKaiaInMainHand(player).get();
+            KaiaWrapper kaiaItem = KaiaUtil.getKaiaInMainHand(player).get();
             int lvl = message.intValue;
             short number = NumberUtils.toShort(String.valueOf(lvl), (short) -20_000);
             if (number <= 0) {
                 Enchantment enchantmentByLocation = Enchantment.getEnchantmentByLocation(message.text);
-                Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(kaiaItem);
+                Map<Enchantment, Integer> enchantments = kaiaItem.getEnchantments();
                 enchantments.remove(enchantmentByLocation);
-                EnchantmentHelper.setEnchantments(enchantments, kaiaItem);
+                kaiaItem.setEnchantments(enchantments);
             } else {
                 Enchantment enchantmentByLocation = Enchantment.getEnchantmentByLocation(message.text);
-                Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(kaiaItem);
+                Map<Enchantment, Integer> enchantments = kaiaItem.getEnchantments();
                 enchantments.put(enchantmentByLocation, lvl);
-                EnchantmentHelper.setEnchantments(enchantments, kaiaItem);
+                kaiaItem.setEnchantments(enchantments);
             }
         }
 

@@ -185,7 +185,7 @@ public class KaiaGuiBlockPotion extends GuiScreen {
             potions.add(potion);
         }
         int y = (int) ((int) (yElementControllerButtons / 8.5) / currentScrollOffset);
-        ArrayList<String> potionsBlocked = NbtListUtil.getValueOfElementsOfNbtList(KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getTagList(KaiaConstantsNbt.effectsBlockeds, 8));
+        List<String> potionsBlocked = KaiaUtil.getKaiaInMainHand(player).get().getStringList(KaiaConstantsNbt.effectsBlockeds);
         for (int c = 0; c < potions.size(); c++) {
             GuiTextField guiTextField = new GuiTextField(++idGuiText, fontRenderer, (int) (width / 13.7142857143), y, (int) (xElementControllerButtons / 0.98), (int) (height / 21.25));
             guiTextField.setMaxStringLength(128);

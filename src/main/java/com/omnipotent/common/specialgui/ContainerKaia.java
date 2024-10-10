@@ -6,6 +6,7 @@ import com.omnipotent.common.specialgui.net.KaiaSlotChangePacket;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
 
@@ -42,10 +43,26 @@ public class ContainerKaia extends Container {
                 }
             }
             addPlayerSlots(player);
+//            addFurnaceSlots(player);
         } else {
             this.stack = ItemStack.EMPTY;
         }
     }
+
+//    private void addFurnaceSlots(EntityPlayer player) {
+//        for (int y = 0; y < 3; y++) {
+//            for (int x = 0; x < 3; x++) {
+//                Slot slot = this.addSlotToContainer(new SlotFurnaceKaia(this.inventory, x + y * 3 + 82, 56, 17));
+//                slot.putStack(new ItemStack(Items.APPLE));
+//            }
+//        }
+//        for (int y = 0; y < 2; y++) {
+//            for (int x = 0; x < 2; x++) {
+//                Slot slot = this.addSlotToContainer(new SlotFurnaceOutput(player, this.inventory, x + y * 3 + 91, 116, 35));
+//                slot.putStack(new ItemStack(Items.APPLE));
+//            }
+//        }
+//    }
 
     private void addPlayerSlots(EntityPlayer player) {
         for (int i = 0; i < 3; ++i) {

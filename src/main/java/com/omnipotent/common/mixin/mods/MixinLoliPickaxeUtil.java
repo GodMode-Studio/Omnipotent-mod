@@ -7,6 +7,7 @@ import com.anotherstar.network.LoliKillEntityPacket;
 import com.anotherstar.network.NetworkHandler;
 import com.anotherstar.util.LoliPickaxeUtil;
 import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.KaiaWrapper;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -41,9 +42,9 @@ public abstract class MixinLoliPickaxeUtil {
     @Final
     public static void killPlayer(EntityPlayer player, EntityLivingBase source) {
         if (KaiaUtil.hasInInventoryKaia(player)) {
-            ItemStack stack = KaiaUtil.getKaiaInMainHandOrInventory(player);
-            if (stack.getTagCompound().getBoolean(counterAttack.getValue()) && !player.world.isRemote)
-                KaiaUtil.killChoice(source, player, stack.getTagCompound().getBoolean(killAllEntities.getValue()));
+            KaiaWrapper stack = KaiaUtil.getKaiaInMainHandOrInventory(player);
+            if (stack.getBoolean(counterAttack) && !player.world.isRemote)
+                KaiaUtil.killChoice(source, player, stack.getBoolean(killAllEntities));
             return;
         }
         if (invHaveLoliPickaxe(player) || player.loliDead || player instanceof FakePlayer) {

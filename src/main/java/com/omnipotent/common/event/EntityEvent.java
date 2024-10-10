@@ -8,6 +8,7 @@ import com.omnipotent.common.entity.CustomLightningBolt;
 import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.KaiaWrapper;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -160,7 +161,7 @@ public class EntityEvent {
                     entityItem.setDead();
                 } else if (player == null) {
                     try {
-                        addKaiaAndManagerInPlayarDataFile(kaia, getPlayerDataFileOfPlayer(uuid).getAbsolutePath());
+                        addKaiaAndManagerInPlayarDataFile(new KaiaWrapper(kaia), getPlayerDataFileOfPlayer(uuid).getAbsolutePath());
                         entityItem.setDead();
                     } catch (IOException ignored) {
                     }

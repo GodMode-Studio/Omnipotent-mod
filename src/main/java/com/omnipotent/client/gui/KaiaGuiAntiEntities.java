@@ -45,7 +45,7 @@ public class KaiaGuiAntiEntities extends GuiScreen implements IGuiPages {
         maxYOfScreen = getEquivalentValue(463, height);
         addPageNavigationButtons();
         entitiesThatCannotBeKilled.clear();
-        entitiesThatCannotBeKilled.addAll(NbtListUtil.getValueOfElementsOfNbtList(KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getTagList(entitiesCantKill, 8)));
+        entitiesThatCannotBeKilled.addAll(KaiaUtil.getKaiaInMainHand(player).get().getStringList(entitiesCantKill));
         addPages();
     }
 
@@ -53,7 +53,7 @@ public class KaiaGuiAntiEntities extends GuiScreen implements IGuiPages {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
         entitiesThatCannotBeKilled.clear();
-        entitiesThatCannotBeKilled.addAll(NbtListUtil.getValueOfElementsOfNbtList(KaiaUtil.getKaiaInMainHand(player).get().getTagCompound().getTagList(entitiesCantKill, 8)));
+        entitiesThatCannotBeKilled.addAll(KaiaUtil.getKaiaInMainHand(player).get().getStringList(entitiesCantKill));
         addPages();
         drawRect(getEquivalentValue(0, width), getEquivalentValue(0, height), getEquivalentValue(500, width), getEquivalentValue(500, height), Color.BLACK.getRGB());
         drawString(fontRenderer, "Entidades que não podem ser mortas", getEquivalentValue(8, width), getEquivalentValue(30, height), Color.WHITE.getRGB());

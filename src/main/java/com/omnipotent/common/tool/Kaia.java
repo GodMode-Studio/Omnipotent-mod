@@ -6,6 +6,7 @@ import com.omnipotent.common.specialgui.IContainer;
 import com.omnipotent.common.specialgui.InventoryKaia;
 import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.KaiaWrapper;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
@@ -36,9 +37,7 @@ import vazkii.botania.api.mana.IManaItem;
 import vazkii.botania.api.mana.IManaReceiver;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.omnipotent.Omnipotent.omnipotentTab;
@@ -235,13 +234,14 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         KaiaUtil.createTagCompoundStatusIfNecessary(stack);
         KaiaUtil.createOwnerIfNecessary(stack, entityIn);
         NBTTagCompound tagCompoundOfKaia = stack.getTagCompound();
-        NBTTagCompound status = tagCompoundOfKaia;
+        if (!tagCompoundOfKaia.hasUniqueId("identify"))
+            tagCompoundOfKaia.setUniqueId("identify", UUID.randomUUID());
         for (String nbtName : NbtBooleanValues.valuesNbt) {
             if (!tagCompoundOfKaia.hasKey(nbtName)) {
                 if (!nbtName.equals(killFriendEntities.getValue()))
-                    status.setBoolean(nbtName, false);
+                    tagCompoundOfKaia.setBoolean(nbtName, false);
                 else
-                    status.setBoolean(nbtName, true);
+                    tagCompoundOfKaia.setBoolean(nbtName, true);
             }
         }
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, blockBreakArea.getValue(), 1);
@@ -252,21 +252,21 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeEnergyInBlocksAround.getValue(), 0);
         checkAndOptionalSetIntegerNbtTag(tagCompoundOfKaia, blockReachDistance.getValue(), 5, 1);
         if (!tagCompoundOfKaia.hasKey(listOfCoordenatesKaia))
-            status.setIntArray(listOfCoordenatesKaia, new int[]{0, 300, 0});
+            tagCompoundOfKaia.setIntArray(listOfCoordenatesKaia, new int[]{0, 300, 0});
         if (!tagCompoundOfKaia.hasKey(maxCountSlot.getValue()) || tagCompoundOfKaia.getInteger(maxCountSlot.getValue()) < 1)
-            status.setInteger(maxCountSlot.getValue(), 200_000_000);
+            tagCompoundOfKaia.setInteger(maxCountSlot.getValue(), 200_000_000);
         if (!tagCompoundOfKaia.hasKey(playersDontKill))
-            status.setTag(playersDontKill, new NBTTagList());
+            tagCompoundOfKaia.setTag(playersDontKill, new NBTTagList());
         if (!tagCompoundOfKaia.hasKey(entitiesCantKill))
-            status.setTag(entitiesCantKill, new NBTTagList());
+            tagCompoundOfKaia.setTag(entitiesCantKill, new NBTTagList());
         if (!tagCompoundOfKaia.hasKey(effectsBlockeds))
-            status.setTag(effectsBlockeds, new NBTTagList());
+            tagCompoundOfKaia.setTag(effectsBlockeds, new NBTTagList());
         String valueCustomPlayerName = customPlayerName.getValue();
         if (!tagCompoundOfKaia.hasKey(valueCustomPlayerName))
-            status.setTag(valueCustomPlayerName, new NBTTagString());
+            tagCompoundOfKaia.setTag(valueCustomPlayerName, new NBTTagString());
         int integer = tagCompoundOfKaia.getInteger(optionOfColor.getValue());
         if (!tagCompoundOfKaia.hasKey(optionOfColor.getValue()) || (integer < 0 || integer > 3))
-            status.setInteger(optionOfColor.getValue(), 0);
+            tagCompoundOfKaia.setInteger(optionOfColor.getValue(), 0);
     }
 
     private static void checkAndOptionalSetIntegerNbtTag(NBTTagCompound tagCompoundOfKaia, String nbtTag, int nbtCount, int minValue) {
@@ -302,7 +302,7 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
             if (cancelAttack)
                 return cancelAttack;
             if (!player.world.isRemote)
-                killChoice(entityAttacked, player, getKaiaInMainHand(player).get().getTagCompound().getBoolean(killAllEntities.getValue()));
+                killChoice(entityAttacked, player, getKaiaInMainHand(player).get().getBoolean(killAllEntities));
             return cancelAttack;
         }
         return false;
@@ -314,10 +314,10 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
             if (player.isSneaking()) {
                 List<Entity> entitiesInArea = getEntitiesInArea(worldIn, player.getPosition(), 100);
                 int entitiesKilled = 0;
-                NBTTagCompound tagCompound = player.getHeldItem(handIn).getTagCompound();
-                filterEntities(entitiesInArea, tagCompound);
+                KaiaWrapper kaia = getHeldKaia(player, handIn);
+                filterEntities(entitiesInArea, kaia);
                 for (Entity entity : entitiesInArea) {
-                    boolean mobKilled = killChoice(entity, player, tagCompound.getBoolean(killAllEntities.getValue()));
+                    boolean mobKilled = killChoice(entity, player, kaia.getBoolean(killAllEntities));
                     if (mobKilled) entitiesKilled++;
                 }
                 UtilityHelper.sendMessageToPlayer(TextFormatting.DARK_RED + "" + entitiesKilled + " Entities Killed", player);

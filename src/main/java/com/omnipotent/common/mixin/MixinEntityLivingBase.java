@@ -5,6 +5,7 @@ import com.omnipotent.acessor.IEntityLivingBaseAcessor;
 import com.omnipotent.common.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.KaiaWrapper;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.entity.Entity;
@@ -272,8 +273,8 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
     @Unique
     private void obliteration(Entity sourceOfDamage, EntityLivingBase entity) {
         if (sourceOfDamage instanceof EntityPlayerMP playerMP) {
-            ItemStack kaia = KaiaUtil.getKaiaInMainHandOrInventory(playerMP);
-            if (kaia.getTagCompound().getBoolean(NbtBooleanValues.maximumObliteration.getValue())) {
+            KaiaWrapper kaia = KaiaUtil.getKaiaInMainHandOrInventory(playerMP);
+            if (kaia.getBoolean(NbtBooleanValues.maximumObliteration)) {
                 entity.setDead();
                 Stream<IAttributeInstance> health1 = attributeMap.getAllAttributes().stream().filter(att -> att.getAttribute().getName().contains("health"));
                 health1.forEach(att -> att.setBaseValue(0));
