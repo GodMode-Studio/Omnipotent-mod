@@ -490,7 +490,7 @@ public class UtilityHelper {
     public static RayTraceResult rayTraceClient(Minecraft mc, Class<? extends Entity> excludeClass, int distance, float partialTicks) {
         Entity entity = mc.getRenderViewEntity();
         if (entity != null && mc.world != null) {
-            mc.mcProfiler.startSection("pick");
+            mc.profiler.startSection("pick");
             RayTraceResult originalObjectMouseOver = entity.rayTrace(distance, partialTicks);
             Vec3d vec3d = entity.getPositionEyes(partialTicks);
             Vec3d vec3d1 = entity.getLook(1.0F);
@@ -542,7 +542,7 @@ public class UtilityHelper {
                 originalObjectMouseOver = new RayTraceResult(pointedEntity, vec3d3);
             }
 
-            mc.mcProfiler.endSection();
+            mc.profiler.endSection();
 
             return originalObjectMouseOver;
         }

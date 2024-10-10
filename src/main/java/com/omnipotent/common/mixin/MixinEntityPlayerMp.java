@@ -5,6 +5,7 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.IContainerListener;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.play.server.SPacketCombatEvent;
 import net.minecraft.scoreboard.IScoreCriteria;
@@ -22,15 +23,12 @@ import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
 
 
 @Mixin(EntityPlayerMP.class)
-public abstract class MixinEntityPlayerMp extends EntityPlayer {
+public abstract class MixinEntityPlayerMp extends EntityPlayer implements IContainerListener {
     public MixinEntityPlayerMp(World worldIn, GameProfile gameProfileIn) {
         super(worldIn, gameProfileIn);
     }
     @Shadow
     public NetHandlerPlayServer connection;
-
-    @Accessor("mcServer")
-    abstract MinecraftServer getmcServer();
 
     /**
      * @author
@@ -39,6 +37,7 @@ public abstract class MixinEntityPlayerMp extends EntityPlayer {
     @Overwrite
     @Final
     public void onDeath(DamageSource cause) {
+        EntityPlayerMP playerMP = (EntityPlayerMP) (Object) this;
         if (hasInInventoryKaia(this)) {
             this.setHealth(Integer.MAX_VALUE);
             this.isDead = false;
@@ -54,12 +53,12 @@ public abstract class MixinEntityPlayerMp extends EntityPlayer {
 
             if (team != null && team.getDeathMessageVisibility() != Team.EnumVisible.ALWAYS) {
                 if (team.getDeathMessageVisibility() == Team.EnumVisible.HIDE_FOR_OTHER_TEAMS) {
-                    this.getmcServer().getPlayerList().sendMessageToAllTeamMembers(this, this.getCombatTracker().getDeathMessage());
+                    playerMP.server.getPlayerList().sendMessageToAllTeamMembers(this, this.getCombatTracker().getDeathMessage());
                 } else if (team.getDeathMessageVisibility() == Team.EnumVisible.HIDE_FOR_OWN_TEAM) {
-                    this.getmcServer().getPlayerList().sendMessageToTeamOrAllPlayers(this, this.getCombatTracker().getDeathMessage());
+                    playerMP.server.getPlayerList().sendMessageToTeamOrAllPlayers(this, this.getCombatTracker().getDeathMessage());
                 }
             } else {
-                this.getmcServer().getPlayerList().sendMessage(this.getCombatTracker().getDeathMessage());
+                playerMP.server.getPlayerList().sendMessage(this.getCombatTracker().getDeathMessage());
             }
         }
 
