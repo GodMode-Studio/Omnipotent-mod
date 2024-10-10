@@ -52,7 +52,7 @@ public final class KaiaWrapper {
     }
 
     public Optional<EntityPlayer> getOwner() {
-        return Optional.of(FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(UUID.fromString(this.nbt
+        return Optional.ofNullable(FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(UUID.fromString(this.nbt
                 .getString(ownerID))));
     }
 

@@ -19,6 +19,7 @@
     "MixinInventoryPlayer",
     "MixinKillCommand",
     "MixinMinecraft",
+    "MixinSlot",
     "MixinSPacketSetSlot",
     "MixinSPacketWindowItems",
     "MixinWorld"
@@ -29,5 +30,5 @@
     "MixinRenderItemHammerLib"
   ],
   "server": [],
-  "plugin" : "com.omnipotent.IMixinPluginMod"
+  "plugin": "com.omnipotent.IMixinPluginMod"
 }

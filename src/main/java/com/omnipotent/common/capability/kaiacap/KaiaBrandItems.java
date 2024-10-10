@@ -2,6 +2,7 @@ package com.omnipotent.common.capability.kaiacap;
 
 import com.omnipotent.common.network.NetworkRegister;
 import com.omnipotent.common.network.PlayerSyncPacket;
+import com.omnipotent.util.KaiaWrapper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -13,8 +14,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class KaiaBrandItems implements IKaiaBrand, Capability.IStorage<IKaiaBrand> {
 
@@ -24,6 +24,9 @@ public class KaiaBrandItems implements IKaiaBrand, Capability.IStorage<IKaiaBran
 
     @Override
     public void habilityBrand(List<ItemStack> kaiaList) {
+        Set<UUID> kaiaIds = new HashSet<>();
+        kaiaList.forEach(item -> kaiaIds.add(new KaiaWrapper(item).getIdentify()));
+        kaiaItems.removeIf(item -> kaiaIds.contains(new KaiaWrapper(item).getIdentify()));
         kaiaItems.addAll(kaiaList);
     }
 

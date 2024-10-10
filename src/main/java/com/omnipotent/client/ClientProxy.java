@@ -24,7 +24,6 @@ public class ClientProxy extends CommonProxy {
         eventBus.register(new EventInitTextures());
         eventBus.register(new EventClient());
         eventBus.register(new EventPlayerNameFormat());
-        eventBus.register(new HandlerRenderGamerOverlay());
         RenderingRegistry.registerEntityRenderingHandler(CustomLightningBolt.class, RenderCustomLightningBolt::new);
         RenderingRegistry.registerEntityRenderingHandler(KaiaEntity.class, RenderKaia::new);
     }
