@@ -165,15 +165,15 @@ public class KaiaGui extends GuiScreen implements IScrollableGui {
     }
 
     private boolean thisNbtNumberIsValid(NbtNumberValues nbtNumberValue, Integer valueOfActualGuiChangeNumber) {
-        List<NbtNumberValues> standartValues = Arrays.stream(NbtNumberValues.values()).filter(nbtValue -> nbtValue != NbtNumberValues.maxCountSlot).collect(Collectors.toList());
+        List<NbtNumberValues> standartValues = Arrays.stream(NbtNumberValues.values()).filter(nbtValue -> nbtValue != NbtNumberValues.maxCountSlot
+                && nbtValue != NbtNumberValues.teleportAllItemsToBackpack).collect(Collectors.toList());
         if (standartValues.contains(nbtNumberValue) && (valueOfActualGuiChangeNumber < 1 || valueOfActualGuiChangeNumber > 1000)) {
             return false;
         } else {
             if (nbtNumberValue == NbtNumberValues.maxCountSlot && (valueOfActualGuiChangeNumber > Integer.MAX_VALUE - 1 || valueOfActualGuiChangeNumber < 1)) {
                 return false;
-            }
+            } else return nbtNumberValue != NbtNumberValues.teleportAllItemsToBackpack || (valueOfActualGuiChangeNumber <= 1000 && valueOfActualGuiChangeNumber >= 0);
         }
-        return true;
     }
 
     private boolean theClickInButtonChangeConfig(int mouseX, int mouseY, int button) throws IOException {

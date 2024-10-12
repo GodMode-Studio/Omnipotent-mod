@@ -51,6 +51,9 @@ guikaia.config.fastBreakBlocks=Quebrar blocos de forma rápida
 guikaia.config.rgbEnchantmentGlitch=Efeito RGB em aurea de encantamento
 guikaia.config.banEntityToSealedDimension=Banir a Entidade para uma dimensão selada
 guikaia.config.maximumObliteration=Oblitere a entidade
+guikaia.config.rescueBeforeDeath=Salvamento antes da morte
+guikaia.config.excludeTileEntityDestruction=Preservar Tile Entity Blocks na mineração em massa
+guikaia.config.teleportAllItemsToBackpack=Teleportar todos os itens para a mochila da Kaia
 #keys
 keykaia.category=Botões Kaia
 keykaia.config=Configurações
@@ -108,3 +111,6 @@ function.description.fastBreakBlocks=Essa opção otimiza a quebra de blocos em 
 function.description.rgbEnchantmentGlitch=Essa opção ativa o efeito RGB no encantamento da espada.
 function.description.banEntityToSealedDimension=Essa opção bani o player morto pela kaia para uma outra dimensão, nesta dimensão não nascem mobs, portais não funcionam todos os itens do player são deletados e o respawn é dentro dela, caso seja um mob ele não será morto só sera enviado para a outra dimensão.
 function.description.maximumObliteration=Essa opção oblitera a entidade, é útil quando a entidade não é morta pela kaia normal.
+function.description.rescueBeforeDeath=Essa opção faz Kaia retorna ao seu inventário assim que voce está prestes a morre.
+function.description.excludeTileEntityDestruction=Esta opção garante que os blocos do tipo TileEntity não sejam destruídos durante a mineração em área.
+function.description.teleportAllItemsToBackpack=Teleporta todos os itens no alcance definido direto para o inventario da kaia, o valor a baixo é em blocos e 0 significa desativado.

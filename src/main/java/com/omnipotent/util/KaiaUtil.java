@@ -381,7 +381,7 @@ public final class KaiaUtil {
             capturedDrops.forEach(entityItem -> drops.add(entityItem.getItem()));
             if (soulReaper != null) drops.add(soulReaper);
             UtilityHelper.compactListItemStacks(drops);
-            addedItemsStacksInKaiaInventory(playerSource, drops, kaia);
+            kaia.addItemStacksInInventory(playerSource, drops);
         } else {
             if (Loader.isModLoaded(DRACONIC_MODID)) {
                 World world = playerSource.world;
@@ -590,7 +590,7 @@ public final class KaiaUtil {
             drops.add(new ItemStack(block));
         UtilityHelper.compactListItemStacks(drops);
         if (kaiaWrapper.getBoolean(autoBackPack))
-            addedItemsStacksInKaiaInventory(player, drops, kaiaInMainHand);
+            kaiaInMainHand.addItemStacksInInventory(player, drops);
         else
             drops.forEach(dropStack -> player.world.spawnEntity(new EntityItem(player.world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, dropStack)));
         xp += block.getExpDrop(state, player.world, pos, enchLevelFortune);
@@ -611,7 +611,8 @@ public final class KaiaUtil {
         int endY = centerPos.getY() + areaBlock / 2;
         float xp = 0f;
         xp += breakBlockIfDropsIsEmpty((EntityPlayerMP) player, centerPos);
-        if (getKaiaInMainHand(player).get().getBoolean(noBreakTileEntity)) {
+        KaiaWrapper kaiaWrapper = getKaiaInMainHand(player).get();
+        if (kaiaWrapper.getBoolean(noBreakTileEntity)) {
             if (checkTheAreaForTileEntityBlock(startX, startY, startZ, endX, endY, endZ, player.world)) {
                 world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
                 return;
@@ -621,7 +622,7 @@ public final class KaiaUtil {
             for (int z = startZ; z <= endZ; z++) {
                 for (int y = startY; y <= endY; y++) {
                     BlockPos blockPos = new BlockPos(x, y, z);
-                    if (!world.isAirBlock(blockPos)) {
+                    if (!world.isAirBlock(blockPos) && (!kaiaWrapper.getBoolean(excludeTileEntityDestruction) || world.getTileEntity(blockPos)==null)) {
                         xp += breakBlockIfDropsIsEmpty((EntityPlayerMP) player, blockPos);
                     }
                 }
@@ -661,44 +662,6 @@ public final class KaiaUtil {
 //        player.addStat(StatList.getBlockStats(block));
         player.world.destroyBlock(pos, false);
         return xp;
-    }
-
-    //excluir
-    public static void addedItemsStacksInKaiaInventory(EntityPlayer playerOwnerOfKaia, NonNullList<ItemStack> drops, KaiaWrapper kaiaWrapper) {
-        InventoryKaia inventory = kaiaWrapper.getInventory();
-        for (ItemStack dropStack : drops) {
-            boolean breakMainLoop = false;
-            for (int currentPage = 0; currentPage < inventory.getMaxPage(); currentPage++) {
-                if (breakMainLoop) {
-                    break;
-                }
-                inventory.openInventory(playerOwnerOfKaia);
-                NonNullList<ItemStack> currentPageItems = inventory.getPage(currentPage);
-                for (int currentSlot = 0; currentSlot < currentPageItems.size(); currentSlot++) {
-                    if (breakMainLoop) {
-                        break;
-                    }
-                    ItemStack stackInCurrentSlot = currentPageItems.get(currentSlot);
-                    if (stackInCurrentSlot == null || stackInCurrentSlot.isEmpty()) {
-                        currentPageItems.set(currentSlot, dropStack);
-                        breakMainLoop = true;
-                        break;
-                    } else {
-                        int maxCountSlot = inventory.cancelStackLimit() ? inventory.getInventoryStackLimit() : Math.min(inventory.getInventoryStackLimit(), dropStack.getMaxStackSize());
-                        int countSlotFree = Math.min(maxCountSlot - stackInCurrentSlot.getCount(), dropStack.getCount());
-                        if (countSlotFree > 0 && stackInCurrentSlot.isItemEqual(dropStack) && ItemStack.areItemStackTagsEqual(stackInCurrentSlot, dropStack)) {
-                            stackInCurrentSlot.grow(countSlotFree);
-                            dropStack.shrink(countSlotFree);
-                            if (dropStack.isEmpty()) {
-                                breakMainLoop = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                inventory.closeInventory(playerOwnerOfKaia);
-            }
-        }
     }
 
     public static void createTagCompoundStatusIfNecessary(ItemStack stack) {
@@ -884,7 +847,7 @@ public final class KaiaUtil {
                             EntityPlayerMP entityPlayerMP = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayers().get(0);
                             NonNullList<ItemStack> items = NonNullList.create();
                             items.add(itemStack);
-                            addedItemsStacksInKaiaInventory(entityPlayerMP, items, kaia);
+                            kaia.addItemStacksInInventory(entityPlayerMP, items);
                             inventory.set(i, kaiaNbt);
                             break;
                         }

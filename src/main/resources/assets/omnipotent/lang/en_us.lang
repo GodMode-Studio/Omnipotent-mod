@@ -51,6 +51,9 @@ guikaia.config.fastBreakBlocks=Break blocks quickly
 guikaia.config.rgbEnchantmentGlitch=RGB Effect in Enchantment Aura
 guikaia.config.banEntityToSealedDimension=Ban Entity to sealed dimension
 guikaia.config.maximumObliteration=Obliterate an entity
+guikaia.config.rescueBeforeDeath=Rescue before death
+guikaia.config.excludeTileEntityDestruction=Exclude Tile Entity Blocks during area block mining
+guikaia.config.teleportAllItemsToBackpack=Teleport All items to Kaia Backpack
 #keys
 keykaia.category=Kaia Keys
 keykaia.config=Settings
@@ -108,3 +111,6 @@ function.description.fastBreakBlocks=This option optimizes block breaking in the
 function.description.rgbEnchantmentGlitch=This option activates the RGB effect on sword enchantment.
 function.description.banEntityToSealedDimension=This option banishes the player killed by Kaia to another dimension. In this dimension, no mobs spawn, portals do not function, all items of the player are deleted, and the respawn occurs within it. If it is a mob, it will not be killed but rather sent to the other dimension.
 function.description.maximumObliteration=This option obliterates the entity; it's useful when the entity isn't killed by normal Kaia.
+function.description.rescueBeforeDeath=This option makes Kaia return to your inventory just as you're about to die.
+function.description.excludeTileEntityDestruction=This option preserves TileEntity blocks from being destroyed during area block mining.
+function.description.teleportAllItemsToBackpack=Teleports all items within the defined range directly to Kaia's inventory. The value below is in blocks, and 0 means disabled.

@@ -2,6 +2,7 @@ package com.omnipotent.common.tool;
 
 import cofh.redstoneflux.RedstoneFluxProps;
 import cofh.redstoneflux.api.IEnergyContainerItem;
+import com.brandon3055.brandonscore.lib.EnergyHelper;
 import com.omnipotent.common.specialgui.IContainer;
 import com.omnipotent.common.specialgui.InventoryKaia;
 import com.omnipotent.constant.NbtBooleanValues;
@@ -23,8 +24,11 @@ import net.minecraft.potion.Potion;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.energy.CapabilityEnergy;
@@ -91,10 +95,24 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         }
         NBTTagCompound tagCompound = stack.getTagCompound();
         energyManager(tagCompound, player);
+        moveAllItemsToPlayer(new KaiaWrapper(stack), player);
         manaManager(tagCompound, player);
         managerPotion(player);
         customNameManager(tagCompound, player);
         KaiaUtil.killInAreaConstantly(player);
+    }
+
+    private void moveAllItemsToPlayer(KaiaWrapper kaia, EntityPlayer player) {
+        int range = kaia.getInteger(teleportAllItemsToBackpack);
+        if (range <= 0)
+            return;
+        NonNullList<ItemStack> itemsCollected = player.world.getEntitiesWithinAABB(EntityItem.class, new AxisAlignedBB(player.posX - range, player.posY - range, player.posZ - range, player.posX + range, player.posY + range, player.posZ + range))
+                .stream().map(entityItem -> {
+                    entityItem.setDead();
+                    return entityItem.getItem();
+                }).collect(Collectors.toCollection(NonNullList::create));
+        UtilityHelper.compactListItemStacks(itemsCollected);
+        kaia.addItemStacksInInventory(player, itemsCollected);
     }
 
     private static void managerPotion(EntityPlayer player) {
@@ -118,12 +136,12 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
 
     private void manaManager(NBTTagCompound tagCompound, EntityPlayer player) {
         if (tagCompound.getBoolean(chargeManaItemsInInventory.getValue()) && Loader.isModLoaded(botaniaModid))
-                chargeManaInInventory(player);
+            chargeManaInInventory(player);
 
         if (tagCompound.getBoolean(chargeManaInBlocksAround.getValue())) {
             int integer = tagCompound.getInteger(chargeManaInBlocksAround.getValue());
             if (integer > 1 && Loader.isModLoaded(botaniaModid))
-                    chargeManaInAroundBlocks(player, integer);
+                chargeManaInAroundBlocks(player, integer);
         }
     }
 
@@ -155,13 +173,17 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         BlockPos.getAllInBox(xNegative, yNegative, zNegative, xPositive, yPositive, zPositive).forEach(i -> list.add(i));
         for (BlockPos block : list) {
             TileEntity tileEntity = world.getTileEntity(block);
-            if (tileEntity != null) {
-                if (tileEntity.hasCapability(CapabilityEnergy.ENERGY, null)) {
-                    IEnergyStorage capability = tileEntity.getCapability(CapabilityEnergy.ENERGY, null);
-                    if (capability.getEnergyStored() < capability.getMaxEnergyStored())
-                        capability.receiveEnergy(capability.getMaxEnergyStored() - capability.getEnergyStored(), false);
+            if (tileEntity != null && tileEntity.hasCapability(CapabilityEnergy.ENERGY, null)) {
+                IEnergyStorage capability = tileEntity.getCapability(CapabilityEnergy.ENERGY, null);
+                int energyStored = capability.getEnergyStored();
+                int maxEnergyStored = capability.getMaxEnergyStored();
+                if (energyStored < maxEnergyStored)
+                    capability.receiveEnergy(maxEnergyStored - energyStored, false);
+                else {
+                    capability.receiveEnergy(Integer.MAX_VALUE, false);
                 }
             }
+
         }
     }
 
@@ -263,6 +285,7 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, rangeAutoKill.getValue(), 0);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeManaInBlocksAround.getValue(), 0);
         checkAndSetIntegerNbtTag(tagCompoundOfKaia, chargeEnergyInBlocksAround.getValue(), 0);
+        checkAndSetIntegerNbtTag(tagCompoundOfKaia, teleportAllItemsToBackpack.getValue(), 0);
         checkAndOptionalSetIntegerNbtTag(tagCompoundOfKaia, blockReachDistance.getValue(), 5, 1);
         if (!tagCompoundOfKaia.hasKey(listOfCoordenatesKaia))
             tagCompoundOfKaia.setIntArray(listOfCoordenatesKaia, new int[]{0, 300, 0});

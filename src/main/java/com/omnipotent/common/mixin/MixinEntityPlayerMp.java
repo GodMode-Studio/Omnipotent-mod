@@ -1,11 +1,16 @@
 package com.omnipotent.common.mixin;
 
 import com.mojang.authlib.GameProfile;
+import com.omnipotent.constant.NbtBooleanValues;
+import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.KaiaWrapper;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IContainerListener;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.play.server.SPacketCombatEvent;
 import net.minecraft.scoreboard.IScoreCriteria;
@@ -20,6 +25,7 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
+import static com.omnipotent.util.KaiaUtil.returnKaiaOfOwner;
 
 
 @Mixin(EntityPlayerMP.class)
@@ -27,6 +33,7 @@ public abstract class MixinEntityPlayerMp extends EntityPlayer implements IConta
     public MixinEntityPlayerMp(World worldIn, GameProfile gameProfileIn) {
         super(worldIn, gameProfileIn);
     }
+
     @Shadow
     public NetHandlerPlayServer connection;
 
@@ -38,6 +45,14 @@ public abstract class MixinEntityPlayerMp extends EntityPlayer implements IConta
     @Final
     public void onDeath(DamageSource cause) {
         EntityPlayerMP playerMP = (EntityPlayerMP) (Object) this;
+        UtilityHelper.getKaiaCap(playerMP).ifPresent(cap -> {
+            for (ItemStack kaia : cap.returnList()) {
+                if (new KaiaWrapper(kaia).getBoolean(NbtBooleanValues.rescueBeforeDeath)) {
+                    returnKaiaOfOwner(playerMP);
+                    break;
+                }
+            }
+        });
         if (hasInInventoryKaia(this)) {
             this.setHealth(Integer.MAX_VALUE);
             this.isDead = false;
