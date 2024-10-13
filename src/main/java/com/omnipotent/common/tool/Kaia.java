@@ -3,6 +3,7 @@ package com.omnipotent.common.tool;
 import cofh.redstoneflux.RedstoneFluxProps;
 import cofh.redstoneflux.api.IEnergyContainerItem;
 import com.brandon3055.brandonscore.lib.EnergyHelper;
+import com.omnipotent.common.specialgui.ContainerKaia;
 import com.omnipotent.common.specialgui.IContainer;
 import com.omnipotent.common.specialgui.InventoryKaia;
 import com.omnipotent.constant.NbtBooleanValues;
@@ -112,7 +113,10 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
                     return entityItem.getItem();
                 }).collect(Collectors.toCollection(NonNullList::create));
         UtilityHelper.compactListItemStacks(itemsCollected);
-        kaia.addItemStacksInInventory(player, itemsCollected);
+        if (player.openContainer instanceof ContainerKaia containerKaia)
+            containerKaia.addExternItemStack(itemsCollected);
+        else
+            kaia.addItemStacksInInventory(player, itemsCollected);
     }
 
     private static void managerPotion(EntityPlayer player) {
@@ -257,8 +261,7 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         BlockPos.getAllInBox(xNegative, yNegative, zNegative, xPositive, yPositive, zPositive).forEach(i -> list.add(i));
         for (BlockPos block : list) {
             TileEntity tileEntity = world.getTileEntity(block);
-            if (tileEntity != null && tileEntity instanceof IManaReceiver) {
-                IManaReceiver manaReceiver = (IManaReceiver) tileEntity;
+            if (tileEntity instanceof IManaReceiver manaReceiver) {
                 if (!manaReceiver.isFull())
                     manaReceiver.recieveMana(Integer.MAX_VALUE);
             }
