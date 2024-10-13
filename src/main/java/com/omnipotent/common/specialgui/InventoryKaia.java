@@ -132,7 +132,7 @@ public class InventoryKaia implements IInventory {
         }
     }
 
-    public void loadAllItems(NBTTagCompound tag, NonNullList<ItemStack> list) {
+    private void loadAllItems(NBTTagCompound tag, NonNullList<ItemStack> list) {
         NBTTagList nbttaglist = tag.getTagList("Items", 10);
         for (int i = 0; i < nbttaglist.tagCount(); ++i) {
             NBTTagCompound nbttagcompound = nbttaglist.getCompoundTagAt(i);
@@ -172,7 +172,7 @@ public class InventoryKaia implements IInventory {
         }
     }
 
-    public NBTTagCompound saveAllItems(NBTTagCompound tag, NonNullList<ItemStack> list, boolean saveEmpty) {
+    private NBTTagCompound saveAllItems(NBTTagCompound tag, NonNullList<ItemStack> list, boolean saveEmpty) {
         NBTTagList nbttaglist = new NBTTagList();
         for (int i = 0; i < list.size(); ++i) {
             ItemStack itemstack = list.get(i);

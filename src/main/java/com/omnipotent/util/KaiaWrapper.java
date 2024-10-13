@@ -139,39 +139,30 @@ public final class KaiaWrapper {
 
     public void addItemStacksInInventory(EntityPlayer playerOwnerOfKaia, NonNullList<ItemStack> drops) {
         InventoryKaia inventory = this.getInventory();
+        inventory.openInventory(playerOwnerOfKaia);
         for (ItemStack dropStack : drops) {
-            boolean breakMainLoop = false;
             for (int currentPage = 0; currentPage < inventory.getMaxPage(); currentPage++) {
-                if (breakMainLoop) {
-                    break;
-                }
-                inventory.openInventory(playerOwnerOfKaia);
                 NonNullList<ItemStack> currentPageItems = inventory.getPage(currentPage);
                 for (int currentSlot = 0; currentSlot < currentPageItems.size(); currentSlot++) {
-                    if (breakMainLoop) {
+                    ItemStack stackInCurrentSlot = currentPageItems.get(currentSlot);
+                    if (stackInCurrentSlot.isEmpty()) {
+                        currentPageItems.set(currentSlot, dropStack);
+                        dropStack = ItemStack.EMPTY;
                         break;
                     }
-                    ItemStack stackInCurrentSlot = currentPageItems.get(currentSlot);
-                    if (stackInCurrentSlot == null || stackInCurrentSlot.isEmpty()) {
-                        currentPageItems.set(currentSlot, dropStack);
-                        breakMainLoop = true;
-                        break;
-                    } else {
-                        int maxCountSlot = inventory.cancelStackLimit() ? inventory.getInventoryStackLimit() : Math.min(inventory.getInventoryStackLimit(), dropStack.getMaxStackSize());
-                        int countSlotFree = Math.min(maxCountSlot - stackInCurrentSlot.getCount(), dropStack.getCount());
-                        if (countSlotFree > 0 && stackInCurrentSlot.isItemEqual(dropStack) && ItemStack.areItemStackTagsEqual(stackInCurrentSlot, dropStack)) {
-                            stackInCurrentSlot.grow(countSlotFree);
-                            dropStack.shrink(countSlotFree);
-                            if (dropStack.isEmpty()) {
-                                breakMainLoop = true;
-                                break;
-                            }
+                    int countSlotFree = Math.min(inventory.getInventoryStackLimit() - stackInCurrentSlot.getCount(), dropStack.getCount());
+                    if (countSlotFree > 0 && stackInCurrentSlot.isItemEqual(dropStack) && ItemStack.areItemStackTagsEqual(stackInCurrentSlot, dropStack)) {
+                        stackInCurrentSlot.grow(countSlotFree);
+                        dropStack.shrink(countSlotFree);
+                        if (dropStack.isEmpty()) {
+                            break;
                         }
                     }
                 }
-                inventory.closeInventory(playerOwnerOfKaia);
+                if (dropStack.isEmpty()) break;
             }
         }
+        inventory.closeInventory(playerOwnerOfKaia);
     }
 
     public InventoryKaia getInventory() {

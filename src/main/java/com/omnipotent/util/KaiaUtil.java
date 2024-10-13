@@ -14,7 +14,7 @@ import com.omnipotent.common.capability.kaiacap.KaiaProvider;
 import com.omnipotent.common.damage.AbsoluteOfCreatorDamage;
 import com.omnipotent.common.entity.CustomLightningBolt;
 import com.omnipotent.common.entity.KaiaEntity;
-import com.omnipotent.common.specialgui.InventoryKaia;
+import com.omnipotent.common.specialgui.ContainerKaia;
 import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.constant.NbtBooleanValues;
 import net.crazymonsters.entity.EntityNotch;
@@ -61,7 +61,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
@@ -100,7 +99,7 @@ public final class KaiaUtil {
 
     private static void deleteDuplicateKaias(EntityPlayer player) {
         NonNullList<ItemStack> inventory = player.inventory.mainInventory;
-        ArrayList<KaiaWrapper> kaias = new ArrayList();
+        ArrayList<KaiaWrapper> kaias = new ArrayList<>();
         for (int i = 0; i < inventory.size(); i++) {
             ItemStack currentItem = inventory.get(i);
             if (currentItem.getItem() instanceof Kaia) {
@@ -381,7 +380,9 @@ public final class KaiaUtil {
             capturedDrops.forEach(entityItem -> drops.add(entityItem.getItem()));
             if (soulReaper != null) drops.add(soulReaper);
             UtilityHelper.compactListItemStacks(drops);
-            kaia.addItemStacksInInventory(playerSource, drops);
+            if(playerSource.openContainer instanceof ContainerKaia containerKaia)
+                containerKaia.addExternItemStack(drops);
+            else kaia.addItemStacksInInventory(playerSource, drops);
         } else {
             if (Loader.isModLoaded(DRACONIC_MODID)) {
                 World world = playerSource.world;
@@ -455,13 +456,105 @@ public final class KaiaUtil {
             if (!player.world.isRemote && !player.capabilities.isCreativeMode && withKaiaMainHand(player)) {
                 if (areaBlock % 2 != 0) {
                     if (kaiaWrapper.getBoolean(fastBreakBlocks))
-                        fastBreakBlocksInAreaOld(areaBlock, player, pos, kaiaWrapper);
+                        breakBlocksInArea(areaBlock, player, pos);//                        fastBreakBlocksInAreaOld(areaBlock, player, pos, kaiaWrapper);
                     else
                         breakBlocksInArea(areaBlock, player, pos);
                 }
             }
+        } else {
+            NonNullList<ItemStack> drops = NonNullList.create();
+            int xp = (int) fillDropListAndCompactIfNecessary(player, pos, drops, kaiaWrapper.getEnchantmentLevel(Enchantments.FORTUNE));
+            processDropsForPlayer(player, drops, kaiaWrapper, Collections.singletonList(pos));
+            player.world.destroyBlock(pos, false);
+            spawnXP(player, pos, player.world, xp);
+        }
+    }
+
+    public static void breakBlocksInArea(int areaBlock, final EntityPlayer player, BlockPos centerPos) {
+        final World world = player.world;
+        int halfArea = areaBlock / 2;
+        int startX = centerPos.getX() - halfArea;
+        int endX = centerPos.getX() + halfArea;
+        int startZ = centerPos.getZ() - halfArea;
+        int endZ = centerPos.getZ() + halfArea;
+        int startY = centerPos.getY() - halfArea;
+        int endY = centerPos.getY() + halfArea;
+        float xp = 0f;
+        NonNullList<ItemStack> drops = NonNullList.create();
+        KaiaWrapper kaiaWrapper = getKaiaInMainHand(player).get();
+        List<BlockPos> blocksToBreak = new ArrayList<>((int) (Math.pow(areaBlock, 3) * 0.75));
+        if (kaiaWrapper.getBoolean(noBreakTileEntity) && checkTheAreaForTileEntityBlock(startX, startY, startZ, endX, endY, endZ, player.world)) {
+            xp = (int) fillDropListAndCompactIfNecessary((EntityPlayerMP) player, centerPos, drops, kaiaWrapper.getEnchantmentLevel(Enchantments.FORTUNE));
+            processDropsForPlayer(player, drops, kaiaWrapper, Collections.singletonList(centerPos));
+            player.world.destroyBlock(centerPos, false);
+            spawnXP(player, centerPos, world, (int) xp);
+            return;
+        }
+        boolean noExcludeTileEntities = !kaiaWrapper.getBoolean(excludeTileEntityDestruction);
+        for (int x = startX; x <= endX; x++) {
+            for (int z = startZ; z <= endZ; z++) {
+                for (int y = startY; y <= endY; y++) {
+                    BlockPos blockPos = new BlockPos(x, y, z);
+                    if (!world.isAirBlock(blockPos) && (noExcludeTileEntities || world.getTileEntity(blockPos) == null)) {
+                        blocksToBreak.add(blockPos);
+                    }
+                }
+            }
+        }
+        for (BlockPos blockPos : blocksToBreak) {
+            xp += fillDropListAndCompactIfNecessary((EntityPlayerMP) player, blockPos, drops, kaiaWrapper.getEnchantmentLevel(Enchantments.FORTUNE));
+        }
+        processDropsForPlayer(player, drops, kaiaWrapper, blocksToBreak);
+        final boolean b = blocksToBreak.size() > (150000);
+        for (BlockPos blockPos : blocksToBreak) {
+            boolean x = b ? world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), 3) : player.world.destroyBlock(blockPos, false);
+        }
+        spawnXP(player, centerPos, world, (int) xp);
+    }
+
+    private static boolean spawnXP(EntityPlayer player, BlockPos centerPos, World world, int xp) {
+        return world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, xp));
+    }
+
+    private static void processDropsForPlayer(EntityPlayer player, NonNullList<ItemStack> drops, KaiaWrapper kaiaWrapper, List<BlockPos> blocksToDrop) {
+        UtilityHelper.compactListItemStacks(drops);
+        drops.removeIf(item -> item.isEmpty());
+        if (kaiaWrapper.getBoolean(autoBackPack)) {
+            kaiaWrapper.addItemStacksInInventory(player, drops);
+        } else {
+            for (BlockPos blockPos : blocksToDrop) {
+                drops.forEach(dropStack -> player.world.spawnEntity(new EntityItem(player.world, blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5, dropStack)));
+            }
+        }
+    }
+
+
+    public static float fillDropListAndCompactIfNecessary(EntityPlayerMP player, BlockPos pos, NonNullList<ItemStack> drops, int enchLevelFortune) {
+        if (drops.size() > 5000) {
+            UtilityHelper.compactListItemStacks(drops);
+        }
+        IBlockState state = player.world.getBlockState(pos);
+        Block block = state.getBlock();
+        float xp = 0f;
+        NonNullList<ItemStack> dropsBlock = NonNullList.create();
+        block.getDrops(dropsBlock, player.world, pos, state, enchLevelFortune);
+        dropsBlock.removeIf(item -> item.getItem() instanceof ItemAir);
+        if (dropsBlock.isEmpty()) {
+            drops.add(new ItemStack(block));
         } else
-            player.world.spawnEntity(new EntityXPOrb(player.world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, (int) breakBlockIfDropsIsEmpty(player, pos)));
+            drops.addAll(dropsBlock);
+        xp += block.getExpDrop(state, player.world, pos, enchLevelFortune);
+        //linha comentada devida a lentidão dela talvez volte no futuro.
+//        player.addStat(StatList.getBlockStats(block));
+        return xp;
+    }
+
+    private static boolean checkTheAreaForTileEntityBlock(int startX, int startY, int startZ, int endX, int endY, int endZ, World world) {
+        BlockPos startBlockPos = new BlockPos(startX, startY, startZ);
+        for (BlockPos blockPos : BlockPos.getAllInBox(startBlockPos, new BlockPos(endX, endY, endZ))) {
+            if (world.getBlockState(blockPos).getBlock().hasTileEntity(world.getBlockState(blockPos))) return true;
+        }
+        return false;
     }
 
     public static void fastBreakBlocksInAreaOld(int areaBlock, EntityPlayer player, BlockPos centerPos, KaiaWrapper kaiaWrapper) {
@@ -476,7 +569,7 @@ public final class KaiaUtil {
         xp += fastBreakBlock((EntityPlayerMP) player, centerPos, kaiaWrapper);
         if (kaiaWrapper.getBoolean(noBreakTileEntity)) {
             if (checkTheAreaForTileEntityBlock(startX, startY, startZ, endX, endY, endZ, player.world)) {
-                world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
+                spawnXP(player, centerPos, world, (int) xp);
                 return;
             }
         }
@@ -490,92 +583,8 @@ public final class KaiaUtil {
                 }
             }
         }
-        world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
+        spawnXP(player, centerPos, world, (int) xp);
     }
-
-//    public static void fastBreakBlocksInArea(final int areaBlock, final EntityPlayer player, final BlockPos centerPos, final NBTTagCompound tagCompound) {
-//        breakBlocksInArea(areaBlock, player, centerPos);
-
-//        World world = player.world;
-//        int startX = centerPos.getX() - areaBlock / 2;
-//        int endX = centerPos.getX() + areaBlock / 2;
-//        int startZ = centerPos.getZ() - areaBlock / 2;
-//        int endZ = centerPos.getZ() + areaBlock / 2;
-//        int startY = centerPos.getY() - areaBlock / 2;
-//        int endY = centerPos.getY() + areaBlock / 2;
-//        float xp = 0f;
-//        int totalArea = areaBlock * areaBlock * areaBlock;
-//        int nThreads = Runtime.getRuntime().availableProcessors();
-//        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
-//        int initialCapacity = (int) Math.ceil(totalArea / nThreads);
-//        ArrayList<BlockPos> blocksToBreak = new ArrayList<>(totalArea);
-//        ArrayList<BlockPos> blocksToBreak2 = new ArrayList<>(initialCapacity);
-//        ArrayList<BlockPos> blocksToBreak3 = new ArrayList<>(initialCapacity);
-//        xp += fastBreakBlock((EntityPlayerMP) player, centerPos, tagCompound);
-//        if (tagCompound.getBoolean(noBreakTileEntity.getValue())) {
-//            if (checkTheAreaForTileEntityBlock(startX, startY, startZ, endX, endY, endZ, player.world)) {
-//                world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
-//                return;
-//            }
-//        }
-//        int count = 0;
-//        for (int x = startX; x <= endX; x++) {
-//            for (int z = startZ; z <= endZ; z++) {
-//                for (int y = startY; y <= endY; y++) {
-//                    BlockPos blockPos = new BlockPos(x, y, z);
-//                    if (!world.isAirBlock(blockPos)) {
-//                        if (count <= initialCapacity)
-//                            blocksToBreak.add(blockPos);
-//                        else if (count <= initialCapacity * 2)
-//                            blocksToBreak2.add(blockPos);
-//                        else
-//                            blocksToBreak3.add(blockPos);
-//                        count++;
-//                    }
-//                }
-//            }
-//        }
-
-    //deppois
-//       try {
-//           ForkJoinPool forkJoinPool = ForkJoinPool.commonPool();
-//           Long invoke = forkJoinPool.invoke(new BreakBlocksTask(blocksToBreak, (EntityPlayerMP) player, tagCompound));
-//           UtilityHelper.sendMessageToAllPlayers(String.valueOf(invoke));
-//       }catch (Exception e){
-//           System.out.println(e);
-//       }
-    //-------
-//        ArrayList<CompletableFuture<Integer>> blocksToBreakAllTask = new ArrayList<>();
-//        blocksToBreakAllTask.add(CompletableFuture.supplyAsync(() -> {
-//            int xp1 = 0;
-//            for (BlockPos b : blocksToBreak) {
-//                xp1 += fastBreakBlock((EntityPlayerMP) player, b, tagCompound);
-//            }
-//            return xp1;
-//        }));
-//        blocksToBreakAllTask.add(CompletableFuture.supplyAsync(() -> {
-//            int xp1 = 0;
-//            for (BlockPos b : blocksToBreak2) {
-//                xp1 += fastBreakBlock((EntityPlayerMP) player, b, tagCompound);
-//            }
-//            return xp1;
-//        }));
-//        blocksToBreakAllTask.add(CompletableFuture.supplyAsync(() -> {
-//            int xp1 = 0;
-//            for (BlockPos b : blocksToBreak3) {
-//                xp1 += fastBreakBlock((EntityPlayerMP) player, b, tagCompound);
-//            }
-//            return xp1;
-//        }));
-//        CompletableFuture<Void> blocksToBreakFuture = CompletableFuture.allOf(blocksToBreakAllTask.toArray(new CompletableFuture[0]));
-//        CompletableFuture<Integer> integerCompletableFuture = blocksToBreakFuture.thenApply(v -> blocksToBreakAllTask.stream().map(CompletableFuture::join).reduce(0, Integer::sum));
-//        try {
-//            xp += integerCompletableFuture.get();
-//        } catch (InterruptedException e) {
-//        } catch (ExecutionException e) {
-//        }
-//        world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
-//    }
 
     public static float fastBreakBlock(EntityPlayerMP player, BlockPos pos, KaiaWrapper kaiaWrapper) {
         IBlockState state = player.world.getBlockState(pos);
@@ -598,69 +607,6 @@ public final class KaiaUtil {
             UtilityHelper.setBlockStateFast(player.world, pos, Blocks.AIR.getDefaultState(), 3);
         } catch (Exception e) {
         }
-        return xp;
-    }
-
-    public static void breakBlocksInArea(int areaBlock, EntityPlayer player, BlockPos centerPos) {
-        World world = player.world;
-        int startX = centerPos.getX() - areaBlock / 2;
-        int endX = centerPos.getX() + areaBlock / 2;
-        int startZ = centerPos.getZ() - areaBlock / 2;
-        int endZ = centerPos.getZ() + areaBlock / 2;
-        int startY = centerPos.getY() - areaBlock / 2;
-        int endY = centerPos.getY() + areaBlock / 2;
-        float xp = 0f;
-        xp += breakBlockIfDropsIsEmpty((EntityPlayerMP) player, centerPos);
-        KaiaWrapper kaiaWrapper = getKaiaInMainHand(player).get();
-        if (kaiaWrapper.getBoolean(noBreakTileEntity)) {
-            if (checkTheAreaForTileEntityBlock(startX, startY, startZ, endX, endY, endZ, player.world)) {
-                world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
-                return;
-            }
-        }
-        for (int x = startX; x <= endX; x++) {
-            for (int z = startZ; z <= endZ; z++) {
-                for (int y = startY; y <= endY; y++) {
-                    BlockPos blockPos = new BlockPos(x, y, z);
-                    if (!world.isAirBlock(blockPos) && (!kaiaWrapper.getBoolean(excludeTileEntityDestruction) || world.getTileEntity(blockPos)==null)) {
-                        xp += breakBlockIfDropsIsEmpty((EntityPlayerMP) player, blockPos);
-                    }
-                }
-            }
-        }
-        world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
-    }
-
-    private static boolean checkTheAreaForTileEntityBlock(int startX, int startY, int startZ, int endX, int endY, int endZ, World world) {
-        BlockPos startBlockPos = new BlockPos(startX, startY, startZ);
-        for (BlockPos blockPos : BlockPos.getAllInBox(startBlockPos, new BlockPos(endX, endY, endZ))) {
-            if (world.getBlockState(blockPos).getBlock().hasTileEntity(world.getBlockState(blockPos))) return true;
-        }
-        return false;
-    }
-
-    public static float breakBlockIfDropsIsEmpty(EntityPlayerMP player, BlockPos pos) {
-        IBlockState state = player.world.getBlockState(pos);
-        Block block = state.getBlock();
-        NonNullList<ItemStack> drops = NonNullList.create();
-        KaiaWrapper kaiaInMainHand = getKaiaInMainHand(player).get();
-        int enchLevelFortune = kaiaInMainHand.getEnchantmentLevel(Enchantments.FORTUNE);
-        Float xp = 0f;
-        block.getDrops(drops, player.world, pos, state, enchLevelFortune);
-        drops.removeIf(item -> item.getItem() instanceof ItemAir);
-        if (drops.isEmpty()) {
-            drops.add(new ItemStack(block));
-        }
-        UtilityHelper.compactListItemStacks(drops);
-        if (kaiaInMainHand.getBoolean(autoBackPack)) {
-            kaiaInMainHand.addItemStacksInInventory(player, drops);
-        } else {
-            drops.forEach(dropStack -> player.world.spawnEntity(new EntityItem(player.world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, dropStack)));
-        }
-        xp += block.getExpDrop(state, player.world, pos, enchLevelFortune);
-        //linha comentada devida a lentidão dela talvez volte no futuro.
-//        player.addStat(StatList.getBlockStats(block));
-        player.world.destroyBlock(pos, false);
         return xp;
     }
 
@@ -865,4 +811,89 @@ public final class KaiaUtil {
     public static KaiaWrapper getHeldKaia(EntityPlayer player, EnumHand enumHand) {
         return new KaiaWrapper(player.getHeldItem(enumHand));
     }
+
+
+//    public static void fastBreakBlocksInArea(final int areaBlock, final EntityPlayer player, final BlockPos centerPos, final NBTTagCompound tagCompound) {
+//        breakBlocksInArea(areaBlock, player, centerPos);
+
+//        World world = player.world;
+//        int startX = centerPos.getX() - areaBlock / 2;
+//        int endX = centerPos.getX() + areaBlock / 2;
+//        int startZ = centerPos.getZ() - areaBlock / 2;
+//        int endZ = centerPos.getZ() + areaBlock / 2;
+//        int startY = centerPos.getY() - areaBlock / 2;
+//        int endY = centerPos.getY() + areaBlock / 2;
+//        float xp = 0f;
+//        int totalArea = areaBlock * areaBlock * areaBlock;
+//        int nThreads = Runtime.getRuntime().availableProcessors();
+//        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+//        int initialCapacity = (int) Math.ceil(totalArea / nThreads);
+//        ArrayList<BlockPos> blocksToBreak = new ArrayList<>(totalArea);
+//        ArrayList<BlockPos> blocksToBreak2 = new ArrayList<>(initialCapacity);
+//        ArrayList<BlockPos> blocksToBreak3 = new ArrayList<>(initialCapacity);
+//        xp += fastBreakBlock((EntityPlayerMP) player, centerPos, tagCompound);
+//        if (tagCompound.getBoolean(noBreakTileEntity.getValue())) {
+//            if (checkTheAreaForTileEntityBlock(startX, startY, startZ, endX, endY, endZ, player.world)) {
+//                world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
+//                return;
+//            }
+//        }
+//        int count = 0;
+//        for (int x = startX; x <= endX; x++) {
+//            for (int z = startZ; z <= endZ; z++) {
+//                for (int y = startY; y <= endY; y++) {
+//                    BlockPos blockPos = new BlockPos(x, y, z);
+//                    if (!world.isAirBlock(blockPos)) {
+//                        if (count <= initialCapacity)
+//                            blocksToBreak.add(blockPos);
+//                        else if (count <= initialCapacity * 2)
+//                            blocksToBreak2.add(blockPos);
+//                        else
+//                            blocksToBreak3.add(blockPos);
+//                        count++;
+//                    }
+//                }
+//            }
+//        }
+
+    //deppois
+//       try {
+//           ForkJoinPool forkJoinPool = ForkJoinPool.commonPool();
+//           Long invoke = forkJoinPool.invoke(new BreakBlocksTask(blocksToBreak, (EntityPlayerMP) player, tagCompound));
+//           UtilityHelper.sendMessageToAllPlayers(String.valueOf(invoke));
+//       }catch (Exception e){
+//           System.out.println(e);
+//       }
+    //-------
+//        ArrayList<CompletableFuture<Integer>> blocksToBreakAllTask = new ArrayList<>();
+//        blocksToBreakAllTask.add(CompletableFuture.supplyAsync(() -> {
+//            int xp1 = 0;
+//            for (BlockPos b : blocksToBreak) {
+//                xp1 += fastBreakBlock((EntityPlayerMP) player, b, tagCompound);
+//            }
+//            return xp1;
+//        }));
+//        blocksToBreakAllTask.add(CompletableFuture.supplyAsync(() -> {
+//            int xp1 = 0;
+//            for (BlockPos b : blocksToBreak2) {
+//                xp1 += fastBreakBlock((EntityPlayerMP) player, b, tagCompound);
+//            }
+//            return xp1;
+//        }));
+//        blocksToBreakAllTask.add(CompletableFuture.supplyAsync(() -> {
+//            int xp1 = 0;
+//            for (BlockPos b : blocksToBreak3) {
+//                xp1 += fastBreakBlock((EntityPlayerMP) player, b, tagCompound);
+//            }
+//            return xp1;
+//        }));
+//        CompletableFuture<Void> blocksToBreakFuture = CompletableFuture.allOf(blocksToBreakAllTask.toArray(new CompletableFuture[0]));
+//        CompletableFuture<Integer> integerCompletableFuture = blocksToBreakFuture.thenApply(v -> blocksToBreakAllTask.stream().map(CompletableFuture::join).reduce(0, Integer::sum));
+//        try {
+//            xp += integerCompletableFuture.get();
+//        } catch (InterruptedException e) {
+//        } catch (ExecutionException e) {
+//        }
+//        world.spawnEntity(new EntityXPOrb(player.world, centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5, (int) xp));
+//    }
 }

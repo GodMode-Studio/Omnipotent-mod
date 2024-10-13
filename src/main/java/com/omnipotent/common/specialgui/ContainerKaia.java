@@ -3,12 +3,13 @@ package com.omnipotent.common.specialgui;
 import com.google.common.collect.Sets;
 import com.omnipotent.common.network.NetworkRegister;
 import com.omnipotent.common.specialgui.net.KaiaSlotChangePacket;
+import com.omnipotent.util.KaiaWrapper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 
 import javax.annotation.Nullable;
 import java.util.Set;
@@ -19,7 +20,7 @@ public class ContainerKaia extends Container {
     public InventoryKaiaCraft craftMatrix;
     public InventoryCraftResult craftResult;
     public boolean skipRefillCraft = false;
-    private ItemStack stack;
+    private final ItemStack stack;
     private int slotIndex;
     private int dragMode = -1;
     private int dragEvent;
@@ -106,7 +107,7 @@ public class ContainerKaia extends Container {
 
     @Override
     public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, EntityPlayer player) {
-        if (slotIndex != -1 && (slotId == 108 + slotIndex || clickTypeIn == ClickType.SWAP && dragType == slotIndex)) {
+        if (slotIndex != -1 && (slotId == 118 + slotIndex || clickTypeIn == ClickType.SWAP && dragType == slotIndex)) {
             return ItemStack.EMPTY;
         }
         if (!inventory.cancelStackLimit()) {
@@ -457,7 +458,7 @@ public class ContainerKaia extends Container {
 
     private ItemStack craftLogic(EntityPlayer playerIn, ItemStack originalStack, ItemStack originalStackAfterTransfer, Slot slot) {
         originalStack.getItem().onCreated(originalStack, playerIn.world, playerIn);
-        if (!mergeItemStack(originalStack, inventory.getSizeInventory(), inventorySlots.size(), true)) {
+        if (!mergeItemStack(originalStack, 10, inventorySlots.size(), true)) {
             return ItemStack.EMPTY;
         }
         slot.onSlotChange(originalStack, originalStackAfterTransfer);
@@ -489,6 +490,7 @@ public class ContainerKaia extends Container {
         this.craftMatrix.closeInventory(player);
     }
 
+    @Override
     public void detectAndSendChanges() {
         for (int i = 0; i < inventorySlots.size(); ++i) {
             ItemStack slotStack = inventorySlots.get(i).getStack();
@@ -511,6 +513,54 @@ public class ContainerKaia extends Container {
         }
     }
 
+    public void addExternItemStack(NonNullList<ItemStack> drops) {
+        for (ItemStack droppedStack : drops) {
+            for (int currentPage = 0; currentPage < inventory.getMaxPage(); currentPage++) {
+                if (currentPage != inventory.getField(0)) {
+                    NonNullList<ItemStack> currentPageItems = inventory.getPage(currentPage);
+                    for (int currentSlot = 0; currentSlot < currentPageItems.size(); currentSlot++) {
+                        ItemStack stackInCurrentSlot = currentPageItems.get(currentSlot);
+                        if (stackInCurrentSlot.isEmpty()) {
+                            currentPageItems.set(currentSlot, droppedStack);
+                            droppedStack = ItemStack.EMPTY;
+                            break;
+                        }
+                        int countSlotFree = Math.min(inventory.getInventoryStackLimit() - stackInCurrentSlot.getCount(), droppedStack.getCount());
+                        if (countSlotFree > 0 && stackInCurrentSlot.isItemEqual(droppedStack) && ItemStack.areItemStackTagsEqual(stackInCurrentSlot, droppedStack)) {
+                            stackInCurrentSlot.grow(countSlotFree);
+                            droppedStack.shrink(countSlotFree);
+                            if (droppedStack.isEmpty()) {
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    for (int i = 10; i <= 90; ++i) {
+                        Slot slot = inventorySlots.get(i);
+                        if (slot == null) return;
+                        if (!slot.getHasStack()) {
+                            slot.putStack(droppedStack);
+                            droppedStack = ItemStack.EMPTY;
+                            break;
+                        } else {
+                            ItemStack stackInCurrentSlot = slot.getStack();
+                            int countSlotFree = Math.min(inventory.getInventoryStackLimit() - stackInCurrentSlot.getCount(), droppedStack.getCount());
+                            if (countSlotFree > 0 && stackInCurrentSlot.isItemEqual(droppedStack) && ItemStack.areItemStackTagsEqual(stackInCurrentSlot, droppedStack)) {
+                                stackInCurrentSlot.grow(countSlotFree);
+                                droppedStack.shrink(countSlotFree);
+                                if (droppedStack.isEmpty()) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (droppedStack.isEmpty()) break;
+            }
+        }
+        detectAndSendChanges();
+    }
+
     public void prePage() {
         inventory.setField(0, inventory.getField(0) - 1);
         updateSlot();
@@ -526,5 +576,4 @@ public class ContainerKaia extends Container {
             inventorySlots.get(i).onSlotChanged();
         }
     }
-
 }

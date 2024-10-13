@@ -19,7 +19,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EntitySelectors;
@@ -134,46 +136,41 @@ public class UtilityHelper {
      * @Author gamerYToffi
      **/
     public static void compactListItemStacks(List<ItemStack> drops) {
-        ItemStack prevStack = null;
-        Comparator comparator = new Comparator() {
-            @Override
-            public int compare(Object o1, Object o2) {
-                return ((ItemStack) o1).getTranslationKey().compareTo(((ItemStack) o2).getTranslationKey());
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                return false;
-            }
-        };
-        drops.sort(comparator);
-        List<ItemStack> itemStacks = new ArrayList<>();
-        for (int c = 0; c < drops.size(); c++) {
-            ItemStack stack = drops.get(c);
-            if (prevStack == null) {
-                prevStack = stack;
-                continue;
-            }
-            if (stack.isItemEqual(prevStack) && ItemStack.areItemStackTagsEqual(prevStack, stack)) {
-                prevStack.setCount(prevStack.getCount() + stack.getCount());
-                if (c == drops.size() - 1) {
-                    itemStacks.add(prevStack);
-                }
+        Map<ItemStackKey, ItemStack> compactedStacks = new HashMap<>();
+        for (ItemStack stack : drops) {
+            if (stack.isEmpty()) continue;
+            ItemStackKey key = new ItemStackKey(stack);
+            if (compactedStacks.containsKey(key)) {
+                ItemStack existingStack = compactedStacks.get(key);
+                existingStack.grow(stack.getCount());
             } else {
-                itemStacks.add(prevStack);
-                prevStack = stack;
-                if (c == drops.size() - 1) {
-                    itemStacks.add(prevStack);
-                }
+                compactedStacks.put(key, stack.copy());
             }
         }
-        if (drops.size() == 1) {
-            ItemStack e = drops.get(0);
-            drops.clear();
-            drops.add(e);
-        } else {
-            drops.clear();
-            drops.addAll(itemStacks);
+        drops.clear();
+        drops.addAll(compactedStacks.values());
+    }
+
+    private static class ItemStackKey {
+        private final Item item;
+        private final NBTTagCompound tag;
+
+        public ItemStackKey(ItemStack stack) {
+            this.item = stack.getItem();
+            this.tag = stack.getTagCompound();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ItemStackKey that = (ItemStackKey) o;
+            return item.equals(that.item) && Objects.equals(tag, that.tag);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(item, tag);
         }
     }
 
