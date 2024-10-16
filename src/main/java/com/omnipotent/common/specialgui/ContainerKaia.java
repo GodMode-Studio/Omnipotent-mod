@@ -15,6 +15,8 @@ import javax.annotation.Nullable;
 import java.util.Set;
 
 public class ContainerKaia extends Container {
+    private static final int BACKPACK_SLOT_1 = 10;
+    private final int BACKPACK_LAST_SLOT = 90;
     private EntityPlayer player;
     protected InventoryKaia inventory;
     public InventoryKaiaCraft craftMatrix;
@@ -432,19 +434,19 @@ public class ContainerKaia extends Container {
         if (slot != null && slot.getHasStack()) {
             ItemStack originalStack = slot.getStack();
             originalStackAfterTransfer = originalStack.copy();
-            if (index < inventory.getSizeInventory()) {
+            if (index < inventory.getSizeInventory()+10) {
                 if (index == 0) {
                     return craftLogic(playerIn, originalStack, originalStackAfterTransfer, slot);
                 }
-                if (index < 10) {
-                    if (!mergeItemStack(originalStack, 10, inventory.getSizeInventory(), false)) {
+                if (index < BACKPACK_SLOT_1) {
+                    if (!mergeItemStack(originalStack, BACKPACK_SLOT_1, inventory.getSizeInventory(), false)) {
                         return ItemStack.EMPTY;
                     }
                 }
-                if (!mergeItemStack(originalStack, inventory.getSizeInventory(), inventorySlots.size(), true)) {
+                if (!mergeItemStack(originalStack, BACKPACK_LAST_SLOT+1, inventorySlots.size(), false)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!mergeItemStack(originalStack, 10, inventory.getSizeInventory(), false)) {
+            } else if (!mergeItemStack(originalStack, BACKPACK_SLOT_1, inventorySlots.size(), false)) {
                 return ItemStack.EMPTY;
             }
             if (originalStack.isEmpty()) {
@@ -458,7 +460,7 @@ public class ContainerKaia extends Container {
 
     private ItemStack craftLogic(EntityPlayer playerIn, ItemStack originalStack, ItemStack originalStackAfterTransfer, Slot slot) {
         originalStack.getItem().onCreated(originalStack, playerIn.world, playerIn);
-        if (!mergeItemStack(originalStack, 10, inventorySlots.size(), true)) {
+        if (!mergeItemStack(originalStack, BACKPACK_SLOT_1, inventorySlots.size(), true)) {
             return ItemStack.EMPTY;
         }
         slot.onSlotChange(originalStack, originalStackAfterTransfer);
@@ -535,7 +537,7 @@ public class ContainerKaia extends Container {
                         }
                     }
                 } else {
-                    for (int i = 10; i <= 90; ++i) {
+                    for (int i = BACKPACK_SLOT_1; i <= BACKPACK_LAST_SLOT; ++i) {
                         Slot slot = inventorySlots.get(i);
                         if (slot == null) return;
                         if (!slot.getHasStack()) {
