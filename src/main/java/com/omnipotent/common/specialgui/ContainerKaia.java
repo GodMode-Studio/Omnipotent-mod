@@ -3,7 +3,6 @@ package com.omnipotent.common.specialgui;
 import com.google.common.collect.Sets;
 import com.omnipotent.common.network.NetworkRegister;
 import com.omnipotent.common.specialgui.net.KaiaSlotChangePacket;
-import com.omnipotent.util.KaiaWrapper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -16,7 +15,9 @@ import java.util.Set;
 
 public class ContainerKaia extends Container {
     private static final int BACKPACK_SLOT_1 = 10;
-    private final int BACKPACK_LAST_SLOT = 90;
+    private final int BACKPACK_LAST_SLOT;
+    private final int PLAYER_SLOT_1;
+    private final int PLAYER_LAST_SLOT;
     private EntityPlayer player;
     protected InventoryKaia inventory;
     public InventoryKaiaCraft craftMatrix;
@@ -50,6 +51,9 @@ public class ContainerKaia extends Container {
         } else {
             this.stack = ItemStack.EMPTY;
         }
+        PLAYER_LAST_SLOT = inventorySlots.size() - 1;
+        BACKPACK_LAST_SLOT = inventory != null ? inventory.getSizeInventory() + 9 : 0;
+        PLAYER_SLOT_1 = BACKPACK_LAST_SLOT + 1;
     }
 
 //    private void addFurnaceSlots(EntityPlayer player) {
@@ -434,19 +438,18 @@ public class ContainerKaia extends Container {
         if (slot != null && slot.getHasStack()) {
             ItemStack originalStack = slot.getStack();
             originalStackAfterTransfer = originalStack.copy();
-            if (index < inventory.getSizeInventory()+10) {
+            if (index < BACKPACK_LAST_SLOT + 1) {
                 if (index == 0) {
                     return craftLogic(playerIn, originalStack, originalStackAfterTransfer, slot);
                 }
                 if (index < BACKPACK_SLOT_1) {
-                    if (!mergeItemStack(originalStack, BACKPACK_SLOT_1, inventory.getSizeInventory(), false)) {
+                    if (!mergeItemStack(originalStack, BACKPACK_SLOT_1, PLAYER_LAST_SLOT + 1, false)) {
                         return ItemStack.EMPTY;
                     }
-                }
-                if (!mergeItemStack(originalStack, BACKPACK_LAST_SLOT+1, inventorySlots.size(), false)) {
+                } else if (!mergeItemStack(originalStack, PLAYER_SLOT_1, PLAYER_LAST_SLOT + 1, false)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!mergeItemStack(originalStack, BACKPACK_SLOT_1, inventorySlots.size(), false)) {
+            } else if (!mergeItemStack(originalStack, BACKPACK_SLOT_1, BACKPACK_LAST_SLOT + 1, false)) {
                 return ItemStack.EMPTY;
             }
             if (originalStack.isEmpty()) {
@@ -460,7 +463,7 @@ public class ContainerKaia extends Container {
 
     private ItemStack craftLogic(EntityPlayer playerIn, ItemStack originalStack, ItemStack originalStackAfterTransfer, Slot slot) {
         originalStack.getItem().onCreated(originalStack, playerIn.world, playerIn);
-        if (!mergeItemStack(originalStack, BACKPACK_SLOT_1, inventorySlots.size(), true)) {
+        if (!mergeItemStack(originalStack, BACKPACK_SLOT_1, PLAYER_LAST_SLOT + 1, true)) {
             return ItemStack.EMPTY;
         }
         slot.onSlotChange(originalStack, originalStackAfterTransfer);
@@ -573,6 +576,8 @@ public class ContainerKaia extends Container {
         updateSlot();
     }
 
+
+    //TODO Currently, this method does nothing and has no effect. However, if you decide to use it for something, replace this getSizeInventory() and use a correct maximum index size.
     private void updateSlot() {
         for (int i = 0; i < inventory.getSizeInventory(); i++) {
             inventorySlots.get(i).onSlotChanged();
