@@ -69,7 +69,7 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
     public abstract boolean spawnEntity(Entity entityIn);
 
     @Shadow
-    public abstract Chunk getChunkFromBlockCoords(BlockPos pos);
+    public abstract Chunk getChunk(BlockPos pos);
 
     @Shadow
     public abstract void updateComparatorOutputLevel(BlockPos pos, Block blockIn);
@@ -122,7 +122,7 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
                 this.gettickableTileEntities().remove(tileentity2);
             }
 
-            this.getChunkFromBlockCoords(pos).removeTileEntity(pos);
+            this.getChunk(pos).removeTileEntity(pos);
         }
         this.updateComparatorOutputLevel(pos, getBlockState(pos).getBlock()); //Notify neighbors of changes
     }

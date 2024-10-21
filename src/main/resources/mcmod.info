@@ -17,6 +17,6 @@
       "botania",
       "draconicevolution"
     ],
-    "authorList": "${mod_authors}"
+    "authorList": ${mod_authors}
   }
 ]

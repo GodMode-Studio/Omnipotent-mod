@@ -138,7 +138,7 @@ public class EntityEvent {
             event.setCanceled(true);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(receiveCanceled = true, priority = EventPriority.LOWEST)
     public void onEntityItemJoinWorld(EntityJoinWorldEvent event) {
         Entity entity = event.getEntity();
         if (entity instanceof EntityItem && !entity.getEntityWorld().isRemote) {
