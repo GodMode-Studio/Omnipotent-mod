@@ -27,7 +27,9 @@
     "MixinWorld"
   ],
   "client": [
+    "MixinEntityPlayerSP",
     "MixinKeyBinding",
+    "MixinMouseHelper",
     "MixinRenderItem",
     "MixinRenderItemHammerLib"
   ],

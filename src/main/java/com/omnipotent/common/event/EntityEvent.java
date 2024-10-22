@@ -141,6 +141,8 @@ public class EntityEvent {
     @SubscribeEvent(receiveCanceled = true, priority = EventPriority.LOWEST)
     public void onEntityItemJoinWorld(EntityJoinWorldEvent event) {
         Entity entity = event.getEntity();
+        if(event.isCanceled() && KaiaUtil.hasInInventoryKaia(entity))
+            event.setCanceled(false);
         if (entity instanceof EntityItem && !entity.getEntityWorld().isRemote) {
             EntityItem entityItem = (EntityItem) entity;
             ItemStack kaia = entityItem.getItem();

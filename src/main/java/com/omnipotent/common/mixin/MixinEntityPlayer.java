@@ -1,11 +1,13 @@
 package com.omnipotent.common.mixin;
 
+import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.KaiaWrapper;
 import com.omnipotent.util.NbtListUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.player.PlayerCapabilities;
@@ -20,14 +22,21 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.event.ForgeEventFactory;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
+import static com.omnipotent.Omnipotent.deobfuscatedEnvironment;
 import static com.omnipotent.constant.NbtBooleanValues.*;
 import static com.omnipotent.util.KaiaConstantsNbt.playersDontKill;
 import static com.omnipotent.util.KaiaUtil.*;
@@ -50,10 +59,10 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
     public abstract String getDisplayNameString();
 
     @Accessor(value = "prefixes", remap = false)
-    abstract java.util.Collection<ITextComponent> getprefixes();
+    abstract Collection<ITextComponent> getprefixes();
 
     @Accessor(value = "suffixes", remap = false)
-    abstract java.util.Collection<ITextComponent> getsuffixes();
+    abstract Collection<ITextComponent> getsuffixes();
 
     @Shadow(remap = false)
     private String displayname;
@@ -62,6 +71,8 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
     public boolean renderSpecialName = false;
     @Unique
     public boolean hasKaia = false;
+    @Shadow
+    public float cameraYaw;
 
     /**
      * @author
@@ -81,6 +92,26 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
         }
         return itextcomponent;
     }
+//
+//    private ArrayList<Float> suspectPitch = new ArrayList<>();
+//    private ArrayList<Float> suspectYaw = new ArrayList<>();
+//
+//    @Inject(method = "onLivingUpdate", at = @At("HEAD"))
+//    public void onLivingUpdate(CallbackInfo ci) {
+//        if (KaiaUtil.hasInInventoryKaia(this)) {
+//            if (cameraPitch > 360) {
+//                suspectPitch.add(cameraPitch);
+//            }
+//            if (cameraYaw > 360) {
+//                suspectYaw.add(cameraPitch);
+//            }
+//            if (suspectPitch.size() > 100) {
+//                for (Float n : suspectPitch) {
+//
+//                }
+//            }
+//        }
+//    }
 
     //
 //    /**
@@ -120,6 +151,41 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
 //        }
 //    }
 
+
+    @Inject(method = "dropItem(Z)Lnet/minecraft/entity/item/EntityItem;", at = @At("HEAD"), cancellable = true)
+    public void dropItem(boolean dropAll, CallbackInfoReturnable<EntityItem> cir) {
+        boolean hasKaia = hasInInventoryKaia(this);
+        if (dropAll && hasKaia)
+            cir.cancel();
+        else if (hasKaia) {
+            cancelExecution(cir);
+        }
+    }
+
+    @Inject(method = "dropItem(Lnet/minecraft/item/ItemStack;Z)Lnet/minecraft/entity/item/EntityItem;", at = @At("HEAD"), cancellable = true)
+    public void dropItem(ItemStack itemStackIn, boolean unused, CallbackInfoReturnable<EntityItem> cir) {
+        if (itemStackIn!=null && itemStackIn.getItem() instanceof Kaia) {
+            cancelExecution(cir);
+        }
+    }
+
+    @Inject(method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/item/EntityItem;", at = @At("HEAD"), cancellable = true)
+    public void dropItem(ItemStack droppedItem, boolean dropAround, boolean traceItem, CallbackInfoReturnable<EntityItem> cir) {
+        if (droppedItem.getItem() instanceof Kaia) {
+            cancelExecution(cir);
+        }
+    }
+
+    @Unique
+    private static void cancelExecution(CallbackInfoReturnable<EntityItem> cir) {
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        if (stackTrace.length > 3) {
+            StackTraceElement stackTraceElement = stackTrace[4];
+            if (!stackTraceElement.getClassName().startsWith("net.minecraft") && !stackTraceElement.getClassName().startsWith("net.minecraftforge"))
+                cir.cancel();
+        }
+    }
+
     /**
      * @author
      * @reason
@@ -132,7 +198,7 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
             isDead = false;
             return;
         }
-        if (net.minecraftforge.common.ForgeHooks.onLivingDeath(this, cause))
+        if (ForgeHooks.onLivingDeath(this, cause))
             return;
         super.onDeath(cause);
         this.setSize(0.2F, 0.2F);
@@ -153,7 +219,7 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
 
         captureDrops = false;
         if (!world.isRemote)
-            net.minecraftforge.event.ForgeEventFactory.onPlayerDrops(player, cause, capturedDrops, recentlyHit > 0);
+            ForgeEventFactory.onPlayerDrops(player, cause, capturedDrops, recentlyHit > 0);
 
         if (cause != null) {
             this.motionX = (double) (-MathHelper.cos((this.attackedAtYaw + this.rotationYaw) * 0.017453292F) * 0.1F);
@@ -178,7 +244,7 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
             if (source != null && source.getTrueSource() != null) {
                 enemie = source.getTrueSource();
                 if (UtilityHelper.isPlayer(enemie) && kaia.getBoolean(playersWhoShouldNotKilledInCounterAttack)) {
-                    if(kaia.playerIsProtected(enemie.getUniqueID().toString())){
+                    if (kaia.playerIsProtected(enemie.getUniqueID().toString())) {
                         cir.cancel();
                         return;
                     }
@@ -194,13 +260,13 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
                 if (kaia.getBoolean(counterAttack)) {
                     if (entityIsFriendEntity(source.getTrueSource())) {
                         if (entityFriendCanKilledByKaia(kaia, source.getTrueSource(), false))
-                            KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getBoolean(killAllEntities));
+                            killChoice(source.getTrueSource(), player, kaia.getBoolean(killAllEntities));
                     } else if (entityNoIsNormalAndCanKilledByKaia(kaia, source.getTrueSource()))
-                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getBoolean(killAllEntities));
+                        killChoice(source.getTrueSource(), player, kaia.getBoolean(killAllEntities));
                     else if (entityIsPlayerAndKaiaCanKillPlayer(kaia, false, source.getTrueSource()))
-                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getBoolean(killAllEntities));
+                        killChoice(source.getTrueSource(), player, kaia.getBoolean(killAllEntities));
                     else
-                        KaiaUtil.killChoice(source.getTrueSource(), player, kaia.getBoolean(killAllEntities));
+                        killChoice(source.getTrueSource(), player, kaia.getBoolean(killAllEntities));
                 }
             }
             cir.cancel();

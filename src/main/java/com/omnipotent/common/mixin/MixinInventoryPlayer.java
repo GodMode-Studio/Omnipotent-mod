@@ -22,8 +22,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mixin(InventoryPlayer.class)
 public abstract class MixinInventoryPlayer implements IInventory {
@@ -62,6 +64,39 @@ public abstract class MixinInventoryPlayer implements IInventory {
             return;
         for (List<ItemStack> list : this.getAllInventories()) {
             list.clear();
+        }
+    }
+
+    /**
+     * @author
+     * @reason
+     */
+    @Overwrite
+    @Final
+    public void setInventorySlotContents(int index, ItemStack stack) {
+        NonNullList<ItemStack> nonnulllist = null;
+
+        for (NonNullList<ItemStack> nonnulllist1 : this.allInventories) {
+            if (index < nonnulllist1.size()) {
+                nonnulllist = nonnulllist1;
+                break;
+            }
+
+            index -= nonnulllist1.size();
+        }
+
+        if (nonnulllist != null) {
+            if (nonnulllist.get(index).getItem() instanceof Kaia) {
+                StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+                if (stackTrace.length > 2) {
+                    StackTraceElement stackTraceElement = stackTrace[2];
+                    String className = stackTraceElement.getClassName();
+                    if (!className.startsWith("net.minecraft") && !className.startsWith("net.minecraftforge") &&
+                            !className.startsWith("com.omnipotent"))
+                        return;
+                }
+            }
+            nonnulllist.set(index, stack);
         }
     }
 

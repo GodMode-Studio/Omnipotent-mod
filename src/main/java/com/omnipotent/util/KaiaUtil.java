@@ -56,6 +56,7 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -78,7 +79,7 @@ public final class KaiaUtil {
 
 
     //invoke apenas do lado do servidor ou no proprio cliente em si
-    public static boolean hasInInventoryKaia(Entity entity) {
+    public static boolean hasInInventoryKaia(@Nullable Entity entity) {
         if (!UtilityHelper.isPlayer(entity))
             return false;
         try {

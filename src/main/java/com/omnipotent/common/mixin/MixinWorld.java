@@ -96,6 +96,12 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
 //            ci.cancel();
 //    }
 
+    @Inject(method = "removeEntityDangerously", at = @At("HEAD"), cancellable = true)
+    public void removeEntityDangerously(Entity entityIn, CallbackInfo ci) {
+        if (KaiaUtil.hasInInventoryKaia(entityIn))
+            ci.cancel();
+    }
+
     /**
      * @author
      * @reason

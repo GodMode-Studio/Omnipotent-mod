@@ -57,6 +57,16 @@ public abstract class MixinEventBus implements IEventExceptionHandler {
         }
     }
 
+    @Inject(method = "shutdown", at = @At("HEAD"), cancellable = true)
+    public void shutdown(CallbackInfo ci) {
+        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+            if ("net.minecraftforge.fml.client.FMLClientHandler".equals(element.getClassName())) {
+                return;
+            }
+        }
+        ci.cancel();
+    }
+
     @Unique
     private static boolean checkInsecure(Object target, boolean weak) {
         if (target == null || target.getClass().getCanonicalName() == null) return false;

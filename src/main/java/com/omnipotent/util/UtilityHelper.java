@@ -179,7 +179,7 @@ public class UtilityHelper {
      *
      * @Author gamerYToffi
      */
-    public static boolean isPlayer(Entity entity) {
+    public static boolean isPlayer(@Nullable Entity entity) {
         return entity instanceof EntityPlayer;
     }
 
