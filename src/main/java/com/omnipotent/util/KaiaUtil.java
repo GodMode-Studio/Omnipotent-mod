@@ -173,23 +173,6 @@ public final class KaiaUtil {
             List<Entity> list = world.getEntitiesWithinAABB(Entity.class, bb);
             entities.addAll(list);
         }
-//        List<String> idEntitiesList = new ArrayList<>();
-//        Iterator<Entity> entityIterator = entities.iterator();
-//        while (entityIterator.hasNext()) {
-//            Entity nextEntity = entityIterator.next();
-//            if (idEntitiesList != null) {
-//                if (idEntitiesList.contains(nextEntity.getUniqueID().toString())) {
-//                    entityIterator.remove();
-//                } else {
-//                    idEntitiesList.add(nextEntity.getUniqueID().toString());
-//                }
-//            } else {
-//                idEntitiesList.add(nextEntity.getUniqueID().toString());
-//            }
-//        }
-//        NBTTagList tagList = tagCompoundOfKaia.getTagList(entitiesCantKill, 8);
-//        if (tagList.tagCount() > 0)
-//            entities.removeIf(entity -> getUUIDOfNbtList(tagList).stream().filter(uuid -> uuid.equals(entity.getUniqueID().toString())).collect(Collectors.toList()).size() > 0);
 
         filterEntities(entities, kaiaWrapper);
         for (Entity entity : entities) {
