@@ -6,10 +6,14 @@ import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.constant.NbtNumberValues;
 import com.omnipotent.constant.NbtStringValues;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -180,5 +184,63 @@ public final class KaiaWrapper {
             }
         }
         return false;
+    }
+
+    public boolean addItemsInFirstEmptyPage(EntityPlayer player, NonNullList<ItemStack> drops) {
+        InventoryKaia inventory = this.getInventory();
+        inventory.openInventory(player);
+        UtilityHelper.compactListItemStacks(drops);
+        getFirstEmptyPage(inventory).ifPresent(page -> {
+            for (ItemStack dropStack : drops) {
+                for (int currentSlot = 0; currentSlot < page.size(); currentSlot++) {
+                    ItemStack stackInCurrentSlot = page.get(currentSlot);
+                    if (stackInCurrentSlot.isEmpty()) {
+                        page.set(currentSlot, dropStack);
+                        break;
+                    }
+                }
+            }
+        });
+        inventory.closeInventory(player);
+        return false;
+    }
+
+    private Optional<NonNullList<ItemStack>> getFirstEmptyPage(InventoryKaia inventory) {
+        for (int currentPage = 0; currentPage < inventory.getMaxPage(); currentPage++) {
+            NonNullList<ItemStack> currentPageItems = inventory.getPage(currentPage);
+            if (pageAreEmpty(currentPageItems))
+                return Optional.of(currentPageItems);
+        }
+        return Optional.empty();
+    }
+
+    private boolean pageAreEmpty(NonNullList<ItemStack> currentPageItems) {
+        return currentPageItems.stream().allMatch(ItemStack::isEmpty);
+    }
+
+    public boolean isSameItem(ItemStack i) {
+        return i == this.kaia;
+    }
+
+    public void banGui(String guiClass) {
+        if (!listContainsElement(bannedGuis, guiClass))
+            addInList(bannedGuis, new NBTTagString(guiClass));
+    }
+
+    public boolean guiIsBanned(@Nonnull GuiScreen gui) {
+        return listContainsElement(bannedGuis, gui.getClass().getCanonicalName());
+    }
+
+    public void banItem(@Nonnull Item i) {
+        String string = i.delegate.name().toString();
+        if (string.startsWith("minecraft") || string.startsWith("omnipotent"))
+            return;
+        if (!listContainsElement(bannedItems, string)) {
+            addInList(bannedItems, new NBTTagString(string));
+        }
+    }
+
+    public boolean itemIsBanned(@Nonnull Item item) {
+        return listContainsElement(bannedItems, item.delegate.name().toString());
     }
 }
