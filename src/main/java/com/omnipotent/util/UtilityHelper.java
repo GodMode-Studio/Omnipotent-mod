@@ -5,16 +5,12 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.omnipotent.common.capability.kaiacap.IKaiaBrand;
 import com.omnipotent.common.capability.kaiacap.KaiaProvider;
-import com.omnipotent.common.entity.KaiaEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -28,6 +24,7 @@ import net.minecraft.util.EntitySelectors;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.*;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.chunk.Chunk;
@@ -38,11 +35,9 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.awt.*;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -197,14 +192,14 @@ public class UtilityHelper {
      *
      * @Author gamerYToffi
      */
-    public static File getPlayerDataFileOfPlayer(@Nonnull UUID uuid) {
+    public static Optional<File> getPlayerDataFileOfPlayer(@Nonnull UUID uuid) {
         MinecraftServer minecraftServer = FMLCommonHandler.instance().getMinecraftServerInstance();
         String worldName = minecraftServer.getFolderName();
         Path playerDataPath = Paths.get(System.getProperty("user.dir"), "saves", worldName, "playerdata", uuid + ".dat");
         if (Files.exists(playerDataPath)) {
-            return playerDataPath.toFile();
+            return Optional.of(playerDataPath.toFile());
         }
-        return null;
+        return Optional.empty();
     }
 
 
@@ -548,5 +543,53 @@ public class UtilityHelper {
 
     public static Optional<IKaiaBrand> getKaiaCap(EntityPlayer entityPlayer) {
         return Optional.ofNullable(entityPlayer.getCapability(KaiaProvider.KaiaBrand, null));
+    }
+
+    public static boolean isMinecraftOrOmnipotentClass(String canonicalName) {
+        return canonicalName.startsWith("net.minecraft") || canonicalName.startsWith("net.minecraftforge")
+                || canonicalName.startsWith("com.omnipotent");
+    }
+
+    public static boolean injectMixinIsCallerMinecraftOrForgeClass() {
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        if (stackTrace.length > 4)
+            return isMinecraftOrOmnipotentClass(stackTrace[4].getClassName());
+        return true;
+    }
+
+    public static boolean isCallerMinecraftOrForgeClassForEvents() {
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        if (stackTrace.length > 4)
+            return isMinecraftOrOmnipotentClass(stackTrace[4].getClassName());
+        return true;
+    }
+
+    private static final TextFormatting RAINBOW[] = new TextFormatting[]{TextFormatting.YELLOW, TextFormatting.GREEN, TextFormatting.AQUA, TextFormatting.BLUE, TextFormatting.LIGHT_PURPLE, TextFormatting.RED, TextFormatting.GOLD, TextFormatting.YELLOW, TextFormatting.GREEN, TextFormatting.AQUA, TextFormatting.LIGHT_PURPLE, TextFormatting.RED, TextFormatting.GOLD};
+    private static final TextFormatting SPACIAL[] = new TextFormatting[]{TextFormatting.WHITE, TextFormatting.AQUA, TextFormatting.BLUE, TextFormatting.WHITE, TextFormatting.AQUA, TextFormatting.BLUE};
+
+    public static String coloringRainbow(String toColor, double delay) {
+        StringBuilder sb = new StringBuilder(toColor.length() * 3);
+        delay = delay == 0 ? 0.001 : delay;
+        int offset = (int) Math.floor((System.currentTimeMillis() & 16383L) / delay) % RAINBOW.length;
+        for (int i = 0; i < toColor.length(); ++i) {
+            char c = toColor.charAt(i);
+            int col = (i + RAINBOW.length - offset) % RAINBOW.length;
+            sb.append(RAINBOW[col]);
+            sb.append(c);
+        }
+        return sb.toString();
+    }
+
+    public static String coloringSpacial(String toColor, double delay) {
+        StringBuilder sb = new StringBuilder(toColor.length() * 3);
+        delay = delay == 0 ? 0.001 : delay;
+        int offset = (int) Math.floor((System.currentTimeMillis() & 16383L) / delay) % SPACIAL.length;
+        for (int i = 0; i < toColor.length(); ++i) {
+            char c = toColor.charAt(i);
+            int col = (i + SPACIAL.length - offset) % SPACIAL.length;
+            sb.append(SPACIAL[col]);
+            sb.append(c);
+        }
+        return sb.toString();
     }
 }
