@@ -1,9 +1,9 @@
 package com.omnipotent.client.key;
 
 import com.omnipotent.Omnipotent;
-import com.omnipotent.common.capability.kaiacap.KaiaProvider;
 import com.omnipotent.common.entity.KaiaEntity;
 import com.omnipotent.common.gui.GuiHandler;
+import com.omnipotent.common.network.MoveAndBanItemsPacket;
 import com.omnipotent.common.network.NetworkRegister;
 import com.omnipotent.common.network.ReturnKaiaPacket;
 import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
@@ -12,11 +12,14 @@ import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraftforge.client.settings.KeyConflictContext;
+import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import org.lwjgl.input.Keyboard;
 
@@ -29,7 +32,9 @@ import java.util.stream.Stream;
 
 import static com.omnipotent.common.gui.GuiHandler.*;
 import static com.omnipotent.constant.NbtBooleanValues.showInfo;
+import static com.omnipotent.util.KaiaConstantsNbt.bannedGuis;
 import static com.omnipotent.util.UtilityHelper.rayTraceClient;
+import static net.minecraftforge.client.settings.KeyConflictContext.GUI;
 import static net.minecraftforge.client.settings.KeyConflictContext.IN_GAME;
 
 public class KeyInit {
@@ -37,39 +42,6 @@ public class KeyInit {
     public static final List<KeyMod> keyBindingRequireKaiaInMainHandList = new ArrayList<>();
     public static final List<KeyMod> othersKeyBindingList = new ArrayList<>();
     private static final String translateKeyOfCategory = "keykaia.category";
-//    private static final Consumer<Object> functionAntiEntities = object -> {
-//        EntityPlayer player = (EntityPlayer) object;
-//        if (KeyInit.kaiaAntiEntities.isPressed() && KaiaUtil.getKaiaInMainHand(player) != null) {
-//            AxisAlignedBB bb = player.getEntityBoundingBox();
-//            Vec3d lookVec = player.getLookVec();
-//            lookVec = lookVec.normalize();
-//            double reachDistance = 5.0;
-//            Vec3d endVec = player.getPositionEyes(1.0F).addVector(lookVec.x * reachDistance, lookVec.y * reachDistance, lookVec.z * reachDistance);
-//            bb = bb.expand(lookVec.x * reachDistance, lookVec.y * reachDistance, lookVec.z * reachDistance).expand(1.0, 1.0, 1.0);
-//            List<Entity> entities = player.world.getEntitiesWithinAABBExcludingEntity(player, bb);
-//            Entity targetEntity = null;
-//            float distanceEntity;
-//            Float distance = Float.MAX_VALUE;
-//            for (Entity entity : entities) {
-//                if (entity.getEntityBoundingBox().calculateIntercept(player.getPositionEyes(1.0F), endVec) != null) {
-//                    distanceEntity = player.getDistance(entity);
-//                    if (distanceEntity < distance) {
-//                        targetEntity = entity;
-//                        distance = distanceEntity;
-//                    }
-//                }
-//            }
-//            if (targetEntity != null)
-//                NetworkRegister.ACESS.sendToServer(new KaiaNbtPacket(entitiesCantKill, targetEntity.getUniqueID().toString() + divisionUUIDAndName + targetEntity.getName(), 0));
-//        }
-//    };
-
-    //    private static final KeyBinding kaiaAntiEntities = new KeyMod(I18n.format("keykaia.antientities"), Keyboard.KEY_Y, I18n.format(translateKeyOfCategory), object -> {
-//        EntityPlayer player = (EntityPlayer) object;
-//        if (KeyInit.kaiaAntiEntitiesGui.isPressed() && KaiaUtil.getKaiaInMainHand(player) != null)
-//            player.openGui(Omnipotent.instance, 7, player.world, 0, 0, 0);
-//    });
-//    private static final KeyBinding kaiaAntiEntitiesGui = new KeyMod(I18n.format("keykaia.antientitiesgui"), Keyboard.KEY_U, I18n.format(translateKeyOfCategory), functionAntiEntities);
 
     private static final KeyBinding keyReturnKaia = new KeyMod(I18n.format("keykaia.returnkaia"), IN_GAME, Keyboard.KEY_G, I18n.format(translateKeyOfCategory), (unused, unused2) -> {
         if (KeyInit.keyReturnKaia.isPressed()) {
@@ -179,6 +151,26 @@ public class KeyInit {
         }
         return false;
     });
+    private static final KeyBinding moveAndBanItems = new KeyMod(I18n.format("keykaia.moveandbanitems"), Keyboard.KEY_H, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
+        if (KeyInit.moveAndBanItems.isPressed() && KeyInit.moveAndBanItems.isActiveAndMatches(KeyInit.moveAndBanItems.getKeyCode())
+                && KaiaUtil.hasInInventoryKaia((EntityPlayer) object)) {
+            NetworkRegister.sendToServer(new MoveAndBanItemsPacket());
+            return true;
+        }
+        return false;
+    }, KeyModifier.CONTROL, IN_GAME);
+    private static final KeyBinding banGuis = new KeyMod(I18n.format("keykaia.banguis"), Keyboard.KEY_P, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
+        if (KeyInit.banGuis.isActiveAndMatches(Keyboard.getEventKey())
+                && KaiaUtil.hasInInventoryKaia((EntityPlayer) object)) {
+            Minecraft minecraft = Minecraft.getMinecraft();
+            GuiScreen currentScreen = minecraft.currentScreen;
+            if (currentScreen != null)
+                NetworkRegister.sendToServer(new KaiaNbtPacket(bannedGuis, currentScreen.getClass().getCanonicalName(), 0));
+            minecraft.currentScreen = null;
+            return true;
+        }
+        return false;
+    }, KeyModifier.CONTROL, GUI);
 
     public static void initKeys() {
         keyBindingRequireKaiaInMainHandList.forEach(ClientRegistry::registerKeyBinding);

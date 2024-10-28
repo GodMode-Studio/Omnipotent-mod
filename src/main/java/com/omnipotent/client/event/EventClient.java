@@ -1,7 +1,12 @@
 package com.omnipotent.client.event;
 
+import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.KaiaWrapper;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiGameOver;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -9,9 +14,33 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
 
 public class EventClient {
+
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void guiOver(GuiOpenEvent event) {
-        if (event.getGui() instanceof GuiGameOver && Minecraft.getMinecraft().player != null && hasInInventoryKaia(Minecraft.getMinecraft().player)) {
+        EntityPlayerSP player = Minecraft.getMinecraft().player;
+        GuiScreen nextGui = event.getGui();
+        if(player==null && nextGui instanceof GuiGameOver)
+            event.setCanceled(true);
+        GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
+        boolean hasKaia = hasInInventoryKaia(player);
+        if (!hasKaia)
+            return;
+        KaiaWrapper kaia = KaiaUtil.getKaiaInMainHandOrInventory(player);
+        boolean guiToOpenIsGameOver = nextGui instanceof GuiGameOver;
+        if (nextGui == null && !UtilityHelper.isCallerMinecraftOrForgeClassForEvents())
+            event.setCanceled(true);
+        if (guiToOpenIsGameOver) {
+            event.setCanceled(true);
+        }
+        if (guiToOpenIsGameOver && currentScreen instanceof GuiGameOver) {
+            Minecraft.getMinecraft().currentScreen = null;
+            event.setCanceled(true);
+        }
+        if (nextGui != null && kaia.guiIsBanned(nextGui)) {
+            event.setCanceled(true);
+        }
+        if (currentScreen != null && nextGui != null && kaia.guiIsBanned(currentScreen) && kaia.guiIsBanned(nextGui)) {
+            Minecraft.getMinecraft().currentScreen = null;
             event.setCanceled(true);
         }
     }

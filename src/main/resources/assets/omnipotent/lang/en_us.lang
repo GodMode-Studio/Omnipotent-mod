@@ -69,6 +69,8 @@ keykaia.kaiashowinfo=Show/hide Kaia info
 keykaia.getKaiaBetweenSaves=To obtain the Kaia of the saves
 keykaia.kaiasummonswords=Summon Kaia entity
 keykaia.kaiaattackshow=Attack entity with Kaia's phantoms.
+keykaia.moveandbanitems=Move all items to the last empty page of the Kaia and ban items that attempt to force their way into the inventory. To ban means that the item can no longer enter the player's inventory.
+keykaia.banguis=When this key is pressed, the currently displayed GUI will be banned, meaning it will no longer open for you. This does not work with Minecraft's GUIs or those from the mod itself.
 #messages in chat
 kaia.message.void=WHEREABOUTS Y150
 kaia.message.returndropitems=Item dropped at position

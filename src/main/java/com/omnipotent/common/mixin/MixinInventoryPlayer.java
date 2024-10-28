@@ -12,10 +12,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.apache.commons.lang3.Validate;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -23,15 +21,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Mixin(InventoryPlayer.class)
 public abstract class MixinInventoryPlayer implements IInventory {
 
     @Shadow
     public EntityPlayer player;
+    @Shadow
+    public final NonNullList<ItemStack> armorInventory = omnipotent_mod$withSize(4, ItemStack.EMPTY);
 
     @Shadow
     @Final
@@ -39,6 +37,31 @@ public abstract class MixinInventoryPlayer implements IInventory {
 
     @Accessor("allInventories")
     abstract List<NonNullList<ItemStack>> getAllInventories();
+
+    @Unique
+    private NonNullList<ItemStack> omnipotent_mod$withSize(int size, ItemStack fill) {
+        Validate.notNull(fill);
+        ItemStack[] aobject = new ItemStack[size];
+        Arrays.fill(aobject, fill);
+        return new NonNullList<>(Arrays.asList(aobject), fill) {
+            @Override
+            public ItemStack set(int index, ItemStack stack) {
+                if (this.get(index).getItem() instanceof Kaia) {
+                    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+                    if (stackTrace.length > 2) {
+                        StackTraceElement stackTraceElement = stackTrace[2];
+                        String className = stackTraceElement.getClassName();
+                        if (!UtilityHelper.isMinecraftOrOmnipotentClass(className))
+                            return ItemStack.EMPTY;
+                    }
+                } else if (KaiaUtil.hasInInventoryKaia(player) && KaiaUtil.getKaiaInMainHandOrInventory(player).itemIsBanned(stack.getItem())) {
+                    stack = ItemStack.EMPTY;
+                }
+                return super.set(index, stack);
+            }
+        };
+    }
+
 
     @Inject(method = "clearMatchingItems", at = @At("HEAD"), cancellable = true)
     public void execute(Item itemIn, int metadataIn, int removeCount, NBTTagCompound itemNBT, CallbackInfoReturnable<Integer> cir) {
@@ -95,9 +118,18 @@ public abstract class MixinInventoryPlayer implements IInventory {
                             !className.startsWith("com.omnipotent"))
                         return;
                 }
+            } else if (KaiaUtil.hasInInventoryKaia(this.player) && KaiaUtil.getKaiaInMainHandOrInventory(player).itemIsBanned(stack.getItem())) {
+                stack = ItemStack.EMPTY;
             }
             nonnulllist.set(index, stack);
         }
+    }
+
+    @Inject(method = "addItemStackToInventory", at = @At("HEAD"), cancellable = true)
+    public void addItemStackToInventory(ItemStack itemStackIn, CallbackInfoReturnable<Boolean> cir) {
+        if (this.player != null && KaiaUtil.hasInInventoryKaia(this.player) && KaiaUtil.getKaiaInMainHandOrInventory(player)
+                .itemIsBanned(itemStackIn.getItem()))
+            cir.cancel();
     }
 
     @Inject(method = "dropAllItems", at = @At("HEAD"), cancellable = true)

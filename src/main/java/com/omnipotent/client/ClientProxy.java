@@ -1,6 +1,7 @@
 package com.omnipotent.client;
 
 import com.omnipotent.client.event.*;
+import com.omnipotent.client.key.GuiScreenKeyboardInputEvent;
 import com.omnipotent.client.key.KeyEvent;
 import com.omnipotent.client.key.KeyInit;
 import com.omnipotent.client.render.RenderCustomLightningBolt;
@@ -24,6 +25,7 @@ public class ClientProxy extends CommonProxy {
         eventBus.register(new EventInitTextures());
         eventBus.register(new EventClient());
         eventBus.register(new EventPlayerNameFormat());
+        eventBus.register(new GuiScreenKeyboardInputEvent());
         RenderingRegistry.registerEntityRenderingHandler(CustomLightningBolt.class, RenderCustomLightningBolt::new);
         RenderingRegistry.registerEntityRenderingHandler(KaiaEntity.class, RenderKaia::new);
     }
