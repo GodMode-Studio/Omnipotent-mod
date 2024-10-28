@@ -1,5 +1,7 @@
 package com.omnipotent.common.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.omnipotent.Config;
 import com.omnipotent.acessor.IEntityLivingBaseAcessor;
 import com.omnipotent.common.damage.AbsoluteOfCreatorDamage;
@@ -485,6 +487,18 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
                 return flag2;
             }
         }
+    }
+
+    @WrapOperation(method = "onEntityUpdate", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/EntityLivingBase;prevCameraPitch:F"))
+    private void setPrevCameraPitch(EntityLivingBase instance, float value, Operation<Void> original) {
+        if (KaiaUtil.hasInInventoryKaia(instance)) {
+            float maxAllowedChange = 5.0F;
+            float originalPitch = instance.prevCameraPitch;
+            if (Math.abs(instance.cameraPitch - originalPitch) > maxAllowedChange) {
+                value = 0;
+            }
+        }
+        original.call(instance, value);
     }
 
     @Shadow

@@ -28,6 +28,8 @@
   ],
   "client": [
     "MixinEntityPlayerSP",
+    "MixinEntityRenderer",
+    "MixinGuiContainerCreative",
     "MixinKeyBinding",
     "MixinMouseHelper",
     "MixinRenderItem",

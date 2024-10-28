@@ -68,8 +68,7 @@ public class EntityEvent {
             if (player.isBurning())
                 player.extinguish();
             entitiesWithKaia.add(keyUID);
-            if (!isRemote)
-                player.hasKaia = true;
+            player.hasKaia = true;
             if (!player.renderSpecialName && hasInInventoryKaia(player)) {
                 player.renderSpecialName = true;
             }
@@ -77,11 +76,13 @@ public class EntityEvent {
         }
         if (!hasKaia) {
             entitiesWithKaia.remove(keyUID);
-            if (!isRemote && !hasInInventoryKaia(player))
+            boolean b = !hasInInventoryKaia(player);
+            if (!isRemote && b)
                 if (player.renderSpecialName) {
                     player.hasKaia = false;
                     player.renderSpecialName = false;
-                }
+                } else if (b)
+                    player.hasKaia = false;
             handleKaiaStateChange(player, false);
         }
     }
@@ -141,7 +142,7 @@ public class EntityEvent {
     @SubscribeEvent(receiveCanceled = true, priority = EventPriority.LOWEST)
     public void onEntityItemJoinWorld(EntityJoinWorldEvent event) {
         Entity entity = event.getEntity();
-        if(event.isCanceled() && KaiaUtil.hasInInventoryKaia(entity))
+        if (event.isCanceled() && KaiaUtil.hasInInventoryKaia(entity))
             event.setCanceled(false);
         if (entity instanceof EntityItem && !entity.getEntityWorld().isRemote) {
             EntityItem entityItem = (EntityItem) entity;
@@ -162,11 +163,13 @@ public class EntityEvent {
                     entityItem.world.spawnEntity(new CustomLightningBolt(entityItem.world, entityItem.posX, entityItem.posY, entityItem.posZ, true));
                     entityItem.setDead();
                 } else if (player == null) {
-                    try {
-                        addKaiaAndManagerInPlayarDataFile(new KaiaWrapper(kaia), getPlayerDataFileOfPlayer(uuid).getAbsolutePath());
-                        entityItem.setDead();
-                    } catch (IOException ignored) {
-                    }
+                    getPlayerDataFileOfPlayer(uuid).ifPresent(file -> {
+                        try {
+                            addKaiaAndManagerInPlayarDataFile(new KaiaWrapper(kaia), file.getAbsolutePath());
+                            entityItem.setDead();
+                        } catch (IOException ignored) {
+                        }
+                    });
                 }
             }
         }
@@ -199,8 +202,9 @@ public class EntityEvent {
         easterEggFunctionMkllVerify();
         for (Entity entity : event.world.loadedEntityList) {
             try {
-                if (entity.absoluteDead){
-                    entity.isDead = true;}
+                if (entity.absoluteDead) {
+                    entity.isDead = true;
+                }
             } catch (Exception e) {
             }
         }

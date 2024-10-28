@@ -1,9 +1,10 @@
 package com.omnipotent.common.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.KaiaWrapper;
-import com.omnipotent.util.NbtListUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -13,7 +14,6 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.entity.player.PlayerCapabilities;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.DamageSource;
@@ -31,14 +31,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 
-import static com.omnipotent.Omnipotent.deobfuscatedEnvironment;
 import static com.omnipotent.constant.NbtBooleanValues.*;
-import static com.omnipotent.util.KaiaConstantsNbt.playersDontKill;
 import static com.omnipotent.util.KaiaUtil.*;
 
 @Mixin(EntityPlayer.class)
@@ -73,6 +68,8 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
     public boolean hasKaia = false;
     @Shadow
     public float cameraYaw;
+    @Shadow
+    public float prevCameraYaw;
 
     /**
      * @author
@@ -92,70 +89,23 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
         }
         return itextcomponent;
     }
-//
-//    private ArrayList<Float> suspectPitch = new ArrayList<>();
-//    private ArrayList<Float> suspectYaw = new ArrayList<>();
-//
-//    @Inject(method = "onLivingUpdate", at = @At("HEAD"))
-//    public void onLivingUpdate(CallbackInfo ci) {
-//        if (KaiaUtil.hasInInventoryKaia(this)) {
-//            if (cameraPitch > 360) {
-//                suspectPitch.add(cameraPitch);
-//            }
-//            if (cameraYaw > 360) {
-//                suspectYaw.add(cameraPitch);
-//            }
-//            if (suspectPitch.size() > 100) {
-//                for (Float n : suspectPitch) {
-//
-//                }
-//            }
-//        }
-//    }
 
-    //
-//    /**
-//     * @author
-//     * @reason
-//     */
-//    @Overwrite
-//    public void closeScreen() {
-//        if (KaiaUtil.hasInInventoryKaia(this)) {
-//            return;
-//        }
-//        this.openContainer = this.inventoryContainer;
-//    }
-//
-//    /**
-//     * @author
-//     * @reason
-//     */
-//    @Overwrite
-//    public void setItemStackToSlot(EntityEquipmentSlot slotIn, ItemStack stack) {
-//        if (slotIn == EntityEquipmentSlot.MAINHAND) {
-//            this.playEquipSound(stack);
-//            NonNullList<ItemStack> mainInventory = this.inventory.mainInventory;
-//            int currentItem = this.inventory.currentItem;
-//            if (mainInventory.get(currentItem).getItem() instanceof Kaia)
-//                return;
-//            mainInventory.set(currentItem, stack);
-//        } else if (slotIn == EntityEquipmentSlot.OFFHAND) {
-//            this.playEquipSound(stack);
-//            NonNullList<ItemStack> offHandInventory = this.inventory.offHandInventory;
-//            if (offHandInventory.get(0).getItem() instanceof Kaia)
-//                return;
-//            offHandInventory.set(0, stack);
-//        } else if (slotIn.getSlotType() == EntityEquipmentSlot.Type.ARMOR) {
-//            this.playEquipSound(stack);
-//            this.inventory.armorInventory.set(slotIn.getIndex(), stack);
-//        }
-//    }
-
+    @WrapOperation(method = "onLivingUpdate", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/EntityPlayer;prevCameraYaw:F"))
+    private void setPrevCameraYaw(EntityPlayer player, float value, Operation<Void> original) {
+        if (KaiaUtil.hasInInventoryKaia(player)) {
+            float maxAllowedChange = 5.0F;
+            float originalYaw = player.prevCameraYaw;
+            if (Math.abs(player.cameraYaw - originalYaw) > maxAllowedChange) {
+                value = 0;
+            }
+        }
+        original.call(player, value);
+    }
 
     @Inject(method = "dropItem(Z)Lnet/minecraft/entity/item/EntityItem;", at = @At("HEAD"), cancellable = true)
     public void dropItem(boolean dropAll, CallbackInfoReturnable<EntityItem> cir) {
         boolean hasKaia = hasInInventoryKaia(this);
-        if (dropAll && hasKaia)
+        if (dropAll && hasKaia && !UtilityHelper.injectMixinIsCallerMinecraftOrForgeClass())
             cir.cancel();
         else if (hasKaia) {
             cancelExecution(cir);
@@ -164,7 +114,7 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
 
     @Inject(method = "dropItem(Lnet/minecraft/item/ItemStack;Z)Lnet/minecraft/entity/item/EntityItem;", at = @At("HEAD"), cancellable = true)
     public void dropItem(ItemStack itemStackIn, boolean unused, CallbackInfoReturnable<EntityItem> cir) {
-        if (itemStackIn!=null && itemStackIn.getItem() instanceof Kaia) {
+        if (itemStackIn != null && itemStackIn.getItem() instanceof Kaia) {
             cancelExecution(cir);
         }
     }
@@ -249,14 +199,6 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
                         return;
                     }
                 }
-//                NBTTagList tagList = kaia.getTagCompound().getTagList(entitiesCantKill, 8);
-//                if (tagList.tagCount() > 0)
-//                    for (String uuid : NbtListUtil.getUUIDOfNbtList(tagList)) {
-//                        if (uuid.equals(source.getTrueSource().getUniqueID().toString())) {
-//                            cir.cancel();
-//                            return;
-//                        }
-//                    }
                 if (kaia.getBoolean(counterAttack)) {
                     if (entityIsFriendEntity(source.getTrueSource())) {
                         if (entityFriendCanKilledByKaia(kaia, source.getTrueSource(), false))
@@ -271,5 +213,11 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
             }
             cir.cancel();
         }
+    }
+
+    @Inject(method = "setDead", at = @At("HEAD"), cancellable = true)
+    public void setDead(CallbackInfo ci) {
+        if (KaiaUtil.hasInInventoryKaia(this))
+            ci.cancel();
     }
 }

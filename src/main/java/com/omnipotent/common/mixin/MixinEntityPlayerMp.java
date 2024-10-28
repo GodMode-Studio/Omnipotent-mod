@@ -18,11 +18,15 @@ import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.stats.StatBase;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
 import static com.omnipotent.util.KaiaUtil.returnKaiaOfOwner;
@@ -116,5 +120,11 @@ public abstract class MixinEntityPlayerMp extends EntityPlayer implements IConta
         this.extinguish();
         this.setFlag(0, false);
         this.getCombatTracker().reset();
+    }
+
+    @Inject(method = "addStat", at = @At("HEAD"), cancellable = true)
+    public void addStat(StatBase stat, int amount, CallbackInfo ci) {
+        if (stat.equals(StatList.DEATHS) && KaiaUtil.hasInInventoryKaia(this))
+            ci.cancel();
     }
 }

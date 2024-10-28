@@ -1,6 +1,7 @@
 package com.omnipotent.common.mixin;
 
 import com.mojang.authlib.GameProfile;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.item.EntityItem;
@@ -22,13 +23,13 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
     @Inject(method = "dropItem", at = @At("HEAD"), cancellable = true)
     public void dropItem(boolean dropAll, CallbackInfoReturnable<EntityItem> cir) {
         boolean hasKaia = hasInInventoryKaia(this);
-        if (dropAll && hasKaia)
+        if (dropAll && hasKaia && !UtilityHelper.injectMixinIsCallerMinecraftOrForgeClass())
             cir.cancel();
         else if (hasKaia) {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             if (stackTrace.length > 3) {
                 StackTraceElement stackTraceElement = stackTrace[3];
-                if (!stackTraceElement.getClassName().startsWith("net.minecraft") && !stackTraceElement.getClassName().startsWith("net.minecraftforge"))
+                if (!stackTraceElement.getClassName().startsWith("net.minecraft") && !stackTraceElement.getClassName().startsWith("com.omnipotent") && !stackTraceElement.getClassName().startsWith("net.minecraftforge"))
                     cir.cancel();
             }
         }

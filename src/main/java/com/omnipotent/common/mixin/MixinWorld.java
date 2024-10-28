@@ -1,6 +1,7 @@
 package com.omnipotent.common.mixin;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.omnipotent.common.capability.kaiacap.KaiaProvider;
 import com.omnipotent.common.entity.CustomLightningBolt;
 import com.omnipotent.common.tool.Kaia;
@@ -18,10 +19,13 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.IBlockAccess;
@@ -29,7 +33,10 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.SaveHandler;
+import net.minecraftforge.common.ForgeChunkManager;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -90,16 +97,35 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
     @Shadow
     public abstract ISaveHandler getSaveHandler();
 
-//    @Inject(method = "removeEntity", at = @At("HEAD"), cancellable = true)
-//    public void removeEntity(Entity entityIn, CallbackInfo ci) {
-//        if (KaiaUtil.hasInInventoryKaia(entityIn))
-//            ci.cancel();
-//    }
+    @Shadow
+    public abstract ImmutableSetMultimap<ChunkPos, ForgeChunkManager.Ticket> getPersistentChunks();
+
+    @Shadow
+    protected abstract boolean isAreaLoaded(int xStart, int yStart, int zStart, int xEnd, int yEnd, int zEnd, boolean allowEmpty);
+
+    @Shadow
+    @Final
+    public Profiler profiler;
+
+    @Shadow
+    protected abstract boolean isChunkLoaded(int x, int z, boolean allowEmpty);
+
+    @Shadow
+    public abstract Chunk getChunk(int chunkX, int chunkZ);
+
+    @Shadow
+    public abstract void updateEntity(Entity ent);
 
     @Inject(method = "removeEntityDangerously", at = @At("HEAD"), cancellable = true)
     public void removeEntityDangerously(Entity entityIn, CallbackInfo ci) {
         if (KaiaUtil.hasInInventoryKaia(entityIn))
             ci.cancel();
+    }
+
+    @Inject(method = "updateEntityWithOptionalForce", at = @At("HEAD"))
+    public void updateEntityWithOptionalForce(Entity entityIn, boolean forceUpdate, CallbackInfo ci) {
+        if (KaiaUtil.hasInInventoryKaia(entityIn))
+            entityIn.addedToChunk = true;
     }
 
     /**
@@ -155,7 +181,7 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
     }
 
     private void managerKaiaInContainerAndSaveInPlayerData(UUID uuid, ItemStack stackInSlot, List<EntityItem> entitiesWithinAABB) {
-        File playerData = UtilityHelper.getPlayerDataFileOfPlayer(uuid);
+        File playerData = UtilityHelper.getPlayerDataFileOfPlayer(uuid).get();
         try {
             String replace = playerData.getAbsolutePath();
             NBTTagCompound playerNbt = CompressedStreamTools.readCompressed(new FileInputStream(replace));

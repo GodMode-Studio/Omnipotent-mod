@@ -7,6 +7,7 @@ import com.omnipotent.common.capability.kaiacap.KaiaBrandItems;
 import com.omnipotent.common.dimension.WorldProviderMod;
 import com.omnipotent.common.event.*;
 import com.omnipotent.common.gui.GuiHandler;
+import com.omnipotent.util.TickScheduler;
 import net.minecraft.world.DimensionType;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -43,6 +44,7 @@ public class CommonProxy {
         eventBus.register(new LivingSpawnEventSpecialSpawnListener());
         eventBus.register(new AttachCapabilitiesEventWorldListener());
         eventBus.register(new PlayerLoggedInEventHandler());
+        eventBus.register(new TickScheduler());
         registerDimension();
         NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
         Config.init(event);
