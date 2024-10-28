@@ -62,7 +62,7 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
     private static final String botaniaModid = "botania";
 
     public Kaia() {
-        super(EnumHelper.addToolMaterial("kaia", Integer.MAX_VALUE, Integer.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE, Integer.MAX_VALUE));
+        super(EnumHelper.addToolMaterial("kaia", Integer.MAX_VALUE, Integer.MAX_VALUE, 0, Float.MAX_VALUE, Integer.MAX_VALUE));
         setTranslationKey("kaia");
         setRegistryName("kaia");
         setCreativeTab(omnipotentTab);
@@ -292,6 +292,10 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         checkAndOptionalSetIntegerNbtTag(tagCompoundOfKaia, blockReachDistance.getValue(), 5, 1);
         if (!tagCompoundOfKaia.hasKey(listOfCoordenatesKaia))
             tagCompoundOfKaia.setIntArray(listOfCoordenatesKaia, new int[]{0, 300, 0});
+        if (!tagCompoundOfKaia.hasKey(bannedGuis))
+            tagCompoundOfKaia.setTag(bannedGuis, new NBTTagList());
+        if (!tagCompoundOfKaia.hasKey(bannedItems))
+            tagCompoundOfKaia.setTag(bannedItems, new NBTTagList());
         if (!tagCompoundOfKaia.hasKey(maxCountSlot.getValue()) || tagCompoundOfKaia.getInteger(maxCountSlot.getValue()) < 1)
             tagCompoundOfKaia.setInteger(maxCountSlot.getValue(), 200_000_000);
         if (!tagCompoundOfKaia.hasKey(playersDontKill))

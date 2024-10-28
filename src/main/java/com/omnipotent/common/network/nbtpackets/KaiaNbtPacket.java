@@ -1,5 +1,6 @@
 package com.omnipotent.common.network.nbtpackets;
 
+import com.omnipotent.Omnipotent;
 import com.omnipotent.common.capability.BlockModeProvider;
 import com.omnipotent.common.capability.IBlockMode;
 import com.omnipotent.common.capability.kaiacap.KaiaProvider;
@@ -8,6 +9,7 @@ import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.constant.NbtStringValues;
 import com.omnipotent.util.*;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -35,6 +37,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.omnipotent.common.CommonProxy.LOG;
 import static com.omnipotent.constant.NbtNumberValues.*;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.KaiaUtil.kaiaSummonSwords;
@@ -151,6 +154,10 @@ public class KaiaNbtPacket implements IMessage {
                     case "kaiaattackshow":
                         if (player.world.getEntityByID(message.intValue) instanceof EntityLivingBase entityByID)
                             kaiaAttackShow(player, entityByID);
+                        break;
+                    case bannedGuis:
+                        if (!UtilityHelper.isMinecraftOrOmnipotentClass(message.text))
+                            KaiaUtil.getKaiaInMainHandOrInventory(player).banGui(message.text);
                         break;
                     default:
                         manageBooleansIntegersAndStringNbt(player, message);

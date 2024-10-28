@@ -11,6 +11,8 @@ public class KaiaConstantsNbt {
     public static final String playersDontKill = "playersdontkill";
     public static final String entitiesCantKill = "entitiescantkill";
     public static final String effectsBlockeds = "effectsBlocked";
+    public static final String bannedGuis = "bannedGuis";
+    public static final String bannedItems = "bannedItems";
     //NBTTagIntArray
     public static final String listOfCoordenatesKaia = "listOfCoordenatesKaia";
 

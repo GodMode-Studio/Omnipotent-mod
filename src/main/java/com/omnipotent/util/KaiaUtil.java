@@ -1,5 +1,6 @@
 package com.omnipotent.util;
 
+import com.brandon3055.brandonscore.client.gui.modulargui.lib.GuiColourProvider;
 import com.brandon3055.draconicevolution.DEConfig;
 import com.brandon3055.draconicevolution.DEFeatures;
 import com.brandon3055.draconicevolution.achievements.Achievements;
@@ -61,7 +62,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
@@ -364,7 +368,7 @@ public final class KaiaUtil {
             capturedDrops.forEach(entityItem -> drops.add(entityItem.getItem()));
             if (soulReaper != null) drops.add(soulReaper);
             UtilityHelper.compactListItemStacks(drops);
-            if(playerSource.openContainer instanceof ContainerKaia containerKaia)
+            if (playerSource.openContainer instanceof ContainerKaia containerKaia)
                 containerKaia.addExternItemStack(drops);
             else kaia.addItemStacksInInventory(playerSource, drops);
         } else {
@@ -490,9 +494,23 @@ public final class KaiaUtil {
         }
         processDropsForPlayer(player, drops, kaiaWrapper, blocksToBreak);
         final boolean b = blocksToBreak.size() > (150000);
-        for (BlockPos blockPos : blocksToBreak) {
-            boolean x = b ? world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), 3) : player.world.destroyBlock(blockPos, false);
-        }
+
+        TickScheduler.scheduleWithCondition(Duration.of(50, ChronoUnit.MILLIS), new Callable<>() {
+            private int currentIndex;
+
+            @Override
+            public Boolean call() {
+                int limit = Math.min(currentIndex + 1000, blocksToBreak.size());
+                for (; currentIndex < limit; currentIndex++) {
+                    BlockPos blockPos = blocksToBreak.get(currentIndex);
+                    boolean x = b ? world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), 3) : player.world.destroyBlock(blockPos, false);
+                }
+                return currentIndex >= blocksToBreak.size();
+            }
+        });
+//        for (BlockPos blockPos : blocksToBreak) {
+//            boolean x = b ? world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), 3) : player.world.destroyBlock(blockPos, false);
+//        }
         spawnXP(player, centerPos, world, (int) xp);
     }
 
@@ -502,7 +520,7 @@ public final class KaiaUtil {
 
     private static void processDropsForPlayer(EntityPlayer player, NonNullList<ItemStack> drops, KaiaWrapper kaiaWrapper, List<BlockPos> blocksToDrop) {
         UtilityHelper.compactListItemStacks(drops);
-        drops.removeIf(item -> item.isEmpty());
+        drops.removeIf(ItemStack::isEmpty);
         if (kaiaWrapper.getBoolean(autoBackPack)) {
             kaiaWrapper.addItemStacksInInventory(player, drops);
         } else {
