@@ -5,6 +5,7 @@ import com.omnipotent.common.command.CommandOmni;
 import com.omnipotent.common.entity.CustomLightningBolt;
 import com.omnipotent.common.entity.KaiaEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.DimensionType;
 import net.minecraftforge.event.RegistryEvent;
@@ -23,13 +24,14 @@ import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
 public class Omnipotent {
     public static final String MODID = "omnipotent";
     public static final String NAME = "Omnipotent Mod";
-    public static final String VERSION = "1.3.1-beta.1";
+    public static final String VERSION = "1.3.2-beta.1";
     public static final OmnipotentTab omnipotentTab = new OmnipotentTab("Omnipotent mod");
     public static final ResourceLocation KAIACAP = new ResourceLocation(MODID, "kaiabrand");
     public static final ResourceLocation BLOCK_MODES_OF_PLAYER = new ResourceLocation(MODID, "blockmodesplayer");
     public static final ResourceLocation ANTIENTITYWORLD = new ResourceLocation(MODID, "antityentityworld");
     public static final ResourceLocation ENTITIESUNBANNABLE = new ResourceLocation(MODID, "entitiesunbannable");
     public static final boolean NETHER_TYPE = false;
+    public static boolean deobfuscatedEnvironment = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
 
 
     @Mod.Instance(Omnipotent.MODID)
