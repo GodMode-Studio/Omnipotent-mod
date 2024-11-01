@@ -55,6 +55,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
+import thebetweenlands.common.entity.mobs.EntitySludgeMenace;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -203,6 +204,12 @@ public final class KaiaUtil {
             }
         } else if (entity instanceof MultiPartEntityPart && ((MultiPartEntityPart) entity).parent instanceof EntityLivingBase) {
             EntityLivingBase livingBase = (EntityLivingBase) ((MultiPartEntityPart) entity).parent;
+            if (!entity.world.isRemote && livingBase.getHealth() != 0.0F) {
+                mobKilled = true;
+                killMobs(livingBase, playerSource, kaia);
+            }
+        } else if (Loader.isModLoaded("thebetweenlands") && entity instanceof EntitySludgeMenace.DummyPart dummy
+                && dummy.getParent() != null && dummy.getParent().parent instanceof EntityLivingBase livingBase) {
             if (!entity.world.isRemote && livingBase.getHealth() != 0.0F) {
                 mobKilled = true;
                 killMobs(livingBase, playerSource, kaia);

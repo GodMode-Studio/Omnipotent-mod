@@ -59,7 +59,7 @@ public abstract class MixinEntity implements ICommandSender, net.minecraftforge.
     @Inject(method = "setUniqueId", at = @At("HEAD"), cancellable = true)
     public void setUniqueId(UUID uniqueIdIn, CallbackInfo ci) {
         Entity entity = (Entity) (Object) this;
-        if (entity instanceof EntityPlayer && entity.getUniqueID() != null)
+        if (entity instanceof EntityPlayer && entity.getUniqueID() != null && !UtilityHelper.injectMixinIsCallerMinecraftOrForgeClass())
             ci.cancel();
     }
 
