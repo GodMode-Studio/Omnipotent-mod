@@ -29,6 +29,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -37,7 +38,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.omnipotent.common.CommonProxy.LOG;
+import static com.omnipotent.Omnipotent.log;
 import static com.omnipotent.constant.NbtNumberValues.*;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.KaiaUtil.kaiaSummonSwords;
@@ -201,8 +202,9 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private void verifyAndAcessSaves(EntityPlayer player, File saveFile, HashMap<Long, ItemStack> kaias) {
-            Path playerDataPath = saveFile.toPath().resolve("playerdata");
+            if (player.getServer().getFolderName().equals(saveFile.getName())) return;
             try {
+                Path playerDataPath = saveFile.toPath().resolve("playerdata");
                 List<File> files = Files.list(playerDataPath)
                         .filter(path -> path.toString().endsWith(".dat"))
                         .filter(path -> path.getFileName().toString().split(".dat")[0].equals(player.getUniqueID().toString()))
@@ -210,20 +212,35 @@ public class KaiaNbtPacket implements IMessage {
                         .collect(Collectors.toList());
 
                 for (File file2 : files) {
-                    try (FileInputStream fis = new FileInputStream(file2)) {
-                        NBTTagCompound nbtTagCompound = CompressedStreamTools.readCompressed(fis);
-                        if (nbtTagCompound != null) {
-                            ISaveHandler saveHandler = player.world.getSaveHandler();
-                            if (saveHandler instanceof SaveHandler) {
-                                ItemStack kaiaOfNbtCompound = getKaiaOfNbtCompound(nbtTagCompound);
-                                if (kaiaOfNbtCompound != null)
-                                    kaias.put(file2.lastModified(), kaiaOfNbtCompound);
+                    NBTTagCompound nbtTagCompound = CompressedStreamTools.readCompressed(new FileInputStream(file2));
+                    ISaveHandler saveHandler = player.world.getSaveHandler();
+                    if (saveHandler instanceof SaveHandler) {
+                        ItemStack kaiaOfNbtCompound = getKaiaOfNbtCompound(nbtTagCompound);
+                        if (kaiaOfNbtCompound != null) {
+                            kaias.put(file2.lastModified(), kaiaOfNbtCompound);
+                            File worldFile = new File(saveFile, "level.dat");
+                            NBTTagCompound worldNBT = CompressedStreamTools.readCompressed(new FileInputStream(worldFile));
+                            NBTTagCompound playerNBTTagCompound = worldNBT.getCompoundTag("Data").getCompoundTag("Player");
+                            if (player.getUniqueID().equals(playerNBTTagCompound.getUniqueId("UUID"))) {
+                                Iterator<NBTBase> inventory = playerNBTTagCompound.getTagList("Inventory", 10).iterator();
+                                while (inventory.hasNext()) {
+                                    NBTBase next = inventory.next();
+                                    if (next instanceof NBTTagCompound) {
+                                        ItemStack itemStack = new ItemStack((NBTTagCompound) next);
+                                        if (itemStack.getItem() instanceof Kaia) {
+                                            inventory.remove();
+                                            break;
+                                        }
+                                    }
+                                }
                             }
+                            CompressedStreamTools.writeCompressed(nbtTagCompound, new FileOutputStream(file2));
+                            CompressedStreamTools.writeCompressed(worldNBT, new FileOutputStream(worldFile));
                         }
-                    } catch (IOException e) {
                     }
                 }
             } catch (IOException e) {
+                log.error("Error when trying to read and write save files", e);
             }
         }
 
@@ -234,13 +251,27 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private ItemStack getKaiaOfNbtCompound(NBTTagCompound nbtTagCompound) {
-            NBTTagList inventory = nbtTagCompound.getTagList("Inventory", 10);
-            Iterator<NBTBase> iterator = inventory.iterator();
-            while (iterator.hasNext()) {
-                NBTBase next = iterator.next();
+            Iterator<NBTBase> inventory = nbtTagCompound.getTagList("Inventory", 10).iterator();
+            while (inventory.hasNext()) {
+                NBTBase next = inventory.next();
                 if (next instanceof NBTTagCompound) {
                     ItemStack itemStack = new ItemStack((NBTTagCompound) next);
                     if (itemStack.getItem() instanceof Kaia) {
+                        inventory.remove();
+                        return itemStack;
+                    }
+                }
+            }
+
+            NBTTagCompound omni = nbtTagCompound.getCompoundTag("ForgeCaps")
+                    .getCompoundTag("omnipotent:kaiabrand");
+            Iterator<NBTBase> tagList = omni.getTagList("kaias", 10).iterator();
+            while (tagList.hasNext()) {
+                NBTBase kaia = tagList.next();
+                if (kaia instanceof NBTTagCompound kaiaNbt) {
+                    ItemStack itemStack = new ItemStack(kaiaNbt);
+                    if (itemStack.getItem() instanceof Kaia) {
+                        tagList.remove();
                         return itemStack;
                     }
                 }
