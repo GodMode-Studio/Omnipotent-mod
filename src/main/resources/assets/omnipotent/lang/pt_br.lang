@@ -70,8 +70,8 @@ keykaia.kaiashowinfo=Exibir/ocultar Info da Kaia
 keykaia.getKaiaBetweenSaves=Obter kaia dos saves
 keykaia.kaiasummonswords=Invocar entidade Kaia
 keykaia.kaiaattackshow=Atacar entidade com fantasmas da Kaia.
-keykaia.moveandbanitems=Todos os itens são movidos para a última página vazia da Kaia. Itens que tentarem forçar sua permanência no inventário serão banidos, ou seja, não poderão mais ser colocados no inventário do jogador.
-keykaia.banguis=Ao pressionar essa tecla, a GUI em exibição será bloqueada, impedindo que ela seja aberta novamente para voce. Não afeta GUIs do Minecraft ou do próprio mod.
+keykaia.moveandbanitems=Move os itens para o inventario e bane os que restarem.
+keykaia.banguis=Bane a GUI atual.
 #messages in chat
 kaia.message.void=PARADEIRO Y150
 kaia.message.returndropitems=item dropado na posição
