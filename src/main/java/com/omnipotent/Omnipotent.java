@@ -4,6 +4,7 @@ import com.omnipotent.common.CommonProxy;
 import com.omnipotent.common.command.CommandOmni;
 import com.omnipotent.common.entity.CustomLightningBolt;
 import com.omnipotent.common.entity.KaiaEntity;
+import com.omnipotent.util.ModLogger;
 import net.minecraft.entity.Entity;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.ResourceLocation;
@@ -31,7 +32,7 @@ public class Omnipotent {
     public static final ResourceLocation ANTIENTITYWORLD = new ResourceLocation(MODID, "antityentityworld");
     public static final ResourceLocation ENTITIESUNBANNABLE = new ResourceLocation(MODID, "entitiesunbannable");
     public static final boolean NETHER_TYPE = false;
-    public static boolean deobfuscatedEnvironment = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
+    public static ModLogger log;
 
 
     @Mod.Instance(Omnipotent.MODID)

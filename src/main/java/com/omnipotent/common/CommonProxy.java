@@ -7,6 +7,7 @@ import com.omnipotent.common.capability.kaiacap.KaiaBrandItems;
 import com.omnipotent.common.dimension.WorldProviderMod;
 import com.omnipotent.common.event.*;
 import com.omnipotent.common.gui.GuiHandler;
+import com.omnipotent.util.ModLogger;
 import com.omnipotent.util.TickScheduler;
 import net.minecraft.world.DimensionType;
 import net.minecraftforge.common.DimensionManager;
@@ -23,10 +24,8 @@ import static com.omnipotent.common.network.NetworkRegister.preInitCommon;
 
 public class CommonProxy {
 
-    public static Logger LOG;
-
     public void preInit(FMLPreInitializationEvent event) {
-        LOG = event.getModLog();
+        log = new ModLogger(event.getModLog());
 //        Mixins.addConfiguration("mixins.omnipotent.json");
         MinecraftForge.EVENT_BUS.register(instance);
         CapabilityManager instanceCap = CapabilityManager.INSTANCE;
