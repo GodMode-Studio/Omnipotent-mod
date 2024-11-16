@@ -54,6 +54,7 @@ guikaia.config.maximumObliteration=Oblitere a entidade
 guikaia.config.rescueBeforeDeath=Salvamento antes da morte
 guikaia.config.excludeTileEntityDestruction=Preservar Tile Entity Blocks na mineração em massa
 guikaia.config.teleportAllItemsToBackpack=Teleportar todos os itens para a mochila da Kaia
+guikaia.config.automaticSmelting=Fundição Automatica
 #keys
 keykaia.category=Botões Kaia
 keykaia.config=Configurações
@@ -116,3 +117,4 @@ function.description.maximumObliteration=Essa opção oblitera a entidade, é ú
 function.description.rescueBeforeDeath=Essa opção faz Kaia retorna ao seu inventário assim que voce está prestes a morre.
 function.description.excludeTileEntityDestruction=Esta opção garante que os blocos do tipo TileEntity não sejam destruídos durante a mineração em área.
 function.description.teleportAllItemsToBackpack=Teleporta todos os itens no alcance definido direto para o inventario da kaia, o valor a baixo é em blocos e 0 significa desativado.
+function.description.automaticSmelting=Todos os itens minerados por Kaia serão automaticamente fundidos.

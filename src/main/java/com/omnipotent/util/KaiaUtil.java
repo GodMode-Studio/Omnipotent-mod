@@ -1,6 +1,5 @@
 package com.omnipotent.util;
 
-import com.brandon3055.brandonscore.client.gui.modulargui.lib.GuiColourProvider;
 import com.brandon3055.draconicevolution.DEConfig;
 import com.brandon3055.draconicevolution.DEFeatures;
 import com.brandon3055.draconicevolution.achievements.Achievements;
@@ -37,6 +36,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Enchantments;
 import net.minecraft.item.ItemAir;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -67,6 +67,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
@@ -458,7 +459,7 @@ public final class KaiaUtil {
             }
         } else {
             NonNullList<ItemStack> drops = NonNullList.create();
-            int xp = (int) fillDropListAndCompactIfNecessary(player, pos, drops, kaiaWrapper.getEnchantmentLevel(Enchantments.FORTUNE));
+            int xp = (int) fillDropListAndCompactIfNecessary(player, pos, drops, kaiaWrapper.getEnchantmentLevel(Enchantments.FORTUNE), kaiaWrapper.getBoolean(automaticSmelting));
             processDropsForPlayer(player, drops, kaiaWrapper, Collections.singletonList(pos));
             player.world.destroyBlock(pos, false);
             spawnXP(player, pos, player.world, xp);
@@ -479,7 +480,7 @@ public final class KaiaUtil {
         KaiaWrapper kaiaWrapper = getKaiaInMainHand(player).get();
         List<BlockPos> blocksToBreak = new ArrayList<>((int) (Math.pow(areaBlock, 3) * 0.75));
         if (kaiaWrapper.getBoolean(noBreakTileEntity) && checkTheAreaForTileEntityBlock(startX, startY, startZ, endX, endY, endZ, player.world)) {
-            xp = (int) fillDropListAndCompactIfNecessary((EntityPlayerMP) player, centerPos, drops, kaiaWrapper.getEnchantmentLevel(Enchantments.FORTUNE));
+            xp = (int) fillDropListAndCompactIfNecessary((EntityPlayerMP) player, centerPos, drops, kaiaWrapper.getEnchantmentLevel(Enchantments.FORTUNE), kaiaWrapper.getBoolean(automaticSmelting));
             processDropsForPlayer(player, drops, kaiaWrapper, Collections.singletonList(centerPos));
             player.world.destroyBlock(centerPos, false);
             spawnXP(player, centerPos, world, (int) xp);
@@ -497,7 +498,7 @@ public final class KaiaUtil {
             }
         }
         for (BlockPos blockPos : blocksToBreak) {
-            xp += fillDropListAndCompactIfNecessary((EntityPlayerMP) player, blockPos, drops, kaiaWrapper.getEnchantmentLevel(Enchantments.FORTUNE));
+            xp += fillDropListAndCompactIfNecessary((EntityPlayerMP) player, blockPos, drops, kaiaWrapper.getEnchantmentLevel(Enchantments.FORTUNE), kaiaWrapper.getBoolean(automaticSmelting));
         }
         processDropsForPlayer(player, drops, kaiaWrapper, blocksToBreak);
         final boolean b = blocksToBreak.size() > (150000);
@@ -538,24 +539,47 @@ public final class KaiaUtil {
     }
 
 
-    public static float fillDropListAndCompactIfNecessary(EntityPlayerMP player, BlockPos pos, NonNullList<ItemStack> drops, int enchLevelFortune) {
+    public static float fillDropListAndCompactIfNecessary(EntityPlayerMP player, BlockPos pos, NonNullList<ItemStack> drops, int enchLevelFortune, boolean smeltItem) {
         if (drops.size() > 5000) {
             UtilityHelper.compactListItemStacks(drops);
         }
         IBlockState state = player.world.getBlockState(pos);
         Block block = state.getBlock();
-        float xp = 0f;
+        AtomicReference<Float> xp = new AtomicReference<>(0f);
         NonNullList<ItemStack> dropsBlock = NonNullList.create();
         block.getDrops(dropsBlock, player.world, pos, state, enchLevelFortune);
-        dropsBlock.removeIf(item -> item.getItem() instanceof ItemAir);
+        dropsBlock.removeIf(item -> item.isEmpty() || item.getItem() instanceof ItemAir);
         if (dropsBlock.isEmpty()) {
             drops.add(new ItemStack(block));
         } else
             drops.addAll(dropsBlock);
-        xp += block.getExpDrop(state, player.world, pos, enchLevelFortune);
+        xp.updateAndGet(v -> v + block.getExpDrop(state, player.world, pos, enchLevelFortune));
+        if (smeltItem) {
+            ArrayList<ItemStack> furnaced = new ArrayList<>();
+            final FurnaceRecipes instance = FurnaceRecipes.instance();
+            drops.forEach(i -> {
+                ItemStack result = instance.getSmeltingResult(i).copy();
+                if (!result.isEmpty()) {
+                    result.setCount(result.getCount() * i.getCount());
+                    if (enchLevelFortune > 0) {
+                        int l = player.world.rand.nextInt(enchLevelFortune + 2);
+                        if (l == 0)
+                            l = 1;
+                        result.setCount(result.getCount() * l);
+                        int finalPower = l;
+                        xp.updateAndGet(v -> v * finalPower);
+                    }
+                    xp.updateAndGet(v -> v + instance.getSmeltingExperience(result) * i.getCount());
+                    furnaced.add(result);
+                    i.setCount(0);
+                }
+            });
+            drops.addAll(furnaced);
+        }
+        drops.removeIf(item -> item.isEmpty() || item.getItem() instanceof ItemAir);
         //linha comentada devida a lentidão dela talvez volte no futuro.
 //        player.addStat(StatList.getBlockStats(block));
-        return xp;
+        return xp.get();
     }
 
     private static boolean checkTheAreaForTileEntityBlock(int startX, int startY, int startZ, int endX, int endY, int endZ, World world) {

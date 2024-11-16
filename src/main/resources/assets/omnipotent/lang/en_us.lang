@@ -54,6 +54,7 @@ guikaia.config.maximumObliteration=Obliterate an entity
 guikaia.config.rescueBeforeDeath=Rescue before death
 guikaia.config.excludeTileEntityDestruction=Exclude Tile Entity Blocks during area block mining
 guikaia.config.teleportAllItemsToBackpack=Teleport All items to Kaia Backpack
+guikaia.config.automaticSmelting=Automatic smelting
 #keys
 keykaia.category=Kaia Keys
 keykaia.config=Settings
@@ -116,3 +117,4 @@ function.description.maximumObliteration=This option obliterates the entity; it'
 function.description.rescueBeforeDeath=This option makes Kaia return to your inventory just as you're about to die.
 function.description.excludeTileEntityDestruction=This option preserves TileEntity blocks from being destroyed during area block mining.
 function.description.teleportAllItemsToBackpack=Teleports all items within the defined range directly to Kaia's inventory. The value below is in blocks, and 0 means disabled.
+function.description.automaticSmelting=All items mined by Kaia will be automatically smelted.
