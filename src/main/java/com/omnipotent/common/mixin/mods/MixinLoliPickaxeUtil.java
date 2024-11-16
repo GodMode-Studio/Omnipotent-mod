@@ -19,18 +19,19 @@ import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+
+import java.util.Optional;
 
 import static com.anotherstar.util.LoliPickaxeUtil.getLoliPickaxe;
 import static com.anotherstar.util.LoliPickaxeUtil.invHaveLoliPickaxe;
 import static com.omnipotent.constant.NbtBooleanValues.counterAttack;
 import static com.omnipotent.constant.NbtBooleanValues.killAllEntities;
 
-@Optional.Interface(iface = "com.anotherstar.util.LoliPickaxeUtil", modid = "lolipickaxe")
+@net.minecraftforge.fml.common.Optional.Interface(iface = "com.anotherstar.util.LoliPickaxeUtil", modid = "lolipickaxe")
 @Mixin(LoliPickaxeUtil.class)
 public abstract class MixinLoliPickaxeUtil {
 
@@ -41,8 +42,9 @@ public abstract class MixinLoliPickaxeUtil {
     @Overwrite(remap = false)
     @Final
     public static void killPlayer(EntityPlayer player, EntityLivingBase source) {
-        if (KaiaUtil.hasInInventoryKaia(player)) {
-            KaiaWrapper stack = KaiaUtil.getKaiaInMainHandOrInventory(player);
+        Optional<KaiaWrapper> kaiaWrapper = KaiaUtil.findKaiaInInventory(player);
+        if (kaiaWrapper.isPresent()) {
+            KaiaWrapper stack = kaiaWrapper.get();
             if (stack.getBoolean(counterAttack) && !player.world.isRemote)
                 KaiaUtil.killChoice(source, player, stack.getBoolean(killAllEntities));
             return;

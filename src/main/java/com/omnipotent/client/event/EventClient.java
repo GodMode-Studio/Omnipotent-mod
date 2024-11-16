@@ -11,6 +11,9 @@ import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import java.util.Optional;
+
+import static com.omnipotent.util.KaiaUtil.findKaiaInInventory;
 import static com.omnipotent.util.KaiaUtil.hasInInventoryKaia;
 
 public class EventClient {
@@ -22,10 +25,11 @@ public class EventClient {
         if(player==null && nextGui instanceof GuiGameOver)
             event.setCanceled(true);
         GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
-        boolean hasKaia = hasInInventoryKaia(player);
+        Optional<KaiaWrapper> optKaia = findKaiaInInventory(player);
+        boolean hasKaia = optKaia.isPresent();
         if (!hasKaia)
             return;
-        KaiaWrapper kaia = KaiaUtil.getKaiaInMainHandOrInventory(player);
+        KaiaWrapper kaia = optKaia.get();
         boolean guiToOpenIsGameOver = nextGui instanceof GuiGameOver;
         if (nextGui == null && !UtilityHelper.isCallerMinecraftOrForgeClassForEvents())
             event.setCanceled(true);

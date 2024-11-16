@@ -11,9 +11,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import org.lwjgl.input.Keyboard;
 
@@ -51,7 +49,7 @@ public class KaiaPlayerGui extends GuiScreen {
         playerAdded();
         listGuiTextField.add(new GuiTextField(23930292, fontRenderer, getEquivalentValueOfscreenWidth(110, width), getEquivalentValueOfscreenHeight(240, height), 160, 10));
         listGuiTextField.get(0).setText(I18n.format("guikaia.playermanager.input"));
-        KaiaWrapper kaiaInMainHand = KaiaUtil.getKaiaInMainHand(player).get();
+        KaiaWrapper kaiaInMainHand = KaiaUtil.getKaiaInMainHand(player);
         GuiButton button = new GuiButton(++idButtons, getEquivalentValueOfscreenWidth(273, width), getEquivalentValueOfscreenHeight(238, height), I18n.format("guikaia.playermanager.save"));
         button.height = 12;
         button.width = button.displayString.length() * 7;
@@ -71,7 +69,7 @@ public class KaiaPlayerGui extends GuiScreen {
         super.drawScreen(mouseX, mouseY, partialTicks);
         playerAdded();
         listGuiTextField.forEach(guiTextField -> guiTextField.drawTextBox());
-        KaiaWrapper kaiaWrapper = KaiaUtil.getKaiaInMainHand(player).get();
+        KaiaWrapper kaiaWrapper = KaiaUtil.getKaiaInMainHand(player);
         for (GuiButton button : buttonList) {
             if (button.id == 3)
                 button.displayString = String.valueOf(kaiaWrapper.getBoolean(playersWhoShouldNotKilledInCounterAttack));
@@ -192,7 +190,7 @@ public class KaiaPlayerGui extends GuiScreen {
 
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
-        KaiaWrapper tagCompound = KaiaUtil.getKaiaInMainHand(player).get();
+        KaiaWrapper tagCompound = KaiaUtil.getKaiaInMainHand(player);
         switch (button.id) {
             case 0:
                 if (!(page == 0))

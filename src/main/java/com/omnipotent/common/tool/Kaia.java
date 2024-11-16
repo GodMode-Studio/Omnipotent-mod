@@ -2,7 +2,6 @@ package com.omnipotent.common.tool;
 
 import cofh.redstoneflux.RedstoneFluxProps;
 import cofh.redstoneflux.api.IEnergyContainerItem;
-import com.brandon3055.brandonscore.lib.EnergyHelper;
 import com.omnipotent.common.specialgui.ContainerKaia;
 import com.omnipotent.common.specialgui.IContainer;
 import com.omnipotent.common.specialgui.InventoryKaia;
@@ -29,7 +28,6 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.energy.CapabilityEnergy;
@@ -352,7 +350,7 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
             if (cancelAttack)
                 return cancelAttack;
             if (!player.world.isRemote)
-                killChoice(entityAttacked, player, getKaiaInMainHand(player).get().getBoolean(killAllEntities));
+                killChoice(entityAttacked, player, getKaiaInMainHand(player).getBoolean(killAllEntities));
             return cancelAttack;
         }
         return false;

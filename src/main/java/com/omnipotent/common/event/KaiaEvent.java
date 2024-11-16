@@ -26,7 +26,7 @@ public class KaiaEvent {
     @SideOnly(Side.CLIENT)
     public void playerAttack(PlayerInteractEvent.LeftClickEmpty event) {
         EntityPlayer player = event.getEntityPlayer();
-        getKaiaInMainHand(player).ifPresent(kaia -> NetworkRegister.sendToServer(new KillPacket()));
+        findKaiaInMainHand(player).ifPresent(kaia -> NetworkRegister.sendToServer(new KillPacket()));
     }
 
     @SubscribeEvent(receiveCanceled = true, priority = EventPriority.LOWEST)

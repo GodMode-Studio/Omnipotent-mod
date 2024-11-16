@@ -2,6 +2,7 @@ package com.omnipotent.common.mixin;
 
 import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.KaiaWrapper;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -22,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Mixin(InventoryPlayer.class)
 public abstract class MixinInventoryPlayer implements IInventory {
@@ -54,8 +56,10 @@ public abstract class MixinInventoryPlayer implements IInventory {
                         if (!UtilityHelper.isMinecraftOrOmnipotentClass(className))
                             return ItemStack.EMPTY;
                     }
-                } else if (KaiaUtil.hasInInventoryKaia(player) && KaiaUtil.getKaiaInMainHandOrInventory(player).itemIsBanned(stack.getItem())) {
-                    stack = ItemStack.EMPTY;
+                } else {
+                    Optional<KaiaWrapper> kaia = KaiaUtil.findKaiaInInventory(player);
+                    if (kaia.isPresent() && kaia.get().itemIsBanned(stack.getItem()))
+                        stack = ItemStack.EMPTY;
                 }
                 return super.set(index, stack);
             }
@@ -118,8 +122,10 @@ public abstract class MixinInventoryPlayer implements IInventory {
                             !className.startsWith("com.omnipotent"))
                         return;
                 }
-            } else if (KaiaUtil.hasInInventoryKaia(this.player) && KaiaUtil.getKaiaInMainHandOrInventory(player).itemIsBanned(stack.getItem())) {
-                stack = ItemStack.EMPTY;
+            } else {
+                Optional<KaiaWrapper> kaiaInInventory = KaiaUtil.findKaiaInInventory(this.player);
+                if (kaiaInInventory.isPresent() && kaiaInInventory.get().itemIsBanned(stack.getItem()))
+                    stack = ItemStack.EMPTY;
             }
             nonnulllist.set(index, stack);
         }
@@ -127,9 +133,8 @@ public abstract class MixinInventoryPlayer implements IInventory {
 
     @Inject(method = "addItemStackToInventory", at = @At("HEAD"), cancellable = true)
     public void addItemStackToInventory(ItemStack itemStackIn, CallbackInfoReturnable<Boolean> cir) {
-        if (this.player != null && KaiaUtil.hasInInventoryKaia(this.player) && KaiaUtil.getKaiaInMainHandOrInventory(player)
-                .itemIsBanned(itemStackIn.getItem()))
-            cir.cancel();
+        KaiaUtil.findKaiaInInventory(this.player).filter(stack -> stack.itemIsBanned(itemStackIn.getItem()))
+                .ifPresent(stack -> cir.cancel());
     }
 
     @Inject(method = "dropAllItems", at = @At("HEAD"), cancellable = true)

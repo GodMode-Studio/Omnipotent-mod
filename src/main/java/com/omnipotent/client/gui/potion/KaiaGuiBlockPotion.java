@@ -8,7 +8,6 @@ import com.omnipotent.common.network.NetworkRegister;
 import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
-import com.omnipotent.util.NbtListUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -185,7 +184,7 @@ public class KaiaGuiBlockPotion extends GuiScreen {
             potions.add(potion);
         }
         int y = (int) ((int) (yElementControllerButtons / 8.5) / currentScrollOffset);
-        List<String> potionsBlocked = KaiaUtil.getKaiaInMainHand(player).get().getStringList(KaiaConstantsNbt.effectsBlockeds);
+        List<String> potionsBlocked = KaiaUtil.getKaiaInMainHand(player).getStringList(KaiaConstantsNbt.effectsBlockeds);
         for (int c = 0; c < potions.size(); c++) {
             GuiTextField guiTextField = new GuiTextField(++idGuiText, fontRenderer, (int) (width / 13.7142857143), y, (int) (xElementControllerButtons / 0.98), (int) (height / 21.25));
             guiTextField.setMaxStringLength(128);

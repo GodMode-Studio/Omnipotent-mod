@@ -12,8 +12,6 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.client.GuiIngameForge;
 import org.spongepowered.asm.mixin.Mixin;
@@ -56,7 +54,7 @@ public abstract class MixinGuiIngameForge extends GuiIngame {
         EntityPlayerSP player = mc.player;
         GuiScreen currentScreen = mc.currentScreen;
         if (player == null || currentScreen != null) return;
-        Optional<KaiaWrapper> kaiaWrapper = KaiaUtil.getKaiaInMainHand(player);
+        Optional<KaiaWrapper> kaiaWrapper = KaiaUtil.findKaiaInMainHand(player);
         if (!kaiaWrapper.isPresent())
             return;
         KaiaWrapper kaiaInMainHand = kaiaWrapper.get();

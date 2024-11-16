@@ -1,6 +1,5 @@
 package com.omnipotent.common.network.nbtpackets;
 
-import com.omnipotent.Omnipotent;
 import com.omnipotent.common.capability.BlockModeProvider;
 import com.omnipotent.common.capability.IBlockMode;
 import com.omnipotent.common.capability.kaiacap.KaiaProvider;
@@ -9,7 +8,6 @@ import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.constant.NbtStringValues;
 import com.omnipotent.util.*;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -125,7 +123,7 @@ public class KaiaNbtPacket implements IMessage {
                     return null;
                 switch (message.type) {
                     case "blockReachDistance":
-                        managerIntegersNbt(message, KaiaUtil.getKaiaInMainHand(player).get());
+                        managerIntegersNbt(message, KaiaUtil.getKaiaInMainHand(player));
                         UtilityHelper.modifyBlockReachDistance(ctx.getServerHandler().player, message.intValue);
                         break;
                     case kaiaEnchant:
@@ -280,7 +278,7 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private void functionManageEffectsBlocked(EntityPlayer player, KaiaNbtPacket message) {
-            KaiaWrapper kaia = KaiaUtil.getKaiaInMainHand(player).get();
+            KaiaWrapper kaia = KaiaUtil.getKaiaInMainHand(player);
             if (message.intValue == 0) {
                 kaia.addInList(effectsBlockeds, new NBTTagString(message.text));
             } else
@@ -288,7 +286,7 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private static void manageBooleansIntegersAndStringNbt(EntityPlayer player, KaiaNbtPacket message) {
-            KaiaWrapper kaia = KaiaUtil.getKaiaInMainHand(player).get();
+            KaiaWrapper kaia = KaiaUtil.getKaiaInMainHand(player);
             if (managerBooleanNbt(message, kaia)) return;
             if (managerIntegersNbt(message, kaia)) return;
             managerStringNbt(message, kaia);
@@ -375,7 +373,7 @@ public class KaiaNbtPacket implements IMessage {
         }
 
         private static void functionManageEnchantments(KaiaNbtPacket message, EntityPlayer player) {
-            KaiaWrapper kaiaItem = KaiaUtil.getKaiaInMainHand(player).get();
+            KaiaWrapper kaiaItem = KaiaUtil.getKaiaInMainHand(player);
             int lvl = message.intValue;
             short number = NumberUtils.toShort(String.valueOf(lvl), (short) -20_000);
             if (number <= 0) {

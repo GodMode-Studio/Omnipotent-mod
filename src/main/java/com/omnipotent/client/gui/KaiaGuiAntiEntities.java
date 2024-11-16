@@ -3,7 +3,6 @@ package com.omnipotent.client.gui;
 import com.omnipotent.common.network.NetworkRegister;
 import com.omnipotent.common.network.nbtpackets.KaiaNbtPacket;
 import com.omnipotent.util.KaiaUtil;
-import com.omnipotent.util.NbtListUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -45,7 +44,7 @@ public class KaiaGuiAntiEntities extends GuiScreen implements IGuiPages {
         maxYOfScreen = getEquivalentValue(463, height);
         addPageNavigationButtons();
         entitiesThatCannotBeKilled.clear();
-        entitiesThatCannotBeKilled.addAll(KaiaUtil.getKaiaInMainHand(player).get().getStringList(entitiesCantKill));
+        entitiesThatCannotBeKilled.addAll(KaiaUtil.getKaiaInMainHand(player).getStringList(entitiesCantKill));
         addPages();
     }
 
@@ -53,7 +52,7 @@ public class KaiaGuiAntiEntities extends GuiScreen implements IGuiPages {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
         entitiesThatCannotBeKilled.clear();
-        entitiesThatCannotBeKilled.addAll(KaiaUtil.getKaiaInMainHand(player).get().getStringList(entitiesCantKill));
+        entitiesThatCannotBeKilled.addAll(KaiaUtil.getKaiaInMainHand(player).getStringList(entitiesCantKill));
         addPages();
         drawRect(getEquivalentValue(0, width), getEquivalentValue(0, height), getEquivalentValue(500, width), getEquivalentValue(500, height), Color.BLACK.getRGB());
         drawString(fontRenderer, "Entidades que não podem ser mortas", getEquivalentValue(8, width), getEquivalentValue(30, height), Color.WHITE.getRGB());

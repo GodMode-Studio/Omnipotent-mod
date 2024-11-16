@@ -54,7 +54,6 @@ import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.Optional;
 import thebetweenlands.common.entity.mobs.EntitySludgeMenace;
 
 import javax.annotation.Nonnull;
@@ -74,6 +73,7 @@ import java.util.function.DoubleSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.omnipotent.Omnipotent.log;
 import static com.omnipotent.constant.NbtBooleanValues.*;
 import static com.omnipotent.constant.NbtNumberValues.*;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
@@ -86,22 +86,44 @@ public final class KaiaUtil {
 
     //invoke apenas do lado do servidor ou no proprio cliente em si
     public static boolean hasInInventoryKaia(@Nullable Entity entity) {
+        return findKaiaInInventory(entity).isPresent();
+    }
+
+    public static Optional<KaiaWrapper> findKaiaInInventory(@Nullable Entity entity) {
+        final Optional<KaiaWrapper> emp = Optional.empty();
         if (!UtilityHelper.isPlayer(entity))
-            return false;
+            return emp;
         try {
             EntityPlayer player = (EntityPlayer) entity;
             deleteDuplicateKaias(player);
             if (player.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof Kaia)
-                return true;
+                return KaiaWrapper.wrapIfKaia(player.getHeldItem(EnumHand.OFF_HAND));
             for (ItemStack slot : player.inventory.mainInventory) {
                 if (slot.getItem() instanceof Kaia) {
-                    return true;
+                    return KaiaWrapper.wrapIfKaia(slot);
                 }
             }
         } catch (Exception e) {
-            return false;
+            log.error("Error in findKaiaInInventory", e);
+            return emp;
         }
-        return false;
+        return emp;
+    }
+
+    public static Optional<KaiaWrapper> findKaiaInMainHand(EntityPlayer player) {
+        return KaiaWrapper.wrapIfKaia(player.getHeldItemMainhand());
+    }
+
+    public static KaiaWrapper getKaiaInMainHand(EntityPlayer player) {
+        return findKaiaInMainHand(player).orElseThrow(() -> new RuntimeException("without kaia in mainhand"));
+    }
+
+    public static KaiaWrapper getKaiaInMainHandOrInventory(EntityPlayer playerSource) {
+        return findKaiaInMainHand(playerSource).orElseGet(() -> getKaiaInInventory(playerSource));
+    }
+
+    public static KaiaWrapper getKaiaInInventory(EntityPlayer player) {
+        return findKaiaInInventory(player).orElseThrow(() -> new RuntimeException("without Kaia in Inventory"));
     }
 
     private static void deleteDuplicateKaias(EntityPlayer player) {
@@ -146,10 +168,6 @@ public final class KaiaUtil {
         for (Entity entity : entities) {
             killChoice(entity, playerSource, killAllEntities);
         }
-    }
-
-    public static KaiaWrapper getKaiaInMainHandOrInventory(EntityPlayer playerSource) {
-        return getKaiaInMainHand(playerSource).orElseGet(() -> getKaiaInInventory(playerSource));
     }
 
     public static List<Entity> getEntitiesInArea(World world, BlockPos position, int rangeOfBlocks) {
@@ -222,8 +240,8 @@ public final class KaiaUtil {
             mobKilled = true;
             entity.setAbsoluteDead();
             entity.setDead();
-            if (Loader.isModLoaded("crazymonsters") && entity instanceof EntityNotch) {
-                crazyDeath((EntityNotch) entity, playerSource);
+            if (Loader.isModLoaded("crazymonsters") && entity instanceof EntityNotch notch) {
+                crazyDeath(notch, playerSource);
             }
             if (kaia.getBoolean(banEntitiesAttacked))
                 dennyEntitySpawnInWorld(playerSource.world, entity);
@@ -231,7 +249,7 @@ public final class KaiaUtil {
         return mobKilled;
     }
 
-    @Optional.Method(modid = "crazymonsters")
+    @net.minecraftforge.fml.common.Optional.Method(modid = "crazymonsters")
     private static void crazyDeath(EntityNotch entity, EntityPlayer playerSource) {
         entity.setCrazyHealth(0);
         DamageSource ds = new AbsoluteOfCreatorDamage(playerSource);
@@ -401,7 +419,7 @@ public final class KaiaUtil {
         entityCreature.onAbsoluteDeath(ds);
     }
 
-    @Optional.Method(modid = DRACONIC_MODID)
+    @net.minecraftforge.fml.common.Optional.Method(modid = DRACONIC_MODID)
     private static ItemStack setReaperEnchant(KaiaWrapper kaia, EntityPlayer playerSource, EntityLivingBase entityCreature) {
         ItemStack soul = null;
         int dropChanceOfReaperEnchantment = kaia.getEnchantmentLevel(EnchantmentReaper.instance) + 5;
@@ -446,7 +464,7 @@ public final class KaiaUtil {
     }
 
     public static void decideBreakBlock(EntityPlayerMP player, BlockPos pos) {
-        KaiaWrapper kaiaWrapper = getKaiaInMainHand(player).get();
+        KaiaWrapper kaiaWrapper = getKaiaInMainHand(player);
         if (kaiaWrapper.getInteger(blockBreakArea) > 1) {
             int areaBlock = kaiaWrapper.getInteger(blockBreakArea);
             if (!player.world.isRemote && !player.capabilities.isCreativeMode && withKaiaMainHand(player)) {
@@ -477,7 +495,7 @@ public final class KaiaUtil {
         int endY = centerPos.getY() + halfArea;
         float xp = 0f;
         NonNullList<ItemStack> drops = NonNullList.create();
-        KaiaWrapper kaiaWrapper = getKaiaInMainHand(player).get();
+        KaiaWrapper kaiaWrapper = getKaiaInMainHand(player);
         List<BlockPos> blocksToBreak = new ArrayList<>((int) (Math.pow(areaBlock, 3) * 0.75));
         if (kaiaWrapper.getBoolean(noBreakTileEntity) && checkTheAreaForTileEntityBlock(startX, startY, startZ, endX, endY, endZ, player.world)) {
             xp = (int) fillDropListAndCompactIfNecessary((EntityPlayerMP) player, centerPos, drops, kaiaWrapper.getEnchantmentLevel(Enchantments.FORTUNE), kaiaWrapper.getBoolean(automaticSmelting));
@@ -623,7 +641,7 @@ public final class KaiaUtil {
         IBlockState state = player.world.getBlockState(pos);
         Block block = state.getBlock();
         NonNullList<ItemStack> drops = NonNullList.create();
-        KaiaWrapper kaiaInMainHand = getKaiaInMainHand(player).get();
+        KaiaWrapper kaiaInMainHand = getKaiaInMainHand(player);
         int enchLevelFortune = kaiaInMainHand.getEnchantmentLevel(Enchantments.FORTUNE);
         Float xp = 0f;
         block.getDrops(drops, player.world, pos, state, enchLevelFortune);
@@ -687,25 +705,6 @@ public final class KaiaUtil {
     }
 
     //excluir
-    public static java.util.Optional<KaiaWrapper> getKaiaInMainHand(EntityPlayer player) {
-        ItemStack stack = player.getHeldItemMainhand();
-        KaiaWrapper kaiaWrapper = stack.getItem() instanceof Kaia ? new KaiaWrapper(stack) : null;
-        return java.util.Optional.ofNullable(kaiaWrapper);
-    }
-
-    public static KaiaWrapper getKaiaInInventory(EntityPlayer player) throws RuntimeException {
-        if (player.inventory.offHandInventory.get(0).getItem() instanceof Kaia)
-            return new KaiaWrapper(player.inventory.offHandInventory.get(0));
-        if (player.getHeldItemMainhand().getItem() instanceof Kaia)
-            return new KaiaWrapper(player.getHeldItemMainhand());
-        for (ItemStack itemStack : player.inventory.mainInventory) {
-            if (itemStack.getItem() instanceof Kaia)
-                return new KaiaWrapper(itemStack);
-        }
-        throw new RuntimeException("without Kaia in Inventory");
-    }
-
-    //excluir
     public static boolean isOwnerOfKaia(ItemStack kaiaStack, @Nonnull EntityPlayer player) {
         return kaiaStack.getTagCompound().getString(ownerName).equals(player.getName()) && kaiaStack.getTagCompound().getString(ownerID).equals(player.getUniqueID().toString());
     }
@@ -729,10 +728,9 @@ public final class KaiaUtil {
     }
 
     public static boolean effectIsBlockedByKaia(EntityPlayer player, Potion potion) {
-        if (!hasInInventoryKaia(player))
-            return false;
-        KaiaWrapper kaiaWrapper = getKaiaInMainHandOrInventory(player);
-        return kaiaWrapper.listContainsElement(effectsBlockeds, potion.getRegistryName().toString());
+        return findKaiaInInventory(player)
+                .map(wrapper -> wrapper.listContainsElement(effectsBlockeds, potion.getRegistryName().toString()))
+                .orElse(false);
     }
 
     public static void kaiaAttackShow(EntityPlayerMP entityPlayerMP, EntityLivingBase entityByID) {

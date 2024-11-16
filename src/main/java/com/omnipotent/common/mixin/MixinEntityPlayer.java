@@ -188,16 +188,13 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
     @Inject(method = "attackEntityFrom", at = @At("HEAD"), cancellable = true)
     public void attackEntityFrom(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         EntityPlayer player = (EntityPlayer) (Object) this;
-        if (hasInInventoryKaia(player)) {
-            KaiaWrapper kaia = getKaiaInMainHandOrInventory(player);
+        findKaiaInInventory(player).ifPresent(kaia -> {
             Entity enemie;
             if (source != null && source.getTrueSource() != null) {
                 enemie = source.getTrueSource();
-                if (UtilityHelper.isPlayer(enemie) && kaia.getBoolean(playersWhoShouldNotKilledInCounterAttack)) {
-                    if (kaia.playerIsProtected(enemie.getUniqueID().toString())) {
-                        cir.cancel();
-                        return;
-                    }
+                if (UtilityHelper.isPlayer(enemie) && kaia.getBoolean(playersWhoShouldNotKilledInCounterAttack) && kaia.playerIsProtected(enemie.getUniqueID().toString())) {
+                    cir.cancel();
+                    return;
                 }
                 if (kaia.getBoolean(counterAttack)) {
                     if (entityIsFriendEntity(source.getTrueSource())) {
@@ -212,7 +209,7 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
                 }
             }
             cir.cancel();
-        }
+        });
     }
 
     @Inject(method = "setDead", at = @At("HEAD"), cancellable = true)
