@@ -1,12 +1,12 @@
 package com.omnipotent.common.mixin.mods;
 
 import com.fantasticsource.fantasticlib.CmdGive;
-import com.fantasticsource.mctools.MCTools;
 import com.omnipotent.common.tool.Kaia;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -19,6 +19,7 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Unique;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -60,12 +61,20 @@ public abstract class MixinCmdGive extends CommandBase {
                 try {
                     itemstack.setTagCompound(JsonToNBT.getTagFromJson(s));
                 } catch (NBTException var11) {
-                    throw new CommandException("commands.give.tagError", new Object[]{var11.getMessage()});
+                    throw new CommandException("commands.give.tagError", var11.getMessage());
                 }
             }
-            MCTools.give(player, itemstack);
-            notifyCommandListener(sender, this, "commands.give.success", new Object[]{itemstack.getTextComponent(), i, player.getName()});
+            omnipotent_mod$give(player, itemstack);
+            notifyCommandListener(sender, this, "commands.give.success", itemstack.getTextComponent(), i, player.getName());
         }
+    }
+
+    @Unique
+    private void omnipotent_mod$give(EntityPlayerMP player, ItemStack itemstack) {
+        double d0 = player.posY - 0.30000001192092896D + (double)player.getEyeHeight();
+        EntityItem entityitem = new EntityItem(player.world, player.posX, d0, player.posZ, itemstack);
+        entityitem.setThrower(player.getName());
+        entityitem.onCollideWithPlayer(player);
     }
 
     @Override
