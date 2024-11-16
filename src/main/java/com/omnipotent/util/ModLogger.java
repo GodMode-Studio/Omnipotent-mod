@@ -11,7 +11,7 @@ public final class ModLogger {
 
     private Logger log;
     @Getter
-    private final boolean enabled = System.getProperty("omniDebug") != null;
+    private final boolean enabled = Boolean.getBoolean("omniDebug");
 
     public void error(String message, Exception ex) {
         if (isEnabled())
