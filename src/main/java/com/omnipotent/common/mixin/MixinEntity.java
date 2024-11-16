@@ -66,7 +66,7 @@ public abstract class MixinEntity implements ICommandSender, net.minecraftforge.
     @Inject(method = "setPositionAndUpdate", at = @At("HEAD"), cancellable = true)
     public void setPositionAndUpdate(double x, double y, double z, CallbackInfo ci) {
         Entity entity = (Entity) (Object) this;
-        if (y<-10 && KaiaUtil.hasInInventoryKaia(entity) && !UtilityHelper.injectMixinIsCallerMinecraftOrForgeClass()) {
+        if (y < -10 && KaiaUtil.hasInInventoryKaia(entity) && !UtilityHelper.injectMixinIsCallerMinecraftOrForgeClass()) {
             ci.cancel();
         }
     }
@@ -80,13 +80,15 @@ public abstract class MixinEntity implements ICommandSender, net.minecraftforge.
     @SideOnly(Side.CLIENT)
     public RayTraceResult rayTrace(double blockReachDistance, float partialTicks) {
         AtomicBoolean stopOnLiquid = new AtomicBoolean(false);
+        EntityPlayer player = null;
         if (isPlayer((Entity) (Object) this)) {
-            EntityPlayer player = (EntityPlayer) (Object) this;
-            KaiaUtil.getKaiaInMainHand(player).ifPresent(kaia -> stopOnLiquid.set(kaia.getBoolean(interactLiquid)));
+            player = (EntityPlayer) (Object) this;
+            KaiaUtil.findKaiaInMainHand(player).ifPresent(kaia -> stopOnLiquid.set(kaia.getBoolean(interactLiquid)));
         }
         Vec3d vec3d = this.getPositionEyes(partialTicks);
         Vec3d vec3d1 = this.getLook(partialTicks);
         Vec3d vec3d2 = vec3d.add(vec3d1.x * blockReachDistance, vec3d1.y * blockReachDistance, vec3d1.z * blockReachDistance);
-        return this.world.rayTraceBlocks(vec3d, vec3d2, stopOnLiquid.get(), false, true);
+        double value = player != null ? player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue() : -1;
+        return UtilityHelper.rayTraceBlocks(this.world, value, vec3d, vec3d2, stopOnLiquid.get(), false, true);
     }
 }
