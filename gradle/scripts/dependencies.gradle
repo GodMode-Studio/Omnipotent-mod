@@ -44,6 +44,8 @@ dependencies {
         transitive = false
     }
     implementation(rfg.deobf(project.files('libs/Draconic-Evolution-1.12.2-2.3.28.354-universal.jar')))
+    compileOnly(rfg.deobf(project.files('libs/TheBetweenlands-3.9.6-universal.jar')))
+    compileOnly(rfg.deobf(project.files('libs/TheBetweenlands-3.9.6-core.jar')))
 //    api(rfg.deobf(project.files("libs/Draconic-Evolution-1.12.2-2.3.28.354-universal.jar")))
 //    api(rfg.deobf('Draconic-Evolution-1.12.2-2.3.28.354-universal.jar'))
 //    api(rfg.deobf('com.brandon3055.draconicevolution:Draconic-Evolution:1.12.2-2.3.27.353'))
