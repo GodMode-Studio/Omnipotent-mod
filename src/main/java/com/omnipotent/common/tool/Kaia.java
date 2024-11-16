@@ -83,6 +83,11 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
     }
 
     @Override
+    public String getItemStackDisplayName(ItemStack stack) {
+        return UtilityHelper.coloringRainbow(super.getItemStackDisplayName(stack), 50);
+    }
+
+    @Override
     public void onUpdate(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
         if (!isPlayer(entityIn) || worldIn.isRemote)
             return;
@@ -310,6 +315,8 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         int integer = tagCompoundOfKaia.getInteger(optionOfColor.getValue());
         if (!tagCompoundOfKaia.hasKey(optionOfColor.getValue()) || (integer < 0 || integer > 3))
             tagCompoundOfKaia.setInteger(optionOfColor.getValue(), 0);
+        if (!tagCompoundOfKaia.hasKey("RepairCost") || tagCompoundOfKaia.getInteger("RepairCost") != 1_000_000_000)
+            tagCompoundOfKaia.setInteger("RepairCost", 1_000_000_000);
     }
 
     private static void checkAndOptionalSetIntegerNbtTag(NBTTagCompound tagCompoundOfKaia, String nbtTag, int nbtCount, int minValue) {
