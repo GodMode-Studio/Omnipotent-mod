@@ -40,7 +40,6 @@ import static com.omnipotent.util.KaiaUtil.*;
 import static com.omnipotent.util.UtilityHelper.getPlayerDataFileOfPlayer;
 
 public class EntityEvent {
-    public static final Set<String> entitiesWithKaia = new HashSet<>();
     public static final Set<String> entitiesFlightKaia = new HashSet<>();
     private static final ArrayList<EntityLivingBase> mobsNamedMkll = new ArrayList<>();
     private static final Map<EntityLivingBase, Integer> timeTeleportation = new HashMap<>();
@@ -67,7 +66,6 @@ public class EntityEvent {
         if (hasKaia) {
             if (player.isBurning())
                 player.extinguish();
-            entitiesWithKaia.add(keyUID);
             player.hasKaia = true;
             if (!player.renderSpecialName && hasInInventoryKaia(player)) {
                 player.renderSpecialName = true;
@@ -75,14 +73,11 @@ public class EntityEvent {
             handleKaiaStateChange(player, true);
         }
         if (!hasKaia) {
-            entitiesWithKaia.remove(keyUID);
             boolean b = !hasInInventoryKaia(player);
-            if (!isRemote && b)
-                if (player.renderSpecialName) {
-                    player.hasKaia = false;
-                    player.renderSpecialName = false;
-                } else if (b)
-                    player.hasKaia = false;
+            if (!isRemote && b) {
+                player.hasKaia = false;
+                player.renderSpecialName = false;
+            }
             handleKaiaStateChange(player, false);
         }
     }
@@ -118,10 +113,9 @@ public class EntityEvent {
 
     @SubscribeEvent
     public void cancelTimeItem(ItemExpireEvent event) {
-        if (event.getEntityItem().getItem().getItem() instanceof Kaia) {
-            if (event.getEntityItem().getItem().hasTagCompound()) {
-                event.setCanceled(true);
-            }
+        if (event.getEntityItem().getItem().getItem() instanceof Kaia &&
+                event.getEntityItem().getItem().hasTagCompound()) {
+            event.setCanceled(true);
         }
     }
 
@@ -135,7 +129,7 @@ public class EntityEvent {
         ItemStack kaia = event.getItem().getItem();
         if (!kaia.hasTagCompound())
             return;
-        if (kaia.getTagCompound().hasKey(KaiaConstantsNbt.ownerID) && kaia.getTagCompound().hasKey(KaiaConstantsNbt.ownerName) && !KaiaUtil.isOwnerOfKaia(kaia, player))
+        if (!new KaiaWrapper(kaia).isOwner(player))
             event.setCanceled(true);
     }
 
@@ -144,35 +138,35 @@ public class EntityEvent {
         Entity entity = event.getEntity();
         if (event.isCanceled() && KaiaUtil.hasInInventoryKaia(entity))
             event.setCanceled(false);
-        if (entity instanceof EntityItem && !entity.getEntityWorld().isRemote) {
-            EntityItem entityItem = (EntityItem) entity;
+        if (entity instanceof EntityItem entityItem && !entity.getEntityWorld().isRemote) {
             ItemStack kaia = entityItem.getItem();
-            if (!kaia.isEmpty() && kaia.getItem() instanceof Kaia) {
-                createTagCompoundStatusIfNecessary(kaia);
-                if (!kaia.getTagCompound().hasKey(KaiaConstantsNbt.ownerID) || !kaia.getTagCompound().hasKey(KaiaConstantsNbt.ownerName)) {
+            boolean stop = KaiaWrapper.wrapIfKaia(kaia).ifPresentBoolean(kaiaWrapper -> {
+                if (!kaiaWrapper.hasOwner()) {
                     entityItem.setEntityInvulnerable(true);
                     entityItem.setNoPickupDelay();
-                    return;
+                    return true;
                 }
-                UUID uuid = UUID.fromString(kaia.getTagCompound().getString(KaiaConstantsNbt.ownerID));
-                EntityPlayer player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(uuid);
-                if (player != null && isOwnerOfKaia(kaia, player)) {
+                kaiaWrapper.getOwner().ifPresentOrElse(player -> {
                     player.sendMessage(new TextComponentString(TextFormatting.AQUA + "Press G for return Kaia"));
                     IKaiaBrand capability = player.getCapability(KaiaProvider.KaiaBrand, null);
                     capability.habilityBrand(Collections.singletonList(kaia));
                     entityItem.world.spawnEntity(new CustomLightningBolt(entityItem.world, entityItem.posX, entityItem.posY, entityItem.posZ, true));
                     entityItem.setDead();
-                } else if (player == null) {
-                    getPlayerDataFileOfPlayer(uuid).ifPresent(file -> {
-                        try {
-                            addKaiaAndManagerInPlayarDataFile(new KaiaWrapper(kaia), file.getAbsolutePath());
-                            entityItem.setDead();
-                        } catch (IOException ignored) {
-                        }
-                    });
-                }
-            }
+                }, () -> kaiaWrapper.getOwnerUUID().ifPresent(uuid -> getPlayerDataFileOfPlayer(uuid).ifPresent(file -> {
+                    try {
+                        addKaiaAndManagerInPlayarDataFile(kaiaWrapper, file.getAbsolutePath());
+                        entityItem.setDead();
+                    } catch (IOException ignored) {
+                    }
+                })));
+                return false;
+            });
+            if (stop) return;
         }
+        stopJoinOfEntity(event, entity);
+    }
+
+    private static void stopJoinOfEntity(EntityJoinWorldEvent event, Entity entity) {
         for (Class<? extends Entity> clazz : antiEntity) {
             if (clazz.isInstance(entity)) {
                 event.setCanceled(true);
