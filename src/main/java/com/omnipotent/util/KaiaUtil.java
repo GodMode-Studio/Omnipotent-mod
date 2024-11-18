@@ -81,7 +81,7 @@ import static com.omnipotent.util.UtilityHelper.getKaiaCap;
 
 public final class KaiaUtil {
     private static final String DRACONIC_MODID = "draconicevolution";
-    public static List<Class> antiEntity = new ArrayList<>();
+    public static List<Class<? extends EntityLivingBase>> antiEntity = new ArrayList<>();
 
 
     //invoke apenas do lado do servidor ou no proprio cliente em si
@@ -97,10 +97,10 @@ public final class KaiaUtil {
             EntityPlayer player = (EntityPlayer) entity;
             deleteDuplicateKaias(player);
             if (player.getHeldItem(EnumHand.OFF_HAND).getItem() instanceof Kaia)
-                return KaiaWrapper.wrapIfKaia(player.getHeldItem(EnumHand.OFF_HAND));
+                return KaiaWrapper.wrapIfKaia(player.getHeldItem(EnumHand.OFF_HAND)).transformInJavaOptional();
             for (ItemStack slot : player.inventory.mainInventory) {
                 if (slot.getItem() instanceof Kaia) {
-                    return KaiaWrapper.wrapIfKaia(slot);
+                    return KaiaWrapper.wrapIfKaia(slot).transformInJavaOptional();
                 }
             }
         } catch (Exception e) {
@@ -111,7 +111,7 @@ public final class KaiaUtil {
     }
 
     public static Optional<KaiaWrapper> findKaiaInMainHand(EntityPlayer player) {
-        return KaiaWrapper.wrapIfKaia(player.getHeldItemMainhand());
+        return KaiaWrapper.wrapIfKaia(player.getHeldItemMainhand()).transformInJavaOptional();
     }
 
     public static KaiaWrapper getKaiaInMainHand(EntityPlayer player) {
@@ -661,21 +661,6 @@ public final class KaiaUtil {
         return xp;
     }
 
-    public static void createTagCompoundStatusIfNecessary(ItemStack stack) {
-        if (stack.getTagCompound() == null) stack.setTagCompound(new NBTTagCompound());
-    }
-
-
-    //excluir
-    public static void createOwnerIfNecessary(ItemStack stack, Entity entityIn) {
-        Objects.requireNonNull(stack, "kaia ItemStack should be non-null");
-        NBTTagCompound tagCompound = stack.getTagCompound();
-        if (!tagCompound.hasKey(ownerName))
-            tagCompound.setString(ownerName, entityIn.getName());
-        if (!tagCompound.hasKey(ownerID))
-            tagCompound.setString(ownerID, entityIn.getUniqueID().toString());
-    }
-
     public static boolean theLastAttackOfKaia(EntityLivingBase entity) {
         return entity.getLastDamageSource() != null && entity.getLastDamageSource().getTrueSource() != null && entity.getLastDamageSource().getDamageType().equals(new AbsoluteOfCreatorDamage(entity).getDamageType());
     }
@@ -684,7 +669,8 @@ public final class KaiaUtil {
         List<ItemStack> kaiaList = player.getCapability(KaiaProvider.KaiaBrand, null).getAndExcludeAllKaiaInList();
         kaiaList = kaiaList.stream().filter(item -> item.getItem() instanceof Kaia).collect(Collectors.toList());
         for (ItemStack kaia : kaiaList) {
-            if (isOwnerOfKaia(kaia, player)) {
+            KaiaWrapper wrapper = new KaiaWrapper(kaia);
+            if (wrapper.isOwner(player)) {
                 if (!(player.inventory.addItemStackToInventory(kaia))) {
                     if (player.inventory.offHandInventory.get(0).isEmpty())
                         player.inventory.offHandInventory.set(0, kaia);
@@ -702,11 +688,6 @@ public final class KaiaUtil {
                 }
             }
         }
-    }
-
-    //excluir
-    public static boolean isOwnerOfKaia(ItemStack kaiaStack, @Nonnull EntityPlayer player) {
-        return kaiaStack.getTagCompound().getString(ownerName).equals(player.getName()) && kaiaStack.getTagCompound().getString(ownerID).equals(player.getUniqueID().toString());
     }
 
     public static void kaiaKillCommandMessage() {

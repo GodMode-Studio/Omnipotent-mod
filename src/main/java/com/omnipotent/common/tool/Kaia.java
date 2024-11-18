@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 import static com.omnipotent.Omnipotent.omnipotentTab;
 import static com.omnipotent.client.render.RenderTextures.texturesItemsInit;
 import static com.omnipotent.common.event.EventInitItems.itemsInit;
+import static com.omnipotent.common.event.EventInitItems.kaia;
 import static com.omnipotent.constant.NbtBooleanValues.*;
 import static com.omnipotent.constant.NbtNumberValues.*;
 import static com.omnipotent.constant.NbtStringValues.customPlayerName;
@@ -91,7 +92,7 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
             return;
         EntityPlayer player = (EntityPlayer) entityIn;
         nbtManager(stack, entityIn);
-        if (!isOwnerOfKaia(stack, player)) {
+        if (!new KaiaWrapper(stack).isOwner(player)) {
             stack.getTagCompound().setBoolean("noowner", true);
             player.world.spawnEntity(new EntityItem(worldIn, player.posX, player.posY, player.posZ + 5, stack));
             player.inventory.deleteStack(stack);
@@ -272,8 +273,8 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
     }
 
     private static void nbtManager(ItemStack stack, Entity entityIn) {
-        KaiaUtil.createTagCompoundStatusIfNecessary(stack);
-        KaiaUtil.createOwnerIfNecessary(stack, entityIn);
+        KaiaWrapper kaiaWrapper = new KaiaWrapper(stack);
+        kaiaWrapper.createOwnerIfNecessary(entityIn);
         NBTTagCompound tagCompoundOfKaia = stack.getTagCompound();
         if (!tagCompoundOfKaia.hasUniqueId("identify"))
             tagCompoundOfKaia.setUniqueId("identify", UUID.randomUUID());
