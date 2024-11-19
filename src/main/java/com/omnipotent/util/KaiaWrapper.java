@@ -6,6 +6,7 @@ import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.constant.NbtBooleanValues;
 import com.omnipotent.constant.NbtNumberValues;
 import com.omnipotent.constant.NbtStringValues;
+import lombok.NonNull;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.enchantment.Enchantment;
@@ -26,38 +27,88 @@ import javax.annotation.Nonnull;
 
 import java.util.*;
 
+import static com.omnipotent.Omnipotent.log;
 import static com.omnipotent.util.KaiaConstantsNbt.*;
 import static com.omnipotent.util.NbtListUtil.divisionUUIDAndName;
 
 public final class KaiaWrapper {
 
+    @Nonnull
     private final ItemStack kaia;
+    @Nonnull
     private final NBTTagCompound nbt;
 
-    public static Optional<KaiaWrapper> wrapIfKaia(ItemStack kaia) {
-        return Optional.ofNullable(kaia.getItem() instanceof Kaia ? new KaiaWrapper(kaia) : null);
+    public static OptionalMod<KaiaWrapper> wrapIfKaia(ItemStack kaia) {
+        return OptionalMod.ofNullable(kaia.getItem() instanceof Kaia ? new KaiaWrapper(kaia) : null);
     }
 
     public KaiaWrapper(ItemStack stack) {
         this.kaia = stack;
-        if (!stack.hasTagCompound()) stack.setTagCompound(new NBTTagCompound());
+        setTagCompound(stack);
         this.nbt = stack.getTagCompound();
+        fixOwnerIfNecessary();
     }
 
+    private void fixOwnerIfNecessary() {
+        try {
+            if (this.nbt.hasKey(ownerID))
+                UUID.fromString(this.nbt.getString(ownerID));
+        } catch (Exception e) {
+            this.nbt.removeTag(ownerID);
+            this.nbt.removeTag(ownerName);
+        }
+    }
+
+    private static void setTagCompound(ItemStack stack) {
+        if (!stack.hasTagCompound()) stack.setTagCompound(new NBTTagCompound());
+    }
+
+    /**
+     * Verifica se o jogador fornecido é o dono da Kaia.
+     * <p>
+     * A Kaia é considerada sem um dono registrado se o UUID registrado ou o nome registrado estiverem vazios
+     * ou inválidos. Caso contrário, a Kaia tem um dono registrado e a verificação é realizada.
+     * <p>
+     * Se a Kaia não tiver dono ou se o nome e o UUID registrados na Kaia coincidirem com o nome e o UUID do
+     * jogador fornecido, o método retornará {@code true}. Caso contrário, retornará {@code false}.
+     *
+     * @param player O jogador a ser verificado como possível dono da Kaia.
+     * @return {@code true} se o jogador for o dono da Kaia ou se a Kaia não tiver dono registrado;
+     * {@code false} caso contrário.
+     */
     public boolean isOwner(@Nonnull EntityPlayer player) {
-        return this.nbt.getString(ownerName).equals(player.getName()) && this.nbt.getString(ownerID).equals(player.getUniqueID().toString());
+        return !hasOwner() || (this.nbt.getString(ownerName).equals(player.getName()) && this.nbt.getString(ownerID).equals(player.getUniqueID().toString()));
     }
 
-    public void createOwnerIfNecessary(@Nonnull Entity entityIn) {
+    public boolean hasOwner() {
+        return getOwnerUUID().isPresent() && getOwnerName().isPresent();
+    }
+
+    public void createOwnerIfNecessary(@NonNull Entity entityIn) {
         if (!nbt.hasKey(ownerName))
             nbt.setString(ownerName, entityIn.getName());
         if (!nbt.hasKey(ownerID))
             nbt.setString(ownerID, entityIn.getUniqueID().toString());
     }
 
-    public Optional<EntityPlayer> getOwner() {
-        return Optional.ofNullable(FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(UUID.fromString(this.nbt
-                .getString(ownerID))));
+    public OptionalMod<EntityPlayer> getOwner() {
+        return getOwnerUUID().flatMap(uuid -> OptionalMod.ofNullable(FMLCommonHandler.instance()
+                        .getMinecraftServerInstance().getPlayerList().getPlayerByUUID(uuid)))
+                .filter(player -> getOwnerName().map(name -> name.equals(player.getName())).orElse(false)).map(p -> p);
+    }
+
+    public OptionalMod<UUID> getOwnerUUID() {
+        try {
+            return OptionalMod.of(UUID.fromString(this.nbt.getString(ownerID)));
+        } catch (IllegalArgumentException e) {
+            log.error("UUID in kaia is invalid", e);
+            return OptionalMod.empty();
+        }
+    }
+
+    public OptionalMod<String> getOwnerName() {
+        String name = this.nbt.getString(ownerName);
+        return OptionalMod.ofNullable(name.isEmpty() ? null : name);
     }
 
     public UUID getIdentify() {
