@@ -51,14 +51,12 @@ import java.util.stream.Stream;
  * use instances for synchronization, or unpredictable behavior may
  * occur. For example, in a future release, synchronization may fail.
  *
- * @apiNote
- * {@code Optional} is primarily intended for use as a method return type where
+ * @param <T> the type of value
+ * @apiNote {@code Optional} is primarily intended for use as a method return type where
  * there is a clear need to represent "no result," and where using {@code null}
  * is likely to cause errors. A variable whose type is {@code Optional} should
  * never itself be {@code null}; it should always point to an {@code Optional}
  * instance.
- *
- * @param <T> the type of value
  * @since 1.8
  */
 public final class OptionalMod<T> {
@@ -76,16 +74,14 @@ public final class OptionalMod<T> {
      * Returns an empty {@code Optional} instance.  No value is present for this
      * {@code Optional}.
      *
-     * @apiNote
-     * Though it may be tempting to do so, avoid testing if an object is empty
+     * @param <T> The type of the non-existent value
+     * @return an empty {@code Optional}
+     * @apiNote Though it may be tempting to do so, avoid testing if an object is empty
      * by comparing with {@code ==} or {@code !=} against instances returned by
      * {@code Optional.empty()}.  There is no guarantee that it is a singleton.
      * Instead, use {@link #isEmpty()} or {@link #isPresent()}.
-     *
-     * @param <T> The type of the non-existent value
-     * @return an empty {@code Optional}
      */
-    public static<T> OptionalMod<T> empty() {
+    public static <T> OptionalMod<T> empty() {
         @SuppressWarnings("unchecked")
         OptionalMod<T> t = (OptionalMod<T>) EMPTY;
         return t;
@@ -95,15 +91,33 @@ public final class OptionalMod<T> {
      * Constructs an instance with the described value.
      *
      * @param value the value to describe; it's the caller's responsibility to
-     *        ensure the value is non-{@code null} unless creating the singleton
-     *        instance returned by {@code empty()}.
+     *              ensure the value is non-{@code null} unless creating the singleton
+     *              instance returned by {@code empty()}.
      */
     private OptionalMod(T value) {
         this.value = value;
     }
 
-    private Optional<T> transformInJavaOptional() {
-        return Optional.ofNullable(this.get());
+    public Optional<T> transformInJavaOptional() {
+        return Optional.ofNullable(this.value);
+    }
+
+    public boolean ifPresentBoolean(Predicate<? super T> predicate) {
+        if (value != null) {
+            return predicate.test(value);
+        }
+        return false;
+    }
+
+    public <U> Optional<U> flatMapJava(Function<? super T, ? extends Optional<? extends U>> mapper) {
+        Objects.requireNonNull(mapper);
+        if (isEmpty()) {
+            return Optional.empty();
+        } else {
+            @SuppressWarnings("unchecked")
+            Optional<U> result = (Optional<U>) mapper.apply(value);
+            return Objects.requireNonNull(result);
+        }
     }
 
     /**
@@ -111,7 +125,7 @@ public final class OptionalMod<T> {
      * value.
      *
      * @param value the value to describe, which must be non-{@code null}
-     * @param <T> the type of the value
+     * @param <T>   the type of the value
      * @return an {@code Optional} with the value present
      * @throws NullPointerException if value is {@code null}
      */
@@ -124,9 +138,9 @@ public final class OptionalMod<T> {
      * non-{@code null}, otherwise returns an empty {@code Optional}.
      *
      * @param value the possibly-{@code null} value to describe
-     * @param <T> the type of the value
+     * @param <T>   the type of the value
      * @return an {@code Optional} with a present value if the specified value
-     *         is non-{@code null}, otherwise an empty {@code Optional}
+     * is non-{@code null}, otherwise an empty {@code Optional}
      */
     @SuppressWarnings("unchecked")
     public static <T> OptionalMod<T> ofNullable(T value) {
@@ -138,11 +152,9 @@ public final class OptionalMod<T> {
      * If a value is present, returns the value, otherwise throws
      * {@code NoSuchElementException}.
      *
-     * @apiNote
-     * The preferred alternative to this method is {@link #orElseThrow()}.
-     *
      * @return the non-{@code null} value described by this {@code Optional}
      * @throws NoSuchElementException if no value is present
+     * @apiNote The preferred alternative to this method is {@link #orElseThrow()}.
      */
     public T get() {
         if (value == null) {
@@ -164,8 +176,8 @@ public final class OptionalMod<T> {
      * If a value is  not present, returns {@code true}, otherwise
      * {@code false}.
      *
-     * @return  {@code true} if a value is not present, otherwise {@code false}
-     * @since   11
+     * @return {@code true} if a value is not present, otherwise {@code false}
+     * @since 11
      */
     public boolean isEmpty() {
         return value == null;
@@ -177,7 +189,7 @@ public final class OptionalMod<T> {
      *
      * @param action the action to be performed, if a value is present
      * @throws NullPointerException if value is present and the given action is
-     *         {@code null}
+     *                              {@code null}
      */
     public void ifPresent(Consumer<? super T> action) {
         if (value != null) {
@@ -189,12 +201,12 @@ public final class OptionalMod<T> {
      * If a value is present, performs the given action with the value,
      * otherwise performs the given empty-based action.
      *
-     * @param action the action to be performed, if a value is present
+     * @param action      the action to be performed, if a value is present
      * @param emptyAction the empty-based action to be performed, if no value is
-     *        present
+     *                    present
      * @throws NullPointerException if a value is present and the given action
-     *         is {@code null}, or no value is present and the given empty-based
-     *         action is {@code null}.
+     *                              is {@code null}, or no value is present and the given empty-based
+     *                              action is {@code null}.
      * @since 9
      */
     public void ifPresentOrElse(Consumer<? super T> action, Runnable emptyAction) {
@@ -212,8 +224,8 @@ public final class OptionalMod<T> {
      *
      * @param predicate the predicate to apply to a value, if present
      * @return an {@code Optional} describing the value of this
-     *         {@code Optional}, if a value is present and the value matches the
-     *         given predicate, otherwise an empty {@code Optional}
+     * {@code Optional}, if a value is present and the value matches the
+     * given predicate, otherwise an empty {@code Optional}
      * @throws NullPointerException if the predicate is {@code null}
      */
     public OptionalMod<T> filter(Predicate<? super T> predicate) {
@@ -233,8 +245,13 @@ public final class OptionalMod<T> {
      * <p>If the mapping function returns a {@code null} result then this method
      * returns an empty {@code Optional}.
      *
-     * @apiNote
-     * This method supports post-processing on {@code Optional} values, without
+     * @param mapper the mapping function to apply to a value, if present
+     * @param <U>    The type of the value returned from the mapping function
+     * @return an {@code Optional} describing the result of applying a mapping
+     * function to the value of this {@code Optional}, if a value is
+     * present, otherwise an empty {@code Optional}
+     * @throws NullPointerException if the mapping function is {@code null}
+     * @apiNote This method supports post-processing on {@code Optional} values, without
      * the need to explicitly check for a return status.  For example, the
      * following code traverses a stream of URIs, selects one that has not
      * yet been processed, and creates a path from that URI, returning
@@ -246,17 +263,10 @@ public final class OptionalMod<T> {
      *                       .findFirst()
      *                       .map(Paths::get);
      * }</pre>
-     *
+     * <p>
      * Here, {@code findFirst} returns an {@code Optional<URI>}, and then
      * {@code map} returns an {@code Optional<Path>} for the desired
      * URI if one exists.
-     *
-     * @param mapper the mapping function to apply to a value, if present
-     * @param <U> The type of the value returned from the mapping function
-     * @return an {@code Optional} describing the result of applying a mapping
-     *         function to the value of this {@code Optional}, if a value is
-     *         present, otherwise an empty {@code Optional}
-     * @throws NullPointerException if the mapping function is {@code null}
      */
     public <U> OptionalMod<U> map(Function<? super T, ? extends U> mapper) {
         Objects.requireNonNull(mapper);
@@ -277,14 +287,14 @@ public final class OptionalMod<T> {
      * invoked, {@code flatMap} does not wrap it within an additional
      * {@code Optional}.
      *
-     * @param <U> The type of value of the {@code Optional} returned by the
-     *            mapping function
+     * @param <U>    The type of value of the {@code Optional} returned by the
+     *               mapping function
      * @param mapper the mapping function to apply to a value, if present
      * @return the result of applying an {@code Optional}-bearing mapping
-     *         function to the value of this {@code Optional}, if a value is
-     *         present, otherwise an empty {@code Optional}
+     * function to the value of this {@code Optional}, if a value is
+     * present, otherwise an empty {@code Optional}
      * @throws NullPointerException if the mapping function is {@code null} or
-     *         returns a {@code null} result
+     *                              returns a {@code null} result
      */
     public <U> OptionalMod<U> flatMap(Function<? super T, ? extends OptionalMod<? extends U>> mapper) {
         Objects.requireNonNull(mapper);
@@ -302,12 +312,12 @@ public final class OptionalMod<T> {
      * otherwise returns an {@code Optional} produced by the supplying function.
      *
      * @param supplier the supplying function that produces an {@code Optional}
-     *        to be returned
+     *                 to be returned
      * @return returns an {@code Optional} describing the value of this
-     *         {@code Optional}, if a value is present, otherwise an
-     *         {@code Optional} produced by the supplying function.
+     * {@code Optional}, if a value is present, otherwise an
+     * {@code Optional} produced by the supplying function.
      * @throws NullPointerException if the supplying function is {@code null} or
-     *         produces a {@code null} result
+     *                              produces a {@code null} result
      * @since 9
      */
     public OptionalMod<T> or(Supplier<? extends OptionalMod<? extends T>> supplier) {
@@ -325,15 +335,13 @@ public final class OptionalMod<T> {
      * If a value is present, returns a sequential {@link Stream} containing
      * only that value, otherwise returns an empty {@code Stream}.
      *
-     * @apiNote
-     * This method can be used to transform a {@code Stream} of optional
+     * @return the optional value as a {@code Stream}
+     * @apiNote This method can be used to transform a {@code Stream} of optional
      * elements to a {@code Stream} of present value elements:
      * <pre>{@code
      *     Stream<Optional<T>> os = ..
      *     Stream<T> s = os.flatMap(Optional::stream)
      * }</pre>
-     *
-     * @return the optional value as a {@code Stream}
      * @since 9
      */
     public Stream<T> stream() {
@@ -349,7 +357,7 @@ public final class OptionalMod<T> {
      * {@code other}.
      *
      * @param other the value to be returned, if no value is present.
-     *        May be {@code null}.
+     *              May be {@code null}.
      * @return the value, if present, otherwise {@code other}
      */
     public T orElse(T other) {
@@ -362,9 +370,9 @@ public final class OptionalMod<T> {
      *
      * @param supplier the supplying function that produces a value to be returned
      * @return the value, if present, otherwise the result produced by the
-     *         supplying function
+     * supplying function
      * @throws NullPointerException if no value is present and the supplying
-     *         function is {@code null}
+     *                              function is {@code null}
      */
     public T orElseGet(Supplier<? extends T> supplier) {
         return value != null ? value : supplier.get();
@@ -389,18 +397,16 @@ public final class OptionalMod<T> {
      * If a value is present, returns the value, otherwise throws an exception
      * produced by the exception supplying function.
      *
-     * @apiNote
-     * A method reference to the exception constructor with an empty argument
+     * @param <X>               Type of the exception to be thrown
+     * @param exceptionSupplier the supplying function that produces an
+     *                          exception to be thrown
+     * @return the value, if present
+     * @throws X                    if no value is present
+     * @throws NullPointerException if no value is present and the exception
+     *                              supplying function is {@code null}
+     * @apiNote A method reference to the exception constructor with an empty argument
      * list can be used as the supplier. For example,
      * {@code IllegalStateException::new}
-     *
-     * @param <X> Type of the exception to be thrown
-     * @param exceptionSupplier the supplying function that produces an
-     *        exception to be thrown
-     * @return the value, if present
-     * @throws X if no value is present
-     * @throws NullPointerException if no value is present and the exception
-     *          supplying function is {@code null}
      */
     public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
         if (value != null) {
@@ -421,7 +427,7 @@ public final class OptionalMod<T> {
      *
      * @param obj an object to be tested for equality
      * @return {@code true} if the other object is "equal to" this object
-     *         otherwise {@code false}
+     * otherwise {@code false}
      */
     @Override
     public boolean equals(Object obj) {
@@ -438,7 +444,7 @@ public final class OptionalMod<T> {
      * (zero) if no value is present.
      *
      * @return hash code value of the present value or {@code 0} if no value is
-     *         present
+     * present
      */
     @Override
     public int hashCode() {
@@ -450,12 +456,10 @@ public final class OptionalMod<T> {
      * suitable for debugging.  The exact presentation format is unspecified and
      * may vary between implementations and versions.
      *
-     * @implSpec
-     * If a value is present the result must include its string representation
+     * @return the string representation of this instance
+     * @implSpec If a value is present the result must include its string representation
      * in the result.  Empty and present {@code Optional}s must be unambiguously
      * differentiable.
-     *
-     * @return the string representation of this instance
      */
     @Override
     public String toString() {

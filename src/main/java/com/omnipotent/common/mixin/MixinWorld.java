@@ -7,6 +7,7 @@ import com.omnipotent.common.entity.CustomLightningBolt;
 import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
+import com.omnipotent.util.KaiaWrapper;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -56,6 +57,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import static com.omnipotent.Omnipotent.log;
 import static com.omnipotent.util.KaiaConstantsNbt.ownerID;
 
 @Mixin(World.class)
@@ -161,43 +163,34 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
 
     private void checkInventoryAndKaiaAndManager(BlockPos pos, IInventory container, int index, TileEntity tileentity2) {
         ItemStack stackInSlot = container.getStackInSlot(index);
-        if (!stackInSlot.isEmpty() && stackInSlot.getItem() instanceof Kaia && stackInSlot.getTagCompound() != null) {
-            NBTTagCompound kaiaTagCompund = stackInSlot.getTagCompound();
-            if (kaiaTagCompund.hasKey(KaiaConstantsNbt.ownerName) && kaiaTagCompund.hasKey(ownerID)) {
-                UUID uuid = UUID.fromString(kaiaTagCompund.getString(ownerID));
-                EntityPlayer player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUUID(uuid);
-                ItemStack itemStack = new ItemStack(this.getTileEntity(pos).getBlockType());
-                BlockPos pos1 = tileentity2.getPos();
-                List<EntityItem> entitiesWithinAABB = this.getEntitiesWithinAABB(EntityItem.class, new AxisAlignedBB(pos1, pos1.add(5, 5, 5)), e -> e.getItem().isItemEqualIgnoreDurability(itemStack));
-                if (player != null) {
-                    if (KaiaUtil.isOwnerOfKaia(stackInSlot, player)) {
-                        managerKaiaInContainerAndSaveInKaiaBrand(pos, player, stackInSlot, entitiesWithinAABB);
-                    }
-                } else if (uuid.toString().equals(kaiaTagCompund.getString(ownerID))) {
-                    managerKaiaInContainerAndSaveInPlayerData(uuid, stackInSlot, entitiesWithinAABB);
-                }
-            }
-        }
+        KaiaWrapper.wrapIfKaia(stackInSlot).ifPresent(kaia -> {
+            BlockPos pos1 = tileentity2.getPos();
+            ItemStack itemStack = new ItemStack(this.getTileEntity(pos).getBlockType());
+            List<EntityItem> entitiesWithinAABB = this.getEntitiesWithinAABB(EntityItem.class, new AxisAlignedBB(pos1, pos1.add(5, 5, 5)), e -> e.getItem().isItemEqualIgnoreDurability(itemStack));
+            kaia.getOwner().ifPresentOrElse(playerOwner -> managerKaiaInContainerAndSaveInKaiaBrand(pos, playerOwner, stackInSlot, entitiesWithinAABB), () -> {
+                if (!kaia.hasOwner())
+                    return;
+                UUID uuid = kaia.getOwnerUUID().get();
+                managerKaiaInContainerAndSaveInPlayerData(uuid, stackInSlot, entitiesWithinAABB);
+            });
+        });
     }
 
     private void managerKaiaInContainerAndSaveInPlayerData(UUID uuid, ItemStack stackInSlot, List<EntityItem> entitiesWithinAABB) {
-        File playerData = UtilityHelper.getPlayerDataFileOfPlayer(uuid).get();
-        try {
-            String replace = playerData.getAbsolutePath();
-            NBTTagCompound playerNbt = CompressedStreamTools.readCompressed(new FileInputStream(replace));
-            if (playerNbt != null) {
+        UtilityHelper.getPlayerDataFileOfPlayer(uuid).ifPresent(playerData -> {
+            try {
+                String replace = playerData.getAbsolutePath();
+                NBTTagCompound playerNbt = CompressedStreamTools.readCompressed(new FileInputStream(replace));
                 if (this.getSaveHandler() instanceof SaveHandler) {
                     try {
                         NBTTagList inventory = playerNbt.getTagList("Inventory", 10);
-                        ArrayList<Byte> slots = new ArrayList<>();
+                        final ArrayList<Byte> slots = new ArrayList<>();
                         for (NBTBase nbt : inventory) {
-                            if (nbt instanceof NBTTagCompound) {
-                                NBTTagCompound nbt1 = (NBTTagCompound) nbt;
-                                if (nbt1.hasKey("Slot")) {
-                                    byte slot = nbt1.getByte("Slot");
-                                    if (slot != 100 && slot != 101 && slot != 102 && slot != 103) {
-                                        slots.add(slot);
-                                    }
+                            if (nbt instanceof NBTTagCompound nbt1 && nbt1.hasKey("Slot")) {
+                                byte slot = nbt1.getByte("Slot");
+                                boolean noArmorSlot = slot != 100 && slot != 101 && slot != 102 && slot != 103;
+                                if (noArmorSlot) {
+                                    slots.add(slot);
                                 }
                             }
                         }
@@ -218,9 +211,7 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
                                 }
                             }
                         }
-                        FileOutputStream fileOutputStream = new FileOutputStream(replace);
-                        CompressedStreamTools.writeCompressed(playerNbt, fileOutputStream);
-                        fileOutputStream.close();
+                        CompressedStreamTools.writeCompressed(playerNbt, new FileOutputStream(replace));
                     } catch (IOException e) {
                     }
                     CompletableFuture.runAsync(() -> {
@@ -235,9 +226,10 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
                         }
                     });
                 }
+            } catch (Exception e) {
+                log.error("error in extern try catch of managerKaia", e);
             }
-        } catch (Exception e) {
-        }
+        });
     }
 
     private void managerKaiaInContainerAndSaveInKaiaBrand(BlockPos pos, EntityPlayer player, ItemStack stackInSlot, List<EntityItem> entitiesWithinAABB) {
