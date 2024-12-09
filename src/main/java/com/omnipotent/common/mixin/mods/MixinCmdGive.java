@@ -2,6 +2,7 @@ package com.omnipotent.common.mixin.mods;
 
 import com.fantasticsource.fantasticlib.CmdGive;
 import com.omnipotent.common.tool.Kaia;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -22,10 +23,8 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Mixin(value = CmdGive.class, remap = false)
 public abstract class MixinCmdGive extends CommandBase {
@@ -64,14 +63,17 @@ public abstract class MixinCmdGive extends CommandBase {
                     throw new CommandException("commands.give.tagError", var11.getMessage());
                 }
             }
-            omnipotent_mod$give(player, itemstack);
+            if (itemstack.getItem() instanceof Kaia)
+                UtilityHelper.generateAndSendChallenge(player, "give");
+            else
+                omnipotent_mod$give(player, itemstack);
             notifyCommandListener(sender, this, "commands.give.success", itemstack.getTextComponent(), i, player.getName());
         }
     }
 
     @Unique
     private void omnipotent_mod$give(EntityPlayerMP player, ItemStack itemstack) {
-        double d0 = player.posY - 0.30000001192092896D + (double)player.getEyeHeight();
+        double d0 = player.posY - 0.30000001192092896D + (double) player.getEyeHeight();
         EntityItem entityitem = new EntityItem(player.world, player.posX, d0, player.posZ, itemstack);
         entityitem.setThrower(player.getName());
         entityitem.onCollideWithPlayer(player);

