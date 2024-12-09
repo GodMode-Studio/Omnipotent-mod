@@ -714,41 +714,71 @@ public final class KaiaUtil {
                 .orElse(false);
     }
 
-    public static void kaiaAttackShow(EntityPlayerMP entityPlayerMP, EntityLivingBase entityByID) {
-        getKaiaCap(entityPlayerMP).ifPresent(cap -> {
-            List<String> kaiaSwordsSummoned = cap.getKaiaSwordsSummoned();
-            Stream<KaiaEntity> entityStream = entityPlayerMP.getEntityWorld().loadedEntityList.stream().filter(e ->
-                    e instanceof KaiaEntity && kaiaSwordsSummoned.contains(e.getPersistentID().toString())).map(KaiaEntity.class::cast);
-            entityStream.forEach(e -> {
-                e.setAttackMode(true);
-                e.setAttackTarget(entityByID);
-            });
+    public static void kaiaAttackShow(EntityPlayerMP player, EntityLivingBase entityByID, boolean type2) {
+        getKaiaCap(player).ifPresent(cap -> {
+            if (!type2) {
+                List<String> kaiaSwordsSummoned = cap.getKaiaSwordsSummoned();
+                Stream<KaiaEntity> entityStream = player.getEntityWorld().loadedEntityList.stream().filter(e ->
+                        e instanceof KaiaEntity && kaiaSwordsSummoned.contains(e.getPersistentID().toString())).map(KaiaEntity.class::cast);
+                entityStream.forEach(e -> {
+                    e.setAttackMode(true);
+                    e.setAttackTarget(entityByID);
+                });
+            } else {
+                kaiaSummonSwords(player, cap, new DataPos(0.5, 13, 0.5), 80);
+                cap.syncWithServer(player);
+                List<String> kaiaSwordsSummoned = cap.getKaiaSwordsSummoned();
+                Stream<KaiaEntity> entityStream = player.getEntityWorld().loadedEntityList.stream().filter(e ->
+                        e instanceof KaiaEntity && kaiaSwordsSummoned.contains(e.getPersistentID().toString())).map(KaiaEntity.class::cast);
+                entityStream.forEach(e -> {
+                    e.setAttackMode(true);
+                    e.setAttackTarget(entityByID);
+                    e.setLive(true);
+                });
+            }
         });
     }
 
 
-    public static void kaiaSummonSwords(EntityPlayerMP entityPlayerMP, IKaiaBrand cap) {
+    public static void kaiaSummonSwords(EntityPlayerMP entityPlayerMP, IKaiaBrand cap, DataPos offset, int limit) {
         World world = entityPlayerMP.world;
         double increaseMov = 0.1;
-        double x = entityPlayerMP.posX + increaseMov;
-        double z = entityPlayerMP.posZ + increaseMov;
+        double x = entityPlayerMP.posX;
+        double z = entityPlayerMP.posZ;
+        int entitiesPerLayer = 25;
+        double layerSpacing = 0.5;
+        int currentLayer = 0;
+        int entitiesInLayer = 0;
 
         ArrayList<String> ids = new ArrayList<>();
         List<String> kaiaSwordsSummoned = cap.getKaiaSwordsSummoned();
         int kaiasInWorld = kaiaSwordsSummoned.size();
 
-        if (kaiasInWorld == 5)
+        if (kaiasInWorld == limit)
             killKaiaEntities(entityPlayerMP, kaiaSwordsSummoned);
 
-        for (int c = 0; c < 5 - kaiasInWorld; c++) {
+        for (int c = 0; c < limit - kaiasInWorld; c++) {
             KaiaEntity kaiaEntity = new KaiaEntity(world, entityPlayerMP, c);
-            x += increaseMov;
-            z += increaseMov;
-            kaiaEntity.setPosition(x, entityPlayerMP.posY, z);
+            if (limit == 5) {
+                x += increaseMov;
+                z += increaseMov;
+            } else {
+                if (entitiesInLayer >= entitiesPerLayer) {
+                    currentLayer++;
+                    entitiesInLayer = 0;
+                }
+                double radius = (currentLayer + 1) * layerSpacing;
+                double angle = (2 * Math.PI / entitiesPerLayer) * entitiesInLayer;
+                x = x + radius * Math.cos(angle);
+                z = z + radius * Math.sin(angle);
+                entitiesInLayer++;
+            }
+            kaiaEntity.setPosition(x, entityPlayerMP.posY + offset.Y(), z);
             world.spawnEntity(kaiaEntity);
             ids.add(kaiaEntity.getPersistentID().toString());
         }
-        cap.getKaiaSwordsSummoned().clear();
+        if (limit == 5)
+            cap.getKaiaSwordsSummoned().clear();
         ids.forEach(cap::addKaiaSummoned);
     }
 

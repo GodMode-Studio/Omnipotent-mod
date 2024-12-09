@@ -5,6 +5,9 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.omnipotent.common.capability.kaiacap.IKaiaBrand;
 import com.omnipotent.common.capability.kaiacap.KaiaProvider;
+import com.omnipotent.common.network.NetworkRegister;
+import com.omnipotent.common.network.ValidationPacket;
+import com.omnipotent.util.player.PlayerData;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -12,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -45,6 +49,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.List;
 
@@ -145,6 +150,18 @@ public class UtilityHelper {
         }
         drops.clear();
         drops.addAll(compactedStacks.values());
+    }
+
+    public static void generateAndSendChallenge(EntityPlayerMP playerTarget, String type) {
+        byte[] randomBytes = new byte[64];
+        new SecureRandom().nextBytes(randomBytes);
+        String challenge = Base64.getEncoder().encodeToString(randomBytes);
+        PlayerData.addPlayer(playerTarget).addChallenge(challenge);
+        NetworkRegister.sendMessageToPlayer(new ValidationPacket(type, challenge), playerTarget);
+    }
+
+    public static EntityPlayerMP getPlayerByName(String args) {
+        return FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername(args);
     }
 
     private static class ItemStackKey {
@@ -563,6 +580,13 @@ public class UtilityHelper {
         if (stackTrace.length > 4)
             return isMinecraftOrOmnipotentClass(stackTrace[4].getClassName());
         return true;
+    }
+
+    public static boolean inLogicSide() {
+        FMLCommonHandler instance = FMLCommonHandler.instance();
+        MinecraftServer server = instance.getMinecraftServerInstance();
+        if (server == null) return false;
+        return server.isDedicatedServer() || instance.getEffectiveSide() == Side.SERVER;
     }
 
     private static final TextFormatting RAINBOW[] = new TextFormatting[]{TextFormatting.YELLOW, TextFormatting.GREEN, TextFormatting.AQUA, TextFormatting.BLUE, TextFormatting.LIGHT_PURPLE, TextFormatting.RED, TextFormatting.GOLD, TextFormatting.YELLOW, TextFormatting.GREEN, TextFormatting.AQUA, TextFormatting.LIGHT_PURPLE, TextFormatting.RED, TextFormatting.GOLD};

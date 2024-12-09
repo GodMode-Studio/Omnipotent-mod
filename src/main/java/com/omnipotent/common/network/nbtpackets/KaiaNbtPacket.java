@@ -17,6 +17,7 @@ import net.minecraft.nbt.*;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.SaveHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -146,13 +147,13 @@ public class KaiaNbtPacket implements IMessage {
                         break;
                     case "kaiasummonswords":
                         getKaiaCap(player).ifPresent(cap -> {
-                            kaiaSummonSwords(player, cap);
+                            kaiaSummonSwords(player, cap, new DataPos(0, 0.5, 0), 5);
                             cap.syncWithServer(player);
                         });
                         break;
                     case "kaiaattackshow":
                         if (player.world.getEntityByID(message.intValue) instanceof EntityLivingBase entityByID)
-                            kaiaAttackShow(player, entityByID);
+                            kaiaAttackShow(player, entityByID, message.text.equals("type2"));
                         break;
                     case bannedGuis:
                         if (!UtilityHelper.isMinecraftOrOmnipotentClass(message.text))
@@ -166,10 +167,10 @@ public class KaiaNbtPacket implements IMessage {
             return null;
         }
 
-        private void kaiaAttackShow(EntityPlayerMP player, EntityLivingBase entityByID) {
+        private void kaiaAttackShow(EntityPlayerMP player, EntityLivingBase entityByID, boolean type2) {
             KaiaWrapper kaiaInMainHandOrInventory = KaiaUtil.getKaiaInMainHandOrInventory(player);
             if (kaiaInMainHandOrInventory != null)
-                KaiaUtil.kaiaAttackShow(player, entityByID);
+                KaiaUtil.kaiaAttackShow(player, entityByID, type2);
         }
 
         private static void blockModeHandler(KaiaNbtPacket message, EntityPlayer player) {

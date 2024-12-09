@@ -17,6 +17,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
@@ -137,19 +138,25 @@ public class KeyInit {
         if (KeyInit.kaiaAttackShow.isPressed()) {
             Entity entityHit = rayTraceClient(Minecraft.getMinecraft(), KaiaEntity.class, 300, 0).entityHit;
             EntityPlayer player = (EntityPlayer) object;
-            if (entityHit instanceof EntityLivingBase) {
-                UtilityHelper.getKaiaCap(player).ifPresent(cap -> {
-                    List<String> kaiaSwordsSummoned = cap.getKaiaSwordsSummoned();
-                    player.getEntityWorld().getLoadedEntityList().stream().filter(e ->
-                                    e instanceof KaiaEntity && kaiaSwordsSummoned.contains(e.getPersistentID().toString())).map(KaiaEntity.class::cast)
-                            .forEach(e -> e.setAttackTarget((EntityLivingBase) entityHit));
-                    NetworkRegister.sendToServer(new KaiaNbtPacket("kaiaattackshow", entityHit.getEntityId()));
-                });
+            EntityLivingBase des = entityHit instanceof MultiPartEntityPart part && part.parent instanceof EntityLivingBase living ? living : null;
+            final EntityLivingBase livingBase = (des == null && entityHit instanceof EntityLivingBase) ? (EntityLivingBase) entityHit : des;
+            if (livingBase != null) {
+                if (KeyInit.kaiaAttackShow.isActiveAndMatches(KeyInit.kaiaAttackShow.getKeyCode())) {
+                    UtilityHelper.getKaiaCap(player).ifPresent(cap -> NetworkRegister.sendToServer(new KaiaNbtPacket("kaiaattackshow", "type2", livingBase.getEntityId())));
+                } else {
+                    UtilityHelper.getKaiaCap(player).ifPresent(cap -> {
+                        List<String> kaiaSwordsSummoned = cap.getKaiaSwordsSummoned();
+                        player.getEntityWorld().getLoadedEntityList().stream().filter(e ->
+                                        e instanceof KaiaEntity && kaiaSwordsSummoned.contains(e.getPersistentID().toString())).map(KaiaEntity.class::cast)
+                                .forEach(e -> e.setAttackTarget(livingBase));
+                        NetworkRegister.sendToServer(new KaiaNbtPacket("kaiaattackshow", livingBase.getEntityId()));
+                    });
+                }
             }
             return true;
         }
         return false;
-    });
+    }, KeyModifier.CONTROL, IN_GAME);
     private static final KeyBinding moveAndBanItems = new KeyMod(I18n.format("keykaia.moveandbanitems"), Keyboard.KEY_H, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         if (KeyInit.moveAndBanItems.isPressed() && KeyInit.moveAndBanItems.isActiveAndMatches(KeyInit.moveAndBanItems.getKeyCode())
                 && KaiaUtil.hasInInventoryKaia((EntityPlayer) object)) {

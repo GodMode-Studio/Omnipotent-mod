@@ -55,7 +55,7 @@ public class Omnipotent {
 
     @SubscribeEvent
     public void entityRegister(RegistryEvent.Register<EntityEntry> event) {
-        EntityEntryBuilder<Entity> entity = EntityEntryBuilder.create().entity(KaiaEntity.class).id("kaia", ++id).name("kaia").tracker(64, 1, true);
+        EntityEntryBuilder<Entity> entity = EntityEntryBuilder.create().entity(KaiaEntity.class).id("kaia", ++id).name("kaia").tracker(256, 1, true);
         EntityEntryBuilder<Entity> entity2 = EntityEntryBuilder.create().entity(CustomLightningBolt.class).id("customligth", ++id).name("custom").tracker(64, 1, true);
         event.getRegistry().registerAll(entity.build(), entity2.build());
     }
