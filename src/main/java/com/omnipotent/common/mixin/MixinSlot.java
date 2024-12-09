@@ -34,7 +34,7 @@ public abstract class MixinSlot {
 
     @Inject(method = "putStack", at = @At("HEAD"))
     public void putStack(ItemStack stack, CallbackInfo ci) {
-        if (stack.getItem() instanceof Kaia && !FMLCommonHandler.instance().getMinecraftServerInstance().getEntityWorld().isRemote && !(inventory instanceof InventoryPlayer)) {
+        if (stack.getItem() instanceof Kaia && UtilityHelper.inLogicSide() && !(inventory instanceof InventoryPlayer)) {
             KaiaWrapper kaiaWrapper = new KaiaWrapper(stack);
             kaiaWrapper.getOwner().flatMapJava(UtilityHelper::getKaiaCap).ifPresent(cap -> cap.habilityBrand(Collections.singletonList(stack)));
         }

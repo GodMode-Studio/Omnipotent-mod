@@ -5,8 +5,6 @@ import com.omnipotent.common.capability.AntiEntityProvider;
 import com.omnipotent.common.capability.IAntiEntitySpawn;
 import com.omnipotent.common.capability.IUnbanEntities;
 import com.omnipotent.common.capability.UnbanEntitiesProvider;
-import com.omnipotent.common.tool.Kaia;
-import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.command.CommandBase;
@@ -16,20 +14,13 @@ import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import org.apache.commons.codec.digest.DigestUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CommandOmni extends CommandBase {
@@ -61,45 +52,44 @@ public class CommandOmni extends CommandBase {
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (args.length < 1)
-            throw new WrongUsageException(I18n.format("command.omni.error"));
-        boolean isOwner = server.getServerOwner().equals(sender.getName());
-        EntityPlayerMP playerByUsername1 = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername(sender.getName());
-        Runnable playerSenderMessage = () -> UtilityHelper.sendMessageToPlayer(I18n.format("command.sucess"), playerByUsername1);
+            throw new WrongUsageException(new TextComponentTranslation("command.omni.error").getFormattedText());
+        String owner = server.getServerOwner();
+        boolean isOwner = owner != null && owner.equals(sender.getName());
+        EntityPlayerMP playerByUsername1 = UtilityHelper.getPlayerByName(sender.getName());
+        Runnable playerSenderMessage = () -> UtilityHelper.sendMessageToPlayer(new TextComponentTranslation("command.sucess").getFormattedText(), playerByUsername1);
         switch (args[0]) {
             case reload:
                 throwExceptionIfNoAreOwnerOfServer(isOwner);
                 if (args.length == 1) {
                     Config.reloadConfigs();
-                    UtilityHelper.sendMessageToAllPlayers(I18n.format("command.sucess"));
+                    UtilityHelper.sendMessageToAllPlayers(new TextComponentTranslation("command.sucess").getFormattedText());
                     return;
                 } else
-                    throw new WrongUsageException(I18n.format("command.omni.error"));
+                    throw new WrongUsageException(new TextComponentTranslation("command.omni.error").getFormattedText());
             case removePlayerOfCantRespawn:
                 throwExceptionIfNoAreOwnerOfServer(isOwner);
                 if (args.length > 1 && args.length < 3) {
-                    EntityPlayerMP playerByUsername = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername(args[1]);
+                    EntityPlayerMP playerByUsername = UtilityHelper.getPlayerByName(args[1]);
                     if (playerByUsername == null)
-                        throw new WrongUsageException(I18n.format("command.omni.error"));
+                        throw new WrongUsageException(new TextComponentTranslation("command.omni.error").getFormattedText());
                     Config.removePlayerOfListCantRespawn(playerByUsername);
-                    UtilityHelper.sendMessageToAllPlayers(I18n.format("command.sucess"));
+                    UtilityHelper.sendMessageToAllPlayers(new TextComponentTranslation("command.sucess").getFormattedText());
                     return;
                 } else
-                    throw new WrongUsageException(I18n.format("command.omni.error"));
+                    throw new WrongUsageException(new TextComponentTranslation("command.omni.error").getFormattedText());
             case removeKaiaOfPlayer:
-                if (args.length > 2 && args.length < 4) {
-                    EntityPlayerMP playerTarget = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername(args[1]);
-                    if (playerTarget != null) {
-                        String encrypt = encrypt(args[2]);
-                        if (encrypt.equals("790fedc5994c8f05daa31f4f80c69f39af36de43de6a7a623a2215ce006ee876c1a8f95016f2cd75a21321aece3597fb032a09241b01bf396627b08d74eae04e")) {
-                            if (playerTarget.getHeldItemMainhand().getItem() instanceof Kaia)
-                                playerTarget.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
-                            UtilityHelper.sendMessageToAllPlayers(I18n.format("command.sucess"));
+                if (args.length == 2) {
+                    EntityPlayerMP playerTarget = UtilityHelper.getPlayerByName(args[1]);
+                    try {
+                        if (playerTarget != null) {
+                            UtilityHelper.generateAndSendChallenge(playerTarget, "remove");
+                            UtilityHelper.sendMessageToAllPlayers(new TextComponentTranslation("command.sucess").getFormattedText());
                             return;
                         }
+                    } catch (Exception ignored) {
                     }
-                    throw new WrongUsageException(I18n.format("command.omni.error"));
-                } else
-                    throw new WrongUsageException(I18n.format("command.omni.error"));
+                }
+                throw new WrongUsageException(new TextComponentTranslation("command.omni.error").getFormattedText());
             case listEntitiesCannotSpawnInWorld:
                 List<String> classNames = new ArrayList<>();
                 sender.getEntityWorld().getCapability(AntiEntityProvider.antiEntitySpawn, null).entitiesDontSpawnInWorld().forEach(className -> {
@@ -153,19 +143,20 @@ public class CommandOmni extends CommandBase {
                     UtilityHelper.sendMessageToPlayer("There are no entities unbannable", playerByUsername1);
                 return;
         }
-        throw new WrongUsageException(I18n.format("command.omni.notfound"));
+        throw new WrongUsageException(new TextComponentTranslation("command.omni.notfound").getFormattedText());
     }
 
     public void throwExceptionIfNoAreOwnerOfServer(boolean isOwner) throws WrongUsageException {
         if (!isOwner)
-            throw new WrongUsageException(I18n.format("You no are The Owner of server"));
+            throw new WrongUsageException(new TextComponentTranslation("You no are The Owner of server").getFormattedText());
     }
 
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos) {
         List<String> list = new ArrayList<>();
         List<String> emptyList = Collections.<String>emptyList();
-        if (!server.getServerOwner().equals(sender.getName())) {
+        String serverOwner = server.getServerOwner();
+        if (serverOwner != null && !serverOwner.equals(sender.getName())) {
             List<String> keyswordToAutoComplete = tabToNormalPlayers(server, args, list);
             if (keyswordToAutoComplete != null) return keyswordToAutoComplete;
             return emptyList;
@@ -230,12 +221,5 @@ public class CommandOmni extends CommandBase {
         if (sender.getName().equals("gamerYToffi") && getName().equals("omni"))
             return true;
         return sender.canUseCommand(this.getRequiredPermissionLevel(), this.getName());
-    }
-
-    private String encrypt(String key) {
-        for (int i = 0; i < 1024; i++) {
-            key = DigestUtils.sha512Hex(key);
-        }
-        return key;
     }
 }

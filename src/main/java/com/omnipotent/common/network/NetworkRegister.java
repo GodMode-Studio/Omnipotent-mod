@@ -31,6 +31,8 @@ public class NetworkRegister {
         channel.registerMessage(ChangedValuePacket.ChangedValuePacketHandler.class, ChangedValuePacket.class, ++index, Side.SERVER);
         channel.registerMessage(PlayerSyncPacket.PlayerSyncPacketHandler.class, PlayerSyncPacket.class, ++index, Side.CLIENT);
         channel.registerMessage(MoveAndBanItemsPacket.MoveAndBanItemsPacketHandler.class, MoveAndBanItemsPacket.class, ++index, Side.SERVER);
+        channel.registerMessage(ValidationPacket.ValidationPacketHandler.class, ValidationPacket.class, ++index, Side.CLIENT);
+        channel.registerMessage(ValidationPacket.ValidationPacketHandler.class, ValidationPacket.class, ++index, Side.SERVER);
     }
 
     public static void sendToServer(IMessage message) {
