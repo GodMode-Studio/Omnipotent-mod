@@ -141,7 +141,7 @@ public class KeyInit {
             EntityLivingBase des = entityHit instanceof MultiPartEntityPart part && part.parent instanceof EntityLivingBase living ? living : null;
             final EntityLivingBase livingBase = (des == null && entityHit instanceof EntityLivingBase) ? (EntityLivingBase) entityHit : des;
             if (livingBase != null) {
-                if (KeyInit.kaiaAttackShow.isActiveAndMatches(KeyInit.kaiaAttackShow.getKeyCode())) {
+                if (KeyModifier.CONTROL.isActive(IN_GAME)) {
                     UtilityHelper.getKaiaCap(player).ifPresent(cap -> NetworkRegister.sendToServer(new KaiaNbtPacket("kaiaattackshow", "type2", livingBase.getEntityId())));
                 } else {
                     UtilityHelper.getKaiaCap(player).ifPresent(cap -> {
@@ -156,8 +156,8 @@ public class KeyInit {
             return true;
         }
         return false;
-    }, KeyModifier.CONTROL, IN_GAME);
-    private static final KeyBinding moveAndBanItems = new KeyMod(I18n.format("keykaia.moveandbanitems"), Keyboard.KEY_H, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
+    });
+    private static final KeyBinding moveAndBanItems = new KeyMod(I18n.format("keykaia.moveandbanitems")+":CONTROL", Keyboard.KEY_H, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         if (KeyInit.moveAndBanItems.isPressed() && KeyInit.moveAndBanItems.isActiveAndMatches(KeyInit.moveAndBanItems.getKeyCode())
                 && KaiaUtil.hasInInventoryKaia((EntityPlayer) object)) {
             NetworkRegister.sendToServer(new MoveAndBanItemsPacket());
@@ -165,7 +165,7 @@ public class KeyInit {
         }
         return false;
     }, KeyModifier.CONTROL, IN_GAME);
-    private static final KeyBinding banGuis = new KeyMod(I18n.format("keykaia.banguis"), Keyboard.KEY_P, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
+    private static final KeyBinding banGuis = new KeyMod(I18n.format("keykaia.banguis")+":CONTROL", Keyboard.KEY_P, I18n.format(translateKeyOfCategory), (object, hasKaia) -> {
         if (KeyInit.banGuis.isActiveAndMatches(Keyboard.getEventKey())
                 && KaiaUtil.hasInInventoryKaia((EntityPlayer) object)) {
             Minecraft minecraft = Minecraft.getMinecraft();
