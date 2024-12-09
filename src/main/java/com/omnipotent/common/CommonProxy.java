@@ -9,6 +9,7 @@ import com.omnipotent.common.event.*;
 import com.omnipotent.common.gui.GuiHandler;
 import com.omnipotent.util.ModLogger;
 import com.omnipotent.util.TickScheduler;
+import com.omnipotent.util.player.PlayerData;
 import net.minecraft.world.DimensionType;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -44,6 +45,7 @@ public class CommonProxy {
         eventBus.register(new AttachCapabilitiesEventWorldListener());
         eventBus.register(new PlayerLoggedInEventHandler());
         eventBus.register(new TickScheduler());
+        eventBus.register(new PlayerData());
         registerDimension();
         NetworkRegistry.INSTANCE.registerGuiHandler(instance, new GuiHandler());
         Config.init(event);
