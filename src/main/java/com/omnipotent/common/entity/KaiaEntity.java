@@ -14,6 +14,7 @@ import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.server.management.PreYggdrasilConverter;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -30,13 +31,14 @@ public class KaiaEntity extends Entity {
             DataSerializers.OPTIONAL_UNIQUE_ID);
     private static final DataParameter<Boolean> ATTACK_MODE = EntityDataManager.createKey(KaiaEntity.class,
             DataSerializers.BOOLEAN);
-    public float prevRenderYawOffset;
-    public float prevRotationYawHead;
-    public float rotationYawHead;
-    public float renderYawOffset;
+    private static final DataParameter<Boolean> LIMITED_LIVE = EntityDataManager.createKey(KaiaEntity.class,
+            DataSerializers.BOOLEAN);
     private int index;
-    private EntityLivingBase attackTarget;
+    private static final DataParameter<Integer> ATTACK_TARGET = EntityDataManager.createKey(KaiaEntity.class,
+            DataSerializers.VARINT);
     private long time;
+    private double permSpeed = 0;
+    private long lastTime;
 
     public KaiaEntity(World worldIn) {
         super(worldIn);
@@ -52,11 +54,12 @@ public class KaiaEntity extends Entity {
     protected void entityInit() {
         this.dataManager.register(PLAYER_OWNER, Optional.absent());
         this.dataManager.register(ATTACK_MODE, false);
+        this.dataManager.register(LIMITED_LIVE, false);
+        this.dataManager.register(ATTACK_TARGET, -121212);
     }
 
     @Override
     public void onEntityUpdate() {
-        updateRotation();
         if (world.isRemote) return;
         time = time == Long.MAX_VALUE ? 0 : ++time;
         EntityPlayer ownerPlayer = getOwnerPlayer();
@@ -65,27 +68,23 @@ public class KaiaEntity extends Entity {
             return;
         }
 
-        if (attackTarget != null && attackTarget.isEntityAlive()) {
-            moveToTarget();
+        if (getAttackTarget() != null && getAttackTarget().isEntityAlive()) {
+            if (time >= 140 && hasLimitedLive())
+                moveToTarget();
         } else {
             orbitalMove(ownerPlayer);
-            this.posY = isAttackMode() ? ownerPlayer.posY + 1 : ownerPlayer.posY;
+            this.posY = ownerPlayer.posY + 0.5;
             setAttackMode(false);
             setAttackTarget(null);
+            if (hasLimitedLive())
+                setDead();
         }
         super.onEntityUpdate();
     }
 
-    private void updateRotation() {
-        this.prevRenderYawOffset = this.renderYawOffset;
-        this.prevRotationYawHead = this.rotationYawHead;
-        this.prevRotationYaw = this.rotationYaw;
-        this.prevRotationPitch = this.rotationPitch;
-    }
-
     private void orbitalMove(EntityPlayer ownerPlayer) {
         int radius = 1;
-        double orbitalPeriod = 60; //3 segundos é 60 ticks multiplica por dois
+        double orbitalPeriod = 60;
         double portion = (time % orbitalPeriod) / orbitalPeriod;
         double angleOffset = (2 * Math.PI / 5) * index;
         double angle = portion * 2 * Math.PI + angleOffset;
@@ -94,24 +93,36 @@ public class KaiaEntity extends Entity {
     }
 
     private void moveToTarget() {
+        EntityLivingBase attackTarget = getAttackTarget();
         double directionX = attackTarget.posX - this.posX;
         double directionY = (attackTarget.posY + attackTarget.getEyeHeight() / 2.0F) - this.posY;
         double directionZ = attackTarget.posZ - this.posZ;
         double distance = MathHelper.sqrt(directionX * directionX + directionY * directionY + directionZ * directionZ);
-        double speed = 0.5;
+        double speed = Math.max(distance / 300, 0.5);
+        if (time >= 500) {
+            lastTime = Math.max(600 - time, 1);
+            speed = distance / lastTime;
+            permSpeed = Math.max(speed, permSpeed);
+        }
+        if (permSpeed != 0)
+            speed = permSpeed;
         if (distance > 0.001) {
             this.posX += (directionX / distance) * speed;
             this.posY += (directionY / distance) * speed;
             this.posZ += (directionZ / distance) * speed;
         }
-
-        this.rotationYaw = (float) (Math.atan2(directionZ, directionX) * (180F / Math.PI)) - 90.0F;
-        this.rotationPitch = (float) -(Math.atan2(directionY, MathHelper.sqrt(directionX * directionX + directionZ * directionZ)) * (180F / Math.PI));
-
-        if (distance < 0.5) {
+        if (isColliding(distance)) {
             attackTarget.attackEntityFrom(new AbsoluteOfCreatorDamage(getOwnerPlayer()), Float.MAX_VALUE);
             attackTarget.onAbsoluteDeath(new AbsoluteOfCreatorDamage(getOwnerPlayer()));
+            if (hasLimitedLive())
+                setDead();
         }
+    }
+
+    private boolean isColliding(double distance) {
+        AxisAlignedBB boundingBox1 = getAttackTarget().getEntityBoundingBox();
+        AxisAlignedBB boundingBox2 = new AxisAlignedBB(this.getPosition());
+        return boundingBox1.intersects(boundingBox2) || distance < 0.1;
     }
 
     @Override
@@ -151,6 +162,7 @@ public class KaiaEntity extends Entity {
         }
         compound.setInteger("indexKaiaSword", index);
         compound.setBoolean("attackmode", this.dataManager.get(ATTACK_MODE));
+        compound.setBoolean("limitedLive", this.dataManager.get(LIMITED_LIVE));
     }
 
     @Override
@@ -172,6 +184,7 @@ public class KaiaEntity extends Entity {
 
         index = compound.getInteger("indexKaiaSword");
         this.dataManager.set(ATTACK_MODE, compound.getBoolean("attackmode"));
+        this.dataManager.set(LIMITED_LIVE, compound.getBoolean("limitedLive"));
     }
 
     public boolean isAttackMode() {
@@ -182,11 +195,19 @@ public class KaiaEntity extends Entity {
         this.dataManager.set(ATTACK_MODE, attackMode);
     }
 
+    public boolean hasLimitedLive() {
+        return this.dataManager.get(LIMITED_LIVE);
+    }
+
+    public void setLive(boolean limitedLive) {
+        this.dataManager.set(LIMITED_LIVE, limitedLive);
+    }
+
     public EntityLivingBase getAttackTarget() {
-        return attackTarget;
+        return (EntityLivingBase) this.world.getEntityByID(this.dataManager.get(ATTACK_TARGET));
     }
 
     public void setAttackTarget(EntityLivingBase attackTarget) {
-        this.attackTarget = attackTarget;
+        this.dataManager.set(ATTACK_TARGET, attackTarget == null ? -121212 : attackTarget.getEntityId());
     }
 }
