@@ -2,6 +2,8 @@ package com.omnipotent.common.entity;
 
 import com.google.common.base.Optional;
 import com.omnipotent.common.damage.AbsoluteOfCreatorDamage;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
@@ -19,13 +21,15 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
 
 import static com.omnipotent.util.UtilityHelper.getKaiaCap;
 
-public class KaiaEntity extends Entity {
+public class KaiaEntity extends Entity implements IEntityAdditionalSpawnData {
 
     private static final DataParameter<Optional<UUID>> PLAYER_OWNER = EntityDataManager.createKey(KaiaEntity.class,
             DataSerializers.OPTIONAL_UNIQUE_ID);
@@ -60,16 +64,16 @@ public class KaiaEntity extends Entity {
 
     @Override
     public void onEntityUpdate() {
+        super.onEntityUpdate();
         if (world.isRemote) return;
         time = time == Long.MAX_VALUE ? 0 : ++time;
         EntityPlayer ownerPlayer = getOwnerPlayer();
         if (ownerPlayer == null) {
-            super.onEntityUpdate();
             return;
         }
 
         if (getAttackTarget() != null && getAttackTarget().isEntityAlive()) {
-            if (time >= 140 && hasLimitedLive())
+            if (!hasLimitedLive() || time >= 140)
                 moveToTarget();
         } else {
             orbitalMove(ownerPlayer);
@@ -79,17 +83,33 @@ public class KaiaEntity extends Entity {
             if (hasLimitedLive())
                 setDead();
         }
-        super.onEntityUpdate();
     }
 
     private void orbitalMove(EntityPlayer ownerPlayer) {
-        int radius = 1;
-        double orbitalPeriod = 60;
+        double radius = 1.5;
+        double orbitalPeriod = 40;
         double portion = (time % orbitalPeriod) / orbitalPeriod;
         double angleOffset = (2 * Math.PI / 5) * index;
         double angle = portion * 2 * Math.PI + angleOffset;
-        this.posX = ownerPlayer.posX + radius * Math.cos(angle);
-        this.posZ = ownerPlayer.posZ + radius * Math.sin(angle);
+        double targetX = ownerPlayer.posX + radius * Math.cos(angle);
+        double targetZ = ownerPlayer.posZ + radius * Math.sin(angle);
+        double baseSpeed = 0.3;
+        double catchupThreshold = 2.0;
+        double dx = targetX - this.posX;
+        double dz = targetZ - this.posZ;
+        double distance = Math.sqrt(dx * dx + dz * dz);
+        double speed = baseSpeed;
+        if (distance > catchupThreshold) {
+            speed = baseSpeed * (distance / catchupThreshold);
+        }
+        this.motionX = dx * speed;
+        this.motionZ = dz * speed;
+        this.posX += this.motionX;
+        this.posZ += this.motionZ;
+        double targetYaw = Math.toDegrees(Math.atan2(this.motionZ, this.motionX));
+        float currentYaw = this.rotationYaw;
+        float yawDiff = (float) ((targetYaw - currentYaw + 180) % 360 - 180);
+        this.rotationYaw += yawDiff * 0.3f;
     }
 
     private void moveToTarget() {
@@ -98,14 +118,7 @@ public class KaiaEntity extends Entity {
         double directionY = (attackTarget.posY + attackTarget.getEyeHeight() / 2.0F) - this.posY;
         double directionZ = attackTarget.posZ - this.posZ;
         double distance = MathHelper.sqrt(directionX * directionX + directionY * directionY + directionZ * directionZ);
-        double speed = Math.max(distance / 300, 0.5);
-        if (time >= 500) {
-            lastTime = Math.max(600 - time, 1);
-            speed = distance / lastTime;
-            permSpeed = Math.max(speed, permSpeed);
-        }
-        if (permSpeed != 0)
-            speed = permSpeed;
+        double speed = getSpeed(distance);
         if (distance > 0.001) {
             this.posX += (directionX / distance) * speed;
             this.posY += (directionY / distance) * speed;
@@ -119,10 +132,23 @@ public class KaiaEntity extends Entity {
         }
     }
 
+    private double getSpeed(double distance) {
+        if (!hasLimitedLive()) return 3;
+        double speed = Math.max(distance / 300, 0.5);
+        if (time >= 500) {
+            lastTime = Math.max(600 - time, 1);
+            speed = distance / lastTime;
+            permSpeed = Math.max(speed, permSpeed);
+        }
+        if (permSpeed != 0)
+            speed = permSpeed;
+        return speed;
+    }
+
     private boolean isColliding(double distance) {
         AxisAlignedBB boundingBox1 = getAttackTarget().getEntityBoundingBox();
         AxisAlignedBB boundingBox2 = new AxisAlignedBB(this.getPosition());
-        return boundingBox1.intersects(boundingBox2) || distance < 0.1;
+        return boundingBox2.intersects(boundingBox1) || distance < 0.1;
     }
 
     @Override
@@ -209,5 +235,19 @@ public class KaiaEntity extends Entity {
 
     public void setAttackTarget(EntityLivingBase attackTarget) {
         this.dataManager.set(ATTACK_TARGET, attackTarget == null ? -121212 : attackTarget.getEntityId());
+    }
+
+    @Override
+    public void writeSpawnData(ByteBuf buffer) {
+        buffer.writeDouble(this.posX);
+        buffer.writeDouble(this.posY);
+        buffer.writeDouble(this.posZ);
+        ByteBufUtils.writeUTF8String(buffer, getOwnerId().toString());
+    }
+
+    @Override
+    public void readSpawnData(ByteBuf additionalData) {
+        setPosition(additionalData.readDouble(), additionalData.readDouble(), additionalData.readDouble());
+        setOwnerId(UUID.fromString(ByteBufUtils.readUTF8String(additionalData)));
     }
 }
