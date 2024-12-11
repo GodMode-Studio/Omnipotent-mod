@@ -72,6 +72,7 @@ public class ChangedValuePacket implements IMessage {
                 else {
                     if (message.booleanValue) {
                         EntityPlayer playerEntityByUUID = player.world.getPlayerEntityByUUID(UUID.fromString(message.text));
+                        if (playerEntityByUUID == null) return null;
                         if (playerEntityByUUID.hasKaia)
                             NetworkRegister.sendToAround(new ChangedValuePacket(playerEntityByUUID.getUniqueID().toString(), true), playerEntityByUUID.dimension, playerEntityByUUID.getPosition(), 50);
                         else {

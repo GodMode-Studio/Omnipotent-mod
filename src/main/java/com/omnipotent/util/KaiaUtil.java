@@ -51,6 +51,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.GameRules;
+import net.minecraft.world.Teleporter;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
@@ -344,9 +345,10 @@ public final class KaiaUtil {
     }
 
     private static boolean banEntityToSealedDimension(EntityLivingBase entity) {
-        if (entity instanceof EntityPlayerMP)
-            ((EntityPlayerMP) entity).setSpawnDimension(Omnipotent.dimensionType.getId());
-        else if (entity instanceof EntityLiving) {
+        if (entity instanceof EntityPlayerMP target) {
+            target.changeDimension(Omnipotent.dimensionType.getId(), new Teleporte(target.posX, target.posY, target.posZ));
+            target.setSpawnDimension(Omnipotent.dimensionType.getId());
+        } else if (entity instanceof EntityLiving) {
             entity.changeDimension(Omnipotent.dimensionType.getId());
             return true;
         }

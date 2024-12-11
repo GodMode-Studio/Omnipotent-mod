@@ -49,14 +49,6 @@ public abstract class MixinEntityPlayerMp extends EntityPlayer implements IConta
     @Final
     public void onDeath(DamageSource cause) {
         EntityPlayerMP playerMP = (EntityPlayerMP) (Object) this;
-        UtilityHelper.getKaiaCap(playerMP).ifPresent(cap -> {
-            for (ItemStack kaia : cap.returnList()) {
-                if (new KaiaWrapper(kaia).getBoolean(NbtBooleanValues.rescueBeforeDeath)) {
-                    returnKaiaOfOwner(playerMP);
-                    break;
-                }
-            }
-        });
         if (hasInInventoryKaia(this)) {
             this.setHealth(Integer.MAX_VALUE);
             this.isDead = false;
@@ -64,6 +56,14 @@ public abstract class MixinEntityPlayerMp extends EntityPlayer implements IConta
         }
         if (net.minecraftforge.common.ForgeHooks.onLivingDeath(this, cause))
             return;
+        UtilityHelper.getKaiaCap(playerMP).ifPresent(cap -> {
+            for (ItemStack kaia : cap.returnList()) {
+                if (new KaiaWrapper(kaia).getBoolean(NbtBooleanValues.rescueBeforeDeath)) {
+                    returnKaiaOfOwner(playerMP);
+                    return;
+                }
+            }
+        });
         boolean flag = this.world.getGameRules().getBoolean("showDeathMessages");
         this.connection.sendPacket(new SPacketCombatEvent(this.getCombatTracker(), SPacketCombatEvent.Event.ENTITY_DIED, flag));
 

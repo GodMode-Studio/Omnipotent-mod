@@ -4,8 +4,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.omnipotent.common.capability.kaiacap.KaiaProvider;
 import com.omnipotent.common.entity.CustomLightningBolt;
-import com.omnipotent.common.tool.Kaia;
-import com.omnipotent.util.KaiaConstantsNbt;
 import com.omnipotent.util.KaiaUtil;
 import com.omnipotent.util.KaiaWrapper;
 import com.omnipotent.util.UtilityHelper;
@@ -26,7 +24,6 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.IBlockAccess;
@@ -35,8 +32,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.SaveHandler;
 import net.minecraftforge.common.ForgeChunkManager;
-import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -47,7 +42,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -58,7 +52,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.omnipotent.Omnipotent.log;
-import static com.omnipotent.util.KaiaConstantsNbt.ownerID;
 
 @Mixin(World.class)
 public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.common.capabilities.ICapabilityProvider {
@@ -84,6 +77,7 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
     public abstract void updateComparatorOutputLevel(BlockPos pos, Block blockIn);
 
     @Shadow
+    @Final
     public boolean isRemote;
 
     @Shadow
@@ -120,7 +114,7 @@ public abstract class MixinWorld implements IBlockAccess, net.minecraftforge.com
 
     @Inject(method = "removeEntityDangerously", at = @At("HEAD"), cancellable = true)
     public void removeEntityDangerously(Entity entityIn, CallbackInfo ci) {
-        if (KaiaUtil.hasInInventoryKaia(entityIn))
+        if (KaiaUtil.hasInInventoryKaia(entityIn) && !UtilityHelper.injectMixinIsCallerMinecraftOrForgeClass())
             ci.cancel();
     }
 

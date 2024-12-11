@@ -71,7 +71,7 @@ public class WorldProviderMod extends WorldProvider {
 
     @Override
     public void onPlayerAdded(EntityPlayerMP entity) {
-        UtilityHelper.sendMessageToPlayer("seja bem vindo", entity);
+        UtilityHelper.sendMessageToPlayer("Seja bem vindo", entity);
     }
 
     @Override

@@ -68,7 +68,7 @@ public class CommandOmni extends CommandBase {
                     throw new WrongUsageException(new TextComponentTranslation("command.omni.error").getFormattedText());
             case removePlayerOfCantRespawn:
                 throwExceptionIfNoAreOwnerOfServer(isOwner);
-                if (args.length > 1 && args.length < 3) {
+                if (args.length == 2) {
                     EntityPlayerMP playerByUsername = UtilityHelper.getPlayerByName(args[1]);
                     if (playerByUsername == null)
                         throw new WrongUsageException(new TextComponentTranslation("command.omni.error").getFormattedText());

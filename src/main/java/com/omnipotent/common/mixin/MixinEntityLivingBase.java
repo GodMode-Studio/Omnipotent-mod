@@ -191,7 +191,7 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
         float standardValue = ((Float) this.dataManager.get(this.getHEALTH())).floatValue();
         if (isPlayer(entity) && hasInInventoryKaia(entity))
             return 20;
-        else if (Config.getListPlayersCantRespawn().contains(entity.getUniqueID().toString()) && !hasInInventoryKaia(entity)) {
+        else if (!this.world.isRemote && Config.getListPlayersCantRespawn().contains(entity.getUniqueID().toString()) && !hasInInventoryKaia(entity)) {
             Config.reloadConfigsOfFile();
             return 0;
         }
@@ -211,7 +211,7 @@ public abstract class MixinEntityLivingBase extends Entity implements IEntityLiv
     @Overwrite
     @Final
     public final float getMaxHealth() {
-        if (Config.getListPlayersCantRespawn().contains(this.getUniqueID().toString()) && !hasInInventoryKaia(this)) {
+        if (!this.world.isRemote && Config.getListPlayersCantRespawn().contains(this.getUniqueID().toString()) && !hasInInventoryKaia(this)) {
             Config.reloadConfigsOfFile();
             return 0;
         }

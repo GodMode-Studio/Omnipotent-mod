@@ -17,14 +17,14 @@ public class Config {
 
     public static void init(FMLPreInitializationEvent event) {
         config = new Configuration(event.getSuggestedConfigurationFile());
+        reloadConfigs();
     }
 
     public static void addPlayerInListThatCantRespawn(EntityPlayer player) {
         String uuid = player.getUniqueID().toString();
         if (playerscantrespawn.contains(uuid))
             return;
-        Property property = config.get(Configuration.CATEGORY_GENERAL, "playerscantrespawn", new String[0], I18n.format("config.playerscantrespawn"));
-        ArrayList stringList = new ArrayList(Arrays.asList(property.getStringList()));
+        Property property = config.get(Configuration.CATEGORY_GENERAL, "playerscantrespawn", new String[0], "Players can´t respawn");
         playerscantrespawn.add(uuid);
         property.setValues(playerscantrespawn.toArray(new String[0]));
         config.save();
@@ -32,7 +32,7 @@ public class Config {
 
     public static void removePlayerOfListCantRespawn(EntityPlayer player) {
         String uuid = player.getUniqueID().toString();
-        if (!playerscantrespawn.contains(uuid) || uuid == null || uuid.isEmpty() || uuid.equals(" "))
+        if (!playerscantrespawn.contains(uuid))
             return;
         Property property = config.get(Configuration.CATEGORY_GENERAL, "playerscantrespawn", new String[0], I18n.format("config.playerscantrespawn"));
         playerscantrespawn.remove(uuid);
@@ -47,9 +47,10 @@ public class Config {
     public static void reloadConfigs() {
         config.load();
         Property property = config.get(Configuration.CATEGORY_GENERAL, "playerscantrespawn", new String[0], "players that can't respawn");
-        ArrayList stringList = new ArrayList(Arrays.asList(property.getStringList()));
-        playerscantrespawn = stringList;
+        playerscantrespawn.clear();
+        playerscantrespawn.addAll(Arrays.asList(property.getStringList()));
     }
+
     public static void reloadConfigsOfFile() {
         Property property = config.get(Configuration.CATEGORY_GENERAL, "playerscantrespawn", new String[0], "players that can't respawn");
         property.setValues(playerscantrespawn.toArray(new String[0]));
