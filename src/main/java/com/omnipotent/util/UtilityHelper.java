@@ -164,6 +164,10 @@ public class UtilityHelper {
         return FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername(args);
     }
 
+    public static boolean inLogicServerSide(World world) {
+        return !world.isRemote;
+    }
+
     private static class ItemStackKey {
         private final Item item;
         private final NBTTagCompound tag;

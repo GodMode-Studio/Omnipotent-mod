@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.omnipotent.common.tool.Kaia;
 import com.omnipotent.util.KaiaUtil;
-import com.omnipotent.util.KaiaWrapper;
 import com.omnipotent.util.UtilityHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -168,7 +167,7 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
         }
 
         captureDrops = false;
-        if (!world.isRemote)
+        if (UtilityHelper.inLogicServerSide(this.world))
             ForgeEventFactory.onPlayerDrops(player, cause, capturedDrops, recentlyHit > 0);
 
         if (cause != null) {
@@ -214,7 +213,7 @@ public abstract class MixinEntityPlayer extends EntityLivingBase {
 
     @Inject(method = "setDead", at = @At("HEAD"), cancellable = true)
     public void setDead(CallbackInfo ci) {
-        if (KaiaUtil.hasInInventoryKaia(this))
+        if (UtilityHelper.inLogicServerSide(this.world) && KaiaUtil.hasInInventoryKaia(this))
             ci.cancel();
     }
 }
