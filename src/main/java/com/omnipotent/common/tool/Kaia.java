@@ -163,8 +163,6 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
             int integer = tagCompound.getInteger(chargeEnergyInBlocksAround.getValue());
             if (integer > 1)
                 chargeEnergyInBlocksAround(player, integer);
-//            if (Loader.isModLoaded(RedstoneFluxProps.MOD_ID))
-//                chargeRfEnergyInBlocksAround(player, stack.getTagCompound().getInteger(chargeEnergyInBlocksAround));
         }
     }
 
@@ -178,7 +176,7 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
         int zNegative = position.getZ() - range;
         int zPositive = position.getZ() + range;
         List<BlockPos> list = new ArrayList<>();
-        BlockPos.getAllInBox(xNegative, yNegative, zNegative, xPositive, yPositive, zPositive).forEach(i -> list.add(i));
+        BlockPos.getAllInBox(xNegative, yNegative, zNegative, xPositive, yPositive, zPositive).forEach(list::add);
         for (BlockPos block : list) {
             TileEntity tileEntity = world.getTileEntity(block);
             if (tileEntity != null && tileEntity.hasCapability(CapabilityEnergy.ENERGY, null)) {
@@ -217,30 +215,6 @@ public class Kaia extends ItemPickaxe implements IContainer, IEnergyContainerIte
                 itemEnergy.receiveEnergy(item, itemEnergy.getMaxEnergyStored(item), false);
         }
     }
-
-//    @Optional.Method(modid = RedstoneFluxProps.MOD_ID)
-//    private void chargeRfEnergyInBlocksAround(EntityPlayer player, int range) {
-//        BlockPos position = player.getPosition();
-//        World world = player.world;
-//        int xNegative = position.getX() - range;
-//        int xPositive = position.getX() + range;
-//        int yNegative = position.getY() - range;
-//        int yPositive = position.getY() + range;
-//        int zNegative = position.getZ() - range;
-//        int zPositive = position.getZ() + range;
-//        List<BlockPos> list = new ArrayList<>();
-//        BlockPos.getAllInBox(xNegative, yNegative, zNegative, xPositive, yPositive, zPositive).forEach(i -> list.add(i));
-//        for (BlockPos block : list) {
-//            TileEntity tileEntity = world.getTileEntity(block);
-//            if (tileEntity != null) {
-//                if (tileEntity instanceof cofh.redstoneflux.api.IEnergyStorage) {
-//                    cofh.redstoneflux.api.IEnergyStorage tileRf = (cofh.redstoneflux.api.IEnergyStorage) tileEntity;
-//                    if (tileRf.getEnergyStored() < tileRf.getMaxEnergyStored())
-//                        tileRf.receiveEnergy(tileRf.getMaxEnergyStored() - tileRf.getEnergyStored(), false);
-//                }
-//            }
-//        }
-//    }
 
     @Optional.Method(modid = botaniaModid)
     private void chargeManaInInventory(EntityPlayer player) {
